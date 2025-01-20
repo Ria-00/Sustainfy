@@ -37,6 +37,7 @@ dependencies:
   cupertino_icons: ^1.0.6
   align_positioned: ^5.0.0
   google_nav_bar: ^5.0.7
+  font_awesome_flutter: ^10.8.0
 
 dev_dependencies:
   flutter_test:
