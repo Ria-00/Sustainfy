@@ -51,90 +51,90 @@ class _RewardPageState extends State<RewardPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            ClipPath(
-              clipper: CustomCurvedEdges(),
-              child: SizedBox(
-                height: 100,
-                child: Container(
-                  color: Colors.green,
-                  child: Row(
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.only(left: 17.0),
-                        child: Image.asset(
-                          'assets/images/SustainifyLogo.png',
-                          width: 50,
-                          height: 60,
-                        ),
-                      ),
-                      SizedBox(
-                        width: 7,
-                      ),
-                      const Text(
-                        'Sustainify',
-                        style: TextStyle(
-                          color: AppColors.white,
-                          fontFamily: AppFonts.inter,
-                          fontSize: AppFonts.interRegular18,
-                          fontWeight: AppFonts.interRegularWeight,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-            // Points Display
-            Container(
-              padding: EdgeInsets.symmetric(vertical: 12),
-              child: RichText(
-                text: TextSpan(
+      body: Column(
+        children: [
+          ClipPath(
+            clipper: CustomCurvedEdges(),
+            child: SizedBox(
+              height: 150,
+              child: Container(
+                color: Colors.green,
+                child: Row(
                   children: [
-                    TextSpan(
-                      text: '$_currentPoints',
-                      style: TextStyle(
-                        color: AppColors.greenappBar,
-                        fontFamily: AppFonts.inter,
-                        fontSize: 70,
-                        fontWeight: AppFonts.interSemiBoldWeight,
+                    Padding(
+                      padding: const EdgeInsets.only(left: 17.0),
+                      child: Image.asset(
+                        'assets/images/SustainifyLogo.png',
+                        width: 50,
+                        height: 60,
                       ),
                     ),
-                    TextSpan(
-                      text: ' points',
+                    SizedBox(
+                      width: 7,
+                    ),
+                    const Text(
+                      'Sustainify',
                       style: TextStyle(
+                        color: AppColors.white,
                         fontFamily: AppFonts.inter,
-                        fontSize: 42,
-                        fontWeight: AppFonts.interSemiBoldWeight,
-                        color: AppColors.black,
+                        fontSize: AppFonts.interRegular18,
+                        fontWeight: AppFonts.interRegularWeight,
                       ),
                     ),
                   ],
                 ),
               ),
             ),
-
-            // Claim Rewards Title
-            Container(
-              padding: EdgeInsets.symmetric(vertical: 13),
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  'Claim Rewards',
-                  style: TextStyle(
-                    fontSize: 17,
-                    fontWeight: FontWeight.w600,
+          ),
+          // Points Display
+          Container(
+            padding: EdgeInsets.symmetric(vertical: 12),
+            child: RichText(
+              text: TextSpan(
+                children: [
+                  TextSpan(
+                    text: '$_currentPoints',
+                    style: TextStyle(
+                      color: AppColors.greenappBar,
+                      fontFamily: AppFonts.inter,
+                      fontSize: 70,
+                      fontWeight: AppFonts.interSemiBoldWeight,
+                    ),
                   ),
+                  TextSpan(
+                    text: ' points',
+                    style: TextStyle(
+                      fontFamily: AppFonts.inter,
+                      fontSize: 42,
+                      fontWeight: AppFonts.interSemiBoldWeight,
+                      color: AppColors.black,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          // Claim Rewards Title
+          Container(
+            padding: EdgeInsets.only(left: 20, right: 20),
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                'Claim Rewards',
+                style: TextStyle(
+                  fontSize: 17,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
             ),
+          ),
 
-            SizedBox(height: 8),
-            // List of reward cards
-            Expanded(
+          SizedBox(height: 8),
+          // List of reward cards
+          Container(
+            // padding: EdgeInsets.only(left: 3, right: 3),
+            child: Expanded(
               child: ListView.builder(
                 itemCount: rewards.length,
                 itemBuilder: (context, index) {
@@ -145,8 +145,8 @@ class _RewardPageState extends State<RewardPage> {
                 },
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -166,7 +166,7 @@ class RewardCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       elevation: 3,
-      margin: EdgeInsets.symmetric(vertical: 8, horizontal: 8),
+      margin: EdgeInsets.symmetric(vertical: 8, horizontal: 20),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(10),
       ),

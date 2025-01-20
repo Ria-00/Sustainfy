@@ -21,7 +21,7 @@ class CurvedAppBarExample extends StatelessWidget {
       body: ClipPath(
         clipper: CustomCurvedEdges(),
         child: SizedBox(
-          height: 100,
+          height: 150,
           child: Container(
             color: Colors.green,
             child: Row(

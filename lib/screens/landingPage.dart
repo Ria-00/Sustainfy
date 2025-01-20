@@ -10,13 +10,13 @@ class LandingPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Padding(
-        padding: const EdgeInsets.all(10.0),
+        padding: const EdgeInsets.all(0.0),
         child: Column(
           children: [
             ClipPath(
               clipper: CustomCurvedEdges(),
               child: SizedBox(
-                height: 100,
+                height: 150,
                 child: Container(
                   color: Colors.green,
                   child: Row(
@@ -47,34 +47,45 @@ class LandingPage extends StatelessWidget {
               ),
             ),
             SizedBox(height: 15),
-            Align(
-              alignment: Alignment.centerLeft,
-              child: Text("Categories",
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-            ),
-            SizedBox(height: 15),
             Container(
-              child: SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
+                padding: EdgeInsets.only(left: 20, right: 20),
+                child: Column(
                   children: [
-                    Image.asset('assets/images/Rectangle13.png'),
-                    SizedBox(width: 15),
-                    Image.asset('assets/images/Rectangle14.png'),
-                    SizedBox(width: 15),
-                    Image.asset('assets/images/Rectangle15.png'),
-                    SizedBox(width: 15),
-                    Image.asset('assets/images/Rectangle13.png'),
-                    SizedBox(width: 15),
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text("Categories",
+                          style: TextStyle(
+                              fontSize: 20, fontWeight: FontWeight.bold)),
+                    ),
+                    SizedBox(height: 15),
+                    Container(
+                      child: SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Row(
+                          children: [
+                            Image.asset('assets/images/Rectangle13.png'),
+                            SizedBox(width: 15),
+                            Image.asset('assets/images/Rectangle14.png'),
+                            SizedBox(width: 15),
+                            Image.asset('assets/images/Rectangle15.png'),
+                            SizedBox(width: 15),
+                            Image.asset('assets/images/Rectangle13.png'),
+                            SizedBox(width: 15),
+                          ],
+                        ),
+                      ),
+                    ),
                   ],
-                ),
-              ),
-            ),
+                )),
             SizedBox(height: 25),
-            Align(
-              alignment: Alignment.centerLeft,
-              child: Text("Live Activities",
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+            Container(
+              padding: EdgeInsets.only(left: 20, right: 20),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Text("Live Activities",
+                    style:
+                        TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+              ),
             ),
             SizedBox(height: 20),
             Image.asset('assets/images/Rectangle16.png'),
