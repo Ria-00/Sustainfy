@@ -3,6 +3,7 @@ import 'package:flutter/widgets.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
 import 'package:provider/provider.dart';
 import 'package:sustainfy/model/userProvider.dart';
+import 'package:sustainfy/screens/communityPage.dart';
 import 'package:sustainfy/screens/landingPage.dart';
 import 'package:sustainfy/screens/loadingPage.dart';
 import 'package:sustainfy/screens/login.dart';
@@ -72,7 +73,7 @@ class _HomePageState extends State<HomePage> {
 
   final List<Widget> _pages = [
     LandingPage(),
-    Center(child: Text("community Page")),
+    CommunityPage(),
     RewardPage(),
     Center(child: Text("Profile Page")),
   ];
