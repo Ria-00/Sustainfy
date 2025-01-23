@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:sustainfy/screens/otpVerification.dart';
 
 class Login extends StatefulWidget {
   const Login({super.key});
@@ -13,6 +14,7 @@ class Login extends StatefulWidget {
 
 class _LoginState extends State<Login> {
   bool _isHidden = false;
+  bool _isRegisterHidden = true; // For Register visibility
   double _containerHeight1 = 280.0; // Initial height of the container
   final double _minHeight1 = 70.0; // Minimum height when collapsed
   final double _maxHeight1 = 280.0; // Maximum height when expanded
@@ -25,6 +27,7 @@ class _LoginState extends State<Login> {
       // Update the container's height based on drag direction
       _containerHeight -= details.primaryDelta!;
       _containerHeight1 += details.primaryDelta!;
+
       // Clamp the height to ensure it stays within the allowed range
       _containerHeight = _containerHeight.clamp(_minHeight, _maxHeight);
       _containerHeight1 = _containerHeight1.clamp(_minHeight1, _maxHeight1);
@@ -32,9 +35,11 @@ class _LoginState extends State<Login> {
       if (details.primaryDelta! > 0) {
         // Dragging down
         _isHidden = false;
+        _isRegisterHidden = true;
       } else if (details.primaryDelta! < 0) {
         // Dragging up
         _isHidden = true;
+        _isRegisterHidden = false;
       }
     });
   }
@@ -68,14 +73,15 @@ class _LoginState extends State<Login> {
                         child: Image.asset(
                           "assets/images/suslogo.png",
                           opacity: const AlwaysStoppedAnimation(.3),
-                          height: MediaQuery.of(context).size.height * 0.2, // 20% of screen height
-
+                          height: MediaQuery.of(context).size.height *
+                              0.2, // 20% of screen height
                         ),
                       ),
                     ),
                     Flexible(
                       child: Container(
-                        padding: const EdgeInsets.only(top:0,left: 25.0, bottom: 26),
+                        padding: const EdgeInsets.only(
+                            top: 0, left: 25.0, bottom: 26),
                         alignment: Alignment.bottomLeft,
                         child: Text(
                           "Hello there, \nWelcome back!",
@@ -245,54 +251,206 @@ class _LoginState extends State<Login> {
             ],
           ),
           Positioned(
-            bottom: 0,
-            left: 0,
-            right: 0,
-            child: GestureDetector(
-              onVerticalDragUpdate: _onVerticalDragUpdate,
-              child: Container(
-                height: _containerHeight,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.only(
-                    topLeft: Radius.circular(30.0), // Rounded bottom-left
-                    topRight: Radius.circular(30.0), // Rounded bottom-right
+  bottom: 0,
+  left: 0,
+  right: 0,
+  child: GestureDetector(
+    onVerticalDragUpdate: _onVerticalDragUpdate,
+    child: AnimatedContainer(
+      duration: const Duration(milliseconds: 300), // Smooth animation
+      height: _containerHeight,
+      decoration: BoxDecoration(
+        borderRadius: const BorderRadius.only(
+          topLeft: Radius.circular(30.0),
+          topRight: Radius.circular(30.0),
+        ),
+        color: const Color.fromRGBO(52, 168, 83, 1),
+      ),
+      child: Column(
+        children: [
+          const SizedBox(height: 14),
+          Container(
+            height: 4,
+            width: 49,
+            decoration: BoxDecoration(
+              color: const Color.fromRGBO(50, 50, 55, 1),
+              borderRadius: const BorderRadius.all(Radius.circular(3)),
+            ),
+          ),
+          const SizedBox(height: 4),
+          Center(
+            child: _containerHeight > _minHeight
+                ? const Text(
+                    "Swipe down to login",
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: Colors.white,
+                      fontWeight: FontWeight.normal,
+                    ),
+                  )
+                : const Text(
+                    "Swipe up to register",
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: Colors.white,
+                      fontWeight: FontWeight.normal,
+                    ),
                   ),
-                  color: const Color.fromRGBO(52, 168, 83, 1),
-                ),
+          ),
+          AnimatedContainer(
+            duration: const Duration(milliseconds: 300), // Smooth expand animation
+            height: _containerHeight-50, // Adjust as needed
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 20),
+              child: SingleChildScrollView(
                 child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
-                    SizedBox(height: 14),
                     Container(
-                      height: 4,
-                      width: 49,
-                      decoration: BoxDecoration(
-                        color: Color.fromRGBO(50, 50, 55, 1),
-                        borderRadius: BorderRadius.all(Radius.circular(3)),
-                      ),
-                    ),
-                    SizedBox(height: 4),
-                    Center(
-                      child: _containerHeight>_minHeight? Text(
-                        "Swipe down to login",
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: Colors.white,
-                          fontWeight: FontWeight.normal,
-                        ),
-                      ): Text(
-                        "Swipe up to register",
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: Colors.white,
-                          fontWeight: FontWeight.normal,
-                        ),
-                      ),
-                    ),
+                              child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.end,
+                                  children: [
+                                    const Text(
+                                      "Register",
+                                      style: TextStyle(
+                                        fontSize: 30,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 35),
+                                    TextField(
+                                      // controller: ,
+                                      decoration: InputDecoration(
+                                          hintText: 'Enter name',
+                                          hintStyle: TextStyle(
+                                              color: Color.fromRGBO(
+                                                  128, 137, 129, 0.354)),
+                                          labelText: "Name",
+                                          labelStyle: TextStyle(
+                                              color: Color.fromRGBO(
+                                                  128, 137, 129, 1)),
+                                          border: OutlineInputBorder(
+                                              borderSide: BorderSide.none,
+                                              borderRadius:
+                                                  BorderRadius.circular(20)),
+                                          filled: true,
+                                          fillColor:
+                                              Color.fromRGBO(220, 237, 222, 1),
+                                          contentPadding: EdgeInsets.all(16)),
+                                    ),
+                                    const SizedBox(height: 12),
+                                    TextField(
+                                      // controller: ,
+                                      decoration: InputDecoration(
+                                          hintText: 'Enter Mobile No.',
+                                          hintStyle: TextStyle(
+                                              color: Color.fromRGBO(
+                                                  128, 137, 129, 0.354)),
+                                          labelText: "Mobile",
+                                          labelStyle: TextStyle(
+                                              color: Color.fromRGBO(
+                                                  128, 137, 129, 1)),
+                                          border: OutlineInputBorder(
+                                              borderSide: BorderSide.none,
+                                              borderRadius:
+                                                  BorderRadius.circular(20)),
+                                          filled: true,
+                                          fillColor:
+                                              Color.fromRGBO(220, 237, 222, 1),
+                                          contentPadding: EdgeInsets.all(16)),
+                                    ),
+                                    const SizedBox(height: 12),
+                                    TextField(
+                                      // controller: ,
+                                      decoration: InputDecoration(
+                                          hintText: 'Enter Email',
+                                          hintStyle: TextStyle(
+                                              color: Color.fromRGBO(
+                                                  128, 137, 129, 0.354)),
+                                          labelText: "Email",
+                                          labelStyle: TextStyle(
+                                              color: Color.fromRGBO(
+                                                  128, 137, 129, 1)),
+                                          border: OutlineInputBorder(
+                                              borderSide: BorderSide.none,
+                                              borderRadius:
+                                                  BorderRadius.circular(20)),
+                                          filled: true,
+                                          fillColor:
+                                              Color.fromRGBO(220, 237, 222, 1),
+                                          contentPadding: EdgeInsets.all(16)),
+                                    ),
+                                    const SizedBox(height: 12),
+                                    TextField(
+                                      obscureText: true,
+                                      decoration: InputDecoration(
+                                          labelText: "Password",
+                                          labelStyle: TextStyle(
+                                              color: Color.fromRGBO(
+                                                  128, 137, 129, 1)),
+                                          hintText: 'Enter Password',
+                                          hintStyle: TextStyle(
+                                              color: Color.fromRGBO(
+                                                  128, 137, 129, 0.354)),
+                                          border: OutlineInputBorder(
+                                              borderSide: BorderSide.none,
+                                              borderRadius:
+                                                  BorderRadius.circular(20)),
+                                          filled: true,
+                                          fillColor:
+                                              Color.fromRGBO(220, 237, 222, 1),
+                                          contentPadding: EdgeInsets.all(16)),
+                                    ),
+                                    const SizedBox(height: 12),
+                                    TextField(
+                                      // controller: ,
+                                      decoration: InputDecoration(
+                                          hintText: 'Enter Password Again',
+                                          hintStyle: TextStyle(
+                                              color: Color.fromRGBO(
+                                                  128, 137, 129, 0.354)),
+                                          labelText: "Confirm Password",
+                                          labelStyle: TextStyle(
+                                              color: Color.fromRGBO(
+                                                  128, 137, 129, 1)),
+                                          border: OutlineInputBorder(
+                                              borderSide: BorderSide.none,
+                                              borderRadius:
+                                                  BorderRadius.circular(20)),
+                                          filled: true,
+                                          fillColor:
+                                              Color.fromRGBO(220, 237, 222, 1),
+                                          contentPadding: EdgeInsets.all(16)),
+                                    ),
+                                    const SizedBox(height: 30),
+                                    ElevatedButton(
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor:
+                                            Color.fromRGBO(50, 50, 55, 1),
+                                        foregroundColor:
+                                            Color.fromARGB(204, 255, 255, 255),
+                                        padding: EdgeInsets.symmetric(
+                                            horizontal: 140, vertical: 13),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(25),
+                                        ),
+                                      ),
+                                      onPressed: () {Navigator.push(context,MaterialPageRoute(builder: (context) => OTPVerifyPage() ));},
+                                      child: const Text("Next"),
+                                    ),
+                                  ]),
+                            ),
                   ],
                 ),
               ),
             ),
           ),
+        ],
+      ),
+    ),
+  ),
+),
+
         ],
       ),
     );
