@@ -55,34 +55,66 @@ class _RewardPageState extends State<RewardPage> {
         children: [
           ClipPath(
             clipper: CustomCurvedEdges(),
-            child: SizedBox(
-              height: 150,
-              child: Container(
-                color: Colors.green,
-                child: Row(
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.only(left: 17.0),
-                      child: Image.asset(
-                        'assets/images/SustainifyLogo.png',
-                        width: 50,
-                        height: 60,
+            child: Container(
+              height: 150, // Specify a height for the curved app bar
+              color: Colors.green,
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(left: 17.0),
+                    child: Image.asset(
+                      'assets/images/SustainifyLogo.png',
+                      width: 50,
+                      height: 60,
+                    ),
+                  ),
+                  SizedBox(width: 7),
+                  // const Text(
+                  //   'Sustainify',
+                  //   style: TextStyle(
+                  //     color: AppColors.white,
+                  //     fontFamily: AppFonts.inter,
+                  //     fontSize: AppFonts.interRegular18,
+                  //     fontWeight: AppFonts.interRegularWeight,
+                  //   ),
+                  // ),
+                  SizedBox(width: 10), // Add spacing between Text and TextField
+                  Expanded(
+                    child: TextField(
+                      decoration: InputDecoration(
+                        hintText: 'Search a reward...',
+                        hintStyle: TextStyle(
+                          color: AppColors.white,
+                          fontFamily: AppFonts.inter,
+                          fontWeight: AppFonts.interRegularWeight,
+                        ),
+                        prefixIcon: Icon(
+                          Icons.search,
+                          color: AppColors.white,
+                        ),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(25.0),
+                          borderSide: BorderSide.none,
+                        ),
+                        filled: true,
+                        fillColor: Colors.white.withOpacity(0.1),
                       ),
                     ),
-                    SizedBox(
-                      width: 7,
-                    ),
-                    const Text(
-                      'Sustainify',
-                      style: TextStyle(
-                        color: AppColors.white,
-                        fontFamily: AppFonts.inter,
-                        fontSize: AppFonts.interRegular18,
-                        fontWeight: AppFonts.interRegularWeight,
-                      ),
-                    ),
-                  ],
-                ),
+                  ),
+                  SizedBox(
+                    width: 15,
+                  )
+                  // IconButton(
+                  //   icon: Icon(
+                  //     Icons.search,
+                  //     color: AppColors.white,
+                  //   ),
+                  //   onPressed: () {
+                  //     // Handle search button press
+                  //   },
+                  // ),
+                ],
               ),
             ),
           ),
