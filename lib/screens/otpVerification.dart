@@ -9,6 +9,8 @@ class OTPVerifyPage extends StatefulWidget {
 class _OTPVerifyPageState extends State<OTPVerifyPage> {
   int _secondsRemaining = 5;
   late Timer _timer;
+  final List<FocusNode> _focusNodes = List.generate(4, (_) => FocusNode());
+  final List<TextEditingController> _controllers = List.generate(4, (_) => TextEditingController());
 
   @override
   void initState() {
@@ -19,20 +21,26 @@ class _OTPVerifyPageState extends State<OTPVerifyPage> {
   void _startTimer() {
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (_secondsRemaining > 0) {
-        if (mounted) { // Check if the widget is still mounted before calling setState
+        if (mounted) {
           setState(() {
             _secondsRemaining--;
           });
         }
       } else {
-        _timer.cancel(); // Stop the timer when it reaches 0
+        _timer.cancel();
       }
     });
   }
 
   @override
   void dispose() {
-    _timer.cancel(); // Dispose of the timer when the widget is disposed
+    _timer.cancel();
+    for (var node in _focusNodes) {
+      node.dispose();
+    }
+    for (var controller in _controllers) {
+      controller.dispose();
+    }
     super.dispose();
   }
 
@@ -58,9 +66,7 @@ class _OTPVerifyPageState extends State<OTPVerifyPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const SizedBox(
-                      height: 50,
-                    ),
+                    const SizedBox(height: 50),
                     const Text(
                       "Verification Code",
                       style: TextStyle(
@@ -69,9 +75,7 @@ class _OTPVerifyPageState extends State<OTPVerifyPage> {
                         color: Color.fromRGBO(50, 50, 55, 1),
                       ),
                     ),
-                    const SizedBox(
-                      height: 50,
-                    ),
+                    const SizedBox(height: 50),
                     const Text(
                       "We have sent a code on: \n********78 ",
                       style: TextStyle(
@@ -80,9 +84,7 @@ class _OTPVerifyPageState extends State<OTPVerifyPage> {
                       ),
                       textAlign: TextAlign.justify,
                     ),
-                    const SizedBox(
-                      height: 50,
-                    ),
+                    const SizedBox(height: 50),
                     const Text(
                       "Enter the code below:",
                       style: TextStyle(
@@ -91,9 +93,7 @@ class _OTPVerifyPageState extends State<OTPVerifyPage> {
                       ),
                       textAlign: TextAlign.justify,
                     ),
-                    const SizedBox(
-                      height: 26,
-                    ),
+                    const SizedBox(height: 26),
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: List.generate(4, (index) {
@@ -102,9 +102,12 @@ class _OTPVerifyPageState extends State<OTPVerifyPage> {
                           width: 55,
                           height: 70,
                           child: TextField(
+                            focusNode: _focusNodes[index],
+                            controller: _controllers[index],
                             textAlign: TextAlign.center,
                             keyboardType: TextInputType.number,
                             maxLength: 1,
+                            style: const TextStyle(fontSize: 20,color: Color.fromRGBO(50, 50, 55, 1)),
                             decoration: InputDecoration(
                               counterText: "",
                               border: OutlineInputBorder(
@@ -113,15 +116,21 @@ class _OTPVerifyPageState extends State<OTPVerifyPage> {
                               ),
                               filled: true,
                               fillColor: const Color.fromARGB(218, 220, 237, 222),
-                              contentPadding: const EdgeInsets.all(40),
+                              contentPadding: const EdgeInsets.symmetric(vertical: 20),
                             ),
+                            onChanged: (value) {
+                              if (value.isNotEmpty && index < 3) {
+                                _focusNodes[index + 1].requestFocus();
+                              }
+                              if (value.isEmpty && index > 0) {
+                                _focusNodes[index - 1].requestFocus();
+                              }
+                            },
                           ),
                         );
                       }),
                     ),
-                    const SizedBox(
-                      height: 28,
-                    ),
+                    const SizedBox(height: 28),
                     Center(
                       widthFactor: 2.1,
                       child: _secondsRemaining > 0
@@ -135,17 +144,18 @@ class _OTPVerifyPageState extends State<OTPVerifyPage> {
                             )
                           : ElevatedButton(
                               style: ElevatedButton.styleFrom(
-                                backgroundColor:
-                                    const Color.fromRGBO(50, 50, 55, 1),
-                                foregroundColor:
-                                    const Color.fromARGB(204, 255, 255, 255),
-                                padding: const EdgeInsets.only(left: 30,right: 30,top: 17,bottom: 17 ),
+                                backgroundColor: const Color.fromRGBO(50, 50, 55, 1),
+                                foregroundColor: const Color.fromARGB(204, 255, 255, 255),
+                                padding: const EdgeInsets.only(left: 30, right: 30, top: 17, bottom: 17),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(25),
                                 ),
                               ),
                               onPressed: () {
-                                _secondsRemaining=30;
+                                setState(() {
+                                  _secondsRemaining = 5;
+                                });
+                                _startTimer();
                               },
                               child: const Text("Resend OTP"),
                             ),

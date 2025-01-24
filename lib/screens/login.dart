@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:sustainfy/main.dart';
+import 'package:sustainfy/screens/landingPage.dart';
 import 'package:sustainfy/screens/otpVerification.dart';
 
 class Login extends StatefulWidget {
@@ -174,7 +176,13 @@ class _LoginState extends State<Login> {
                                         borderRadius: BorderRadius.circular(25),
                                       ),
                                     ),
-                                    onPressed: () {},
+                                    onPressed: () {
+                                      Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                              builder: (context) =>
+                                                  HomePage()));
+                                    },
                                     child: const Text("Submit"),
                                   ),
                                   SizedBox(height: 15),
