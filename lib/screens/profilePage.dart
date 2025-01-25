@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:sustainfy/utils/colors.dart';
+import 'package:sustainfy/screens/settingsPage.dart';
 import 'package:sustainfy/utils/font.dart';
 import 'package:sustainfy/widgets/customCurvedEdges.dart';
 
@@ -106,7 +106,7 @@ class _ProfilePageState extends State<ProfilePage> {
             // Category Buttons Section
             SizedBox(height: 20),
             Container(
-              padding: EdgeInsets.symmetric(horizontal: 10),
+              padding: EdgeInsets.symmetric(horizontal: 25),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -138,34 +138,42 @@ class _ProfilePageState extends State<ProfilePage> {
             SizedBox(height: 20),
 
             // Settings Section
-            Divider(),
+
             Container(
-              padding: EdgeInsets.symmetric(horizontal: 10),
+              padding: EdgeInsets.symmetric(horizontal: 25),
               child: Column(
                 children: [
                   ListTile(
                     contentPadding: EdgeInsets.zero,
-                    title: Text('Settings'),
-                    trailing: Icon(Icons.arrow_forward),
+                    title: Text(
+                      'Settings',
+                      style: TextStyle(fontSize: 20),
+                    ),
+                    trailing: Icon(Icons.arrow_forward_ios),
                     onTap: () {
-                      // Navigate to Settings
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => SettingsPage()),
+                      );
                     },
                   ),
+                  Divider(),
                   ListTile(
                     contentPadding: EdgeInsets.zero,
-                    title: Text('Log out'),
-                    trailing: Icon(Icons.arrow_forward),
+                    title: Text('Log out', style: TextStyle(fontSize: 20)),
+                    trailing: Icon(Icons.arrow_forward_ios),
                     onTap: () {
                       // Handle log out
                     },
                   ),
+                  Divider(),
                   ListTile(
                     contentPadding: EdgeInsets.zero,
                     title: Text(
                       'Delete Account',
-                      style: TextStyle(color: Colors.red),
+                      style: TextStyle(color: Colors.red, fontSize: 20),
                     ),
-                    trailing: Icon(Icons.arrow_forward, color: Colors.red),
+                    trailing: Icon(Icons.arrow_forward_ios, color: Colors.red),
                     onTap: () {
                       // Handle account deletion
                     },
