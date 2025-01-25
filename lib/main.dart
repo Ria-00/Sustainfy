@@ -7,6 +7,7 @@ import 'package:sustainfy/screens/communityPage.dart';
 import 'package:sustainfy/screens/landingPage.dart';
 import 'package:sustainfy/screens/loadingPage.dart';
 import 'package:sustainfy/screens/login.dart';
+import 'package:sustainfy/screens/profilePage.dart';
 import 'package:sustainfy/screens/rewardPage.dart';
 import 'package:sustainfy/screens/test.dart';
 import 'package:sustainfy/utils/colors.dart';
@@ -75,7 +76,7 @@ class _HomePageState extends State<HomePage> {
     LandingPage(),
     CommunityPage(),
     RewardPage(),
-    Center(child: Text("Profile Page")),
+    ProfilePage(),
   ];
 
   void _onTabSelected(int index) {

@@ -1,3 +1,15 @@
+buildscript {
+    ext.kotlin_version = '1.8.22' // Define the Kotlin version
+    repositories {
+        google()
+        mavenCentral()
+    }
+    dependencies {
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version" // Use the defined Kotlin version
+        classpath "com.android.tools.build:gradle:8.1.0" // Ensure compatibility with compileSdk
+    }
+}
+
 allprojects {
     repositories {
         google()
@@ -6,11 +18,22 @@ allprojects {
 }
 
 rootProject.buildDir = '../build'
+
 subprojects {
     project.buildDir = "${rootProject.buildDir}/${project.name}"
 }
+
 subprojects {
     project.evaluationDependsOn(':app')
+    
+    // Enforce consistent Kotlin versions for dependencies
+    configurations.all {
+        resolutionStrategy.eachDependency { details ->
+            if (details.requested.group == 'org.jetbrains.kotlin') {
+                details.useVersion '1.8.22' // Force Kotlin 1.8.22 for all dependencies
+            }
+        }
+    }
 }
 
 tasks.register("clean", Delete) {
