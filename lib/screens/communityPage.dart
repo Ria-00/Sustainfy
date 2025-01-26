@@ -27,12 +27,12 @@ class _CommunityPageState extends State<CommunityPage> {
     ),
   ];
 
-  final List<User> users = [
-    User(
+  final List<UserClass> users = [
+    UserClass.withPhoto(
       userName: "John Wick",
       userProfilePhoto: "assets/images/pfp1.png",
     ),
-    User(
+    UserClass.withPhoto(
       userName: "Chomu Singh",
       userProfilePhoto: "assets/images/pfp2.png",
     ),
@@ -130,7 +130,7 @@ class _CommunityPageState extends State<CommunityPage> {
 }
 
 class EventCard extends StatefulWidget {
-  final User user;
+  final UserClass user;
   final EventModel event;
   // final Color backgroundColor;
 
@@ -168,7 +168,7 @@ class _EventCardState extends State<EventCard> {
         children: [
           ListTile(
             leading: CircleAvatar(
-              backgroundImage: AssetImage(widget.user.userProfilePhoto),
+              backgroundImage: AssetImage(widget.user.userProfilePhoto!),
               // backgroundColor: Colors.grey[300],
             ),
             title: Text(
