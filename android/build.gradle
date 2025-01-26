@@ -1,13 +1,19 @@
 buildscript {
-    ext.kotlin_version = '1.8.22' // Define the Kotlin version
+    ext.kotlin_version = '1.9.10' // Use a Kotlin version compatible with Gradle 8.9
     repositories {
         google()
         mavenCentral()
     }
     dependencies {
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version" // Use the defined Kotlin version
-        classpath "com.android.tools.build:gradle:8.1.0" // Ensure compatibility with compileSdk
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version" // Updated Kotlin Gradle plugin
+        classpath "com.android.tools.build:gradle:8.1.0" // Updated Android Gradle plugin compatible with Gradle 8.9
     }
+}
+
+plugins {
+    id "org.jetbrains.kotlin.android" version "1.9.10" apply false
+    // Google Services plugin updated to a compatible version
+    id 'com.google.gms.google-services' version '4.4.2' apply false
 }
 
 allprojects {
@@ -21,16 +27,12 @@ rootProject.buildDir = '../build'
 
 subprojects {
     project.buildDir = "${rootProject.buildDir}/${project.name}"
-}
 
-subprojects {
-    project.evaluationDependsOn(':app')
-    
-    // Enforce consistent Kotlin versions for dependencies
+    // Ensure consistent Kotlin version across all dependencies
     configurations.all {
         resolutionStrategy.eachDependency { details ->
             if (details.requested.group == 'org.jetbrains.kotlin') {
-                details.useVersion '1.8.22' // Force Kotlin 1.8.22 for all dependencies
+                details.useVersion '1.9.10' // Ensure compatibility with Kotlin 1.9.10
             }
         }
     }

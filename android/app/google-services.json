@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "196279097755",
+    "project_id": "sustainfy-7e1ab",
+    "storage_bucket": "sustainfy-7e1ab.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:196279097755:android:6ce90ad38c4fa056bbe93e",
+        "android_client_info": {
+          "package_name": "com.example.sustainfy"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD3D59Md0l0SAWFc-mXGW7OL-PpATwDt3A"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
