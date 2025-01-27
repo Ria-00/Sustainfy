@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
+import 'package:sustainfy/screens/eventDescriptionPage.dart';
+import 'package:sustainfy/screens/settingsPage.dart';
 import 'package:sustainfy/utils/colors.dart';
 import 'package:sustainfy/utils/font.dart';
 import 'package:sustainfy/widgets/customAppBar.dart';
@@ -122,11 +124,23 @@ class LandingPage extends StatelessWidget {
                 ),
               ),
               SizedBox(height: 20),
-              Image.asset('assets/images/Rectangle16.png'),
+              GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => EventDescriptionPage()),
+                  );
+                },
+                child: Image.asset('assets/images/Rectangle16.png'),
+              ),
+              // Image.asset('assets/images/Rectangle16.png'),
               SizedBox(height: 20),
               Image.asset('assets/images/Rectangle17.png'),
               SizedBox(height: 20),
               Image.asset('assets/images/Rectangle18.png'),
+              SizedBox(height: 20),
+              Image.asset('assets/images/Rectangle16.png'),
             ],
           ),
         ),
