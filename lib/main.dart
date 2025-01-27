@@ -95,7 +95,7 @@ class _HomePageState extends State<HomePage> {
         backgroundColor: Colors.white,
         color: Colors.black,
         activeColor: Colors.black,
-        tabBackgroundColor: Color.fromARGB(255, 76, 131, 84),
+        tabBackgroundColor: Colors.green,
         gap: 8,
         padding: EdgeInsets.all(16),
         tabs: [
