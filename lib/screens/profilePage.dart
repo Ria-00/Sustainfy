@@ -96,7 +96,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   IconButton(
                     icon: Icon(Icons.edit),
                     onPressed: () {
-                      // Navigate to edit profile
+                      showEditProfileModal(context);
                     },
                   ),
                 ],
@@ -163,7 +163,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     title: Text('Log out', style: TextStyle(fontSize: 20)),
                     trailing: Icon(Icons.arrow_forward_ios),
                     onTap: () {
-                      // Handle log out
+                      showLogoutModal(context);
                     },
                   ),
                   Divider(),
@@ -185,6 +185,229 @@ class _ProfilePageState extends State<ProfilePage> {
         ),
       ),
     );
+  }
+
+  void showEditProfileModal(BuildContext context) {
+    final FocusNode nameFocusNode = FocusNode();
+    final FocusNode emailFocusNode = FocusNode();
+    final FocusNode mobileFocusNode = FocusNode();
+
+    void onFocusChange(StateSetter setState) {
+      setState(() {});
+    }
+
+    // Add listeners to the focus nodes
+    nameFocusNode.addListener(() => onFocusChange);
+    emailFocusNode.addListener(() => onFocusChange);
+    mobileFocusNode.addListener(() => onFocusChange);
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (BuildContext context) {
+        return StatefulBuilder(
+          builder: (BuildContext context, StateSetter setState) {
+            // Check if any input field is focused
+            bool isKeyboardOpen = nameFocusNode.hasFocus ||
+                emailFocusNode.hasFocus ||
+                mobileFocusNode.hasFocus;
+
+            return DraggableScrollableSheet(
+              initialChildSize: isKeyboardOpen ? 0.8 : 0.6,
+              maxChildSize: 0.9,
+              minChildSize: 0.4,
+              builder: (_, controller) {
+                return GestureDetector(
+                  // Close the keyboard if user taps outside
+                  onTap: () {
+                    FocusScope.of(context).unfocus();
+                    setState(() {}); // Rebuild the modal when focus is lost
+                  },
+                  child: Container(
+                    padding: EdgeInsets.symmetric(horizontal: 20),
+                    decoration: BoxDecoration(
+                      color: Colors.green,
+                      borderRadius:
+                          BorderRadius.vertical(top: Radius.circular(30)),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        SizedBox(height: 20),
+                        CircleAvatar(
+                          radius: 50,
+                          backgroundImage: AssetImage('assets/images/pfp2.png'),
+                          child: Align(
+                            alignment: Alignment.bottomRight,
+                            child: Icon(
+                              Icons.edit,
+                              color: Colors.white,
+                              size: 20,
+                            ),
+                          ),
+                        ),
+                        SizedBox(height: 10),
+                        Text(
+                          "Edit Profile",
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        SizedBox(height: 20),
+                        TextField(
+                          focusNode: nameFocusNode,
+                          onTap: () {
+                            setState(() {}); // Rebuild when focused
+                          },
+                          decoration: InputDecoration(
+                            filled: true,
+                            fillColor: Colors.white,
+                            hintText: "Enter Name",
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                          ),
+                        ),
+                        SizedBox(height: 10),
+                        TextField(
+                          focusNode: emailFocusNode,
+                          onTap: () {
+                            setState(() {});
+                          },
+                          decoration: InputDecoration(
+                            filled: true,
+                            fillColor: Colors.white,
+                            hintText: "Enter Email",
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                          ),
+                        ),
+                        SizedBox(height: 10),
+                        TextField(
+                          focusNode: mobileFocusNode,
+                          onTap: () {
+                            setState(() {});
+                          },
+                          decoration: InputDecoration(
+                            filled: true,
+                            fillColor: Colors.white,
+                            hintText: "Enter Mobile No.",
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                          ),
+                        ),
+                        SizedBox(height: 20),
+                        ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.black,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                          ),
+                          onPressed: () {
+                            // Submit logic
+                            FocusScope.of(context).unfocus();
+                            setState(() {}); // Rebuild to reset size
+                          },
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 50),
+                            child: Text(
+                              "Submit",
+                              style: TextStyle(color: Colors.white),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            );
+          },
+        );
+      },
+    );
+  }
+
+  void showLogoutModal(BuildContext context) {
+    showModalBottomSheet(
+        context: context,
+        isScrollControlled: true,
+        backgroundColor: Colors.transparent,
+        builder: (BuildContext context) {
+          return FractionallySizedBox(
+            widthFactor: 1.0,
+            child: Container(
+              padding: EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+              decoration: BoxDecoration(
+                color: Colors.green,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    "Are you sure you want to Logout?",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  SizedBox(height: 20),
+                  Column(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      SizedBox(
+                        width: MediaQuery.of(context).size.width * 0.65,
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                          ),
+                          onPressed: () {
+                            Navigator.of(context).pop(); // Close modal
+                            // Add logout logic here
+                          },
+                          child: Text(
+                            "Yes",
+                            style: TextStyle(color: Colors.green),
+                          ),
+                        ),
+                      ),
+                      SizedBox(height: 10),
+                      SizedBox(
+                        width: MediaQuery.of(context).size.width * 0.65,
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.black,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                          ),
+                          onPressed: () {
+                            Navigator.of(context).pop(); // Close modal
+                          },
+                          child: Text(
+                            "No",
+                            style: TextStyle(color: Colors.white),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          );
+        });
   }
 
   Widget _buildCategoryButton(String category) {
