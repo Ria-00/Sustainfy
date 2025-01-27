@@ -1,67 +1,61 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
 import 'package:provider/provider.dart';
 import 'package:sustainfy/model/userProvider.dart';
 import 'package:sustainfy/screens/communityPage.dart';
 import 'package:sustainfy/screens/landingPage.dart';
-import 'package:sustainfy/screens/loadingPage.dart';
 import 'package:sustainfy/screens/login.dart';
 import 'package:sustainfy/screens/profilePage.dart';
 import 'package:sustainfy/screens/rewardPage.dart';
-import 'package:sustainfy/screens/test.dart';
-import 'package:sustainfy/utils/colors.dart';
-import 'package:sustainfy/utils/font.dart';
-import 'package:sustainfy/widgets/customAppBar.dart';
-import 'package:sustainfy/widgets/customCurvedEdges.dart';
 
-void main() {
-  runApp(MyApp1());
+void main() async{
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+      options: FirebaseOptions(
+          apiKey: 'AIzaSyD3D59Md0l0SAWFc-mXGW7OL-PpATwDt3A',
+          appId: '1:196279097755:android:6ce90ad38c4fa056bbe93e',
+          messagingSenderId: '196279097755',
+          projectId: 'sustainfy-7e1ab'));
+  runApp(const MyApp1());
 }
 
 class MyApp1 extends StatelessWidget {
   const MyApp1({super.key});
 
-  // This widget is the root of your application.
-  // @override
-  // Widget build(BuildContext context) {
-  //   return ChangeNotifierProvider(
-  //       create: (context) => userProvider(),
-  //       child: MaterialApp(
-  //         debugShowCheckedModeBanner: false,
-  //         title: 'Sustainfy',
-  //         theme: ThemeData(
-  //           colorScheme: ColorScheme.fromSeed(
-  //               seedColor: Color.fromARGB(255, 52, 168, 83)),
-  //           useMaterial3: true,
-  //         ),
-  //         home: RewardPage(),
-  //         routes: {
-  //           // '/signup': (context) => Signup(),
-  //           // '/home': (context) => HomePage(),
-  //           // '/home1': (context) => Home(), // Assuming this route is not used
-  //           // '/bagPage': (context) => BagPage(),
-  //           // '/detailPage': (context) => DetailPage(
-  //           //       product: ModalRoute.of(context)!.settings.arguments as Product,
-  //           //     ),
-  //           // '/checkout': (context) => Checkout(
-  //           //       userEmail: Provider.of<userProvider>(context).email!,
-  //           //     ),
-  //           '/login': (context) => Login(),
-  //           // '/orders': (context) => Orders(
-  //           //       userEmail: Provider.of<userProvider>(context).email!,
-  //           //     ),
-  //         },
-  //       ));
-  // }
-
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: Login(),
-    );
+    return ChangeNotifierProvider(
+        create: (context) => userProvider(),
+        child: MaterialApp(
+          debugShowCheckedModeBanner: false,
+          title: 'Sustainfy',
+          theme: ThemeData(
+            colorScheme: ColorScheme.fromSeed(
+                seedColor: Color.fromARGB(255, 52, 168, 83)),
+            useMaterial3: true,
+          ),
+          home: Login(),
+          routes: {
+            // '/signup': (context) => Signup(),
+            // '/home': (context) => HomePage(),
+            // '/home1': (context) => Home(), // Assuming this route is not used
+            // '/bagPage': (context) => BagPage(),
+            // '/detailPage': (context) => DetailPage(
+            //       product: ModalRoute.of(context)!.settings.arguments as Product,
+            //     ),
+            // '/checkout': (context) => Checkout(
+            //       userEmail: Provider.of<userProvider>(context).email!,
+            //     ),
+            '/login': (context) => Login(),
+            // '/orders': (context) => Orders(
+            //       userEmail: Provider.of<userProvider>(context).email!,
+            //     ),
+          },
+        ));
   }
+
+ 
 }
 
 class HomePage extends StatefulWidget {
