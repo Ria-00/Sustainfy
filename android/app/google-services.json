@@ -9,10 +9,23 @@
       "client_info": {
         "mobilesdk_app_id": "1:196279097755:android:6ce90ad38c4fa056bbe93e",
         "android_client_info": {
-          "package_name": "com.example.sustainfy"
+          "package_name": "com.ncu.sustainfy"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "196279097755-96ne286e89frscul944vqsn6ak4l7m7u.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.ncu.sustainfy",
+            "certificate_hash": "d0afa1e1186044b752d76df6c6f15b11c559f603"
+          }
+        },
+        {
+          "client_id": "196279097755-49a8a4c4m2ebadc74fs8rrifmmra3pgj.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyD3D59Md0l0SAWFc-mXGW7OL-PpATwDt3A"
@@ -20,7 +33,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "196279097755-49a8a4c4m2ebadc74fs8rrifmmra3pgj.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }
