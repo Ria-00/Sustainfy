@@ -47,7 +47,7 @@ class _CommunityPageState extends State<CommunityPage> {
             clipper: CustomCurvedEdges(),
             child: Container(
               height: 150, // Specify a height for the curved app bar
-              color: Colors.green,
+              color: const Color.fromRGBO(52, 168, 83, 1),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [

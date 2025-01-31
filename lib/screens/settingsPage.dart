@@ -13,7 +13,7 @@ class SettingsPage extends StatelessWidget {
             child: SizedBox(
               height: 150,
               child: Container(
-                color: Colors.green,
+                color: const Color.fromRGBO(52, 168, 83, 1),
                 child: Row(
                   children: [
                     Padding(
@@ -61,7 +61,8 @@ class SettingsPage extends StatelessWidget {
                 //     onPressed: () => Navigator.pop(context)),
                 Text(
                   "Settings",
-                  style: TextStyle(fontSize: 25),
+                  style: TextStyle(
+                      fontSize: 25, color: const Color.fromRGBO(50, 50, 55, 1)),
                 ),
               ],
             ),
@@ -152,7 +153,7 @@ class SettingsPage extends StatelessWidget {
                         child: Container(
                           padding: EdgeInsets.symmetric(horizontal: 20),
                           decoration: BoxDecoration(
-                            color: Colors.green,
+                            color: const Color.fromRGBO(52, 168, 83, 1),
                             borderRadius:
                                 BorderRadius.vertical(top: Radius.circular(30)),
                           ),
@@ -298,7 +299,7 @@ class SettingsPage extends StatelessWidget {
                         child: Container(
                           padding: EdgeInsets.symmetric(horizontal: 20),
                           decoration: BoxDecoration(
-                            color: Colors.green,
+                            color: const Color.fromRGBO(52, 168, 83, 1),
                             borderRadius:
                                 BorderRadius.vertical(top: Radius.circular(30)),
                           ),

@@ -93,9 +93,9 @@ class _HomePageState extends State<HomePage> {
 
       bottomNavigationBar: GNav(
         backgroundColor: Colors.white,
-        color: Colors.black,
-        activeColor: Colors.black,
-        tabBackgroundColor: Colors.green,
+        color: const Color.fromRGBO(50, 50, 55, 1),
+        activeColor: const Color.fromRGBO(50, 50, 55, 1),
+        tabBackgroundColor: const Color.fromRGBO(52, 168, 83, 1),
         gap: 8,
         padding: EdgeInsets.all(16),
         tabs: [
