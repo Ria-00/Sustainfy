@@ -280,14 +280,18 @@ class _ProfilePageState extends State<ProfilePage> {
                                   setState(() {}); // Rebuild when focused
                                 },
                                 decoration: InputDecoration(
+                                  labelStyle: TextStyle(
+                                      color: Color.fromRGBO(128, 137, 129, 1)),
                                   filled: true,
-                                  fillColor: Colors.white,
-                                  hintText: "Enter Name",
+                                  fillColor: Color.fromRGBO(220, 237, 222, 1),
+                                  hintText: "Name",
+                                  labelText: "Enter name",
                                   hintStyle: TextStyle(
-                                      fontWeight: AppFonts.interRegularWeight,
-                                      fontFamily: AppFonts.inter),
+                                    color: Color.fromRGBO(128, 137, 129, 0.354),
+                                  ),
                                   border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(10),
+                                    borderSide: BorderSide.none,
+                                    borderRadius: BorderRadius.circular(20),
                                   ),
                                 ),
                               ),
@@ -298,14 +302,18 @@ class _ProfilePageState extends State<ProfilePage> {
                                   setState(() {});
                                 },
                                 decoration: InputDecoration(
+                                  labelStyle: TextStyle(
+                                      color: Color.fromRGBO(128, 137, 129, 1)),
                                   filled: true,
-                                  fillColor: Colors.white,
-                                  hintText: "Enter Email",
+                                  fillColor: Color.fromRGBO(220, 237, 222, 1),
+                                  hintText: "Email",
+                                  labelText: "Enter Email",
                                   hintStyle: TextStyle(
-                                      fontWeight: AppFonts.interRegularWeight,
-                                      fontFamily: AppFonts.inter),
+                                    color: Color.fromRGBO(128, 137, 129, 0.354),
+                                  ),
                                   border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(10),
+                                    borderSide: BorderSide.none,
+                                    borderRadius: BorderRadius.circular(20),
                                   ),
                                 ),
                               ),
@@ -316,14 +324,18 @@ class _ProfilePageState extends State<ProfilePage> {
                                   setState(() {});
                                 },
                                 decoration: InputDecoration(
+                                  labelStyle: TextStyle(
+                                      color: Color.fromRGBO(128, 137, 129, 1)),
                                   filled: true,
-                                  fillColor: Colors.white,
-                                  hintText: "Enter Mobile No.",
+                                  fillColor: Color.fromRGBO(220, 237, 222, 1),
+                                  hintText: "Mobile No.",
+                                  labelText: "Enter Mobile No.",
                                   hintStyle: TextStyle(
-                                      fontWeight: AppFonts.interRegularWeight,
-                                      fontFamily: AppFonts.inter),
+                                    color: Color.fromRGBO(128, 137, 129, 0.354),
+                                  ),
                                   border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(10),
+                                    borderSide: BorderSide.none,
+                                    borderRadius: BorderRadius.circular(20),
                                   ),
                                 ),
                               ),

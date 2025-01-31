@@ -162,26 +162,30 @@ class SettingsPage extends StatelessWidget {
                             children: [
                               SizedBox(height: 20),
                               Text(
-                                "Reset Password!",
+                                "Reset Password",
                                 style: TextStyle(
                                     color: Colors.black,
-                                    fontSize: 40,
+                                    fontSize: 35,
                                     fontWeight: AppFonts.jostSemiBoldWeight,
                                     fontFamily: AppFonts.jost),
                               ),
-                              SizedBox(height: 20),
+                              SizedBox(height: 25),
                               TextField(
                                 focusNode: nameFocusNode,
                                 onTap: () => setState(() {}),
                                 decoration: InputDecoration(
+                                  labelStyle: TextStyle(
+                                      color: Color.fromRGBO(128, 137, 129, 1)),
                                   filled: true,
-                                  fillColor: Colors.white,
-                                  hintText: "Old Password",
+                                  fillColor: Color.fromRGBO(220, 237, 222, 1),
+                                  hintText: "old password",
+                                  labelText: "Old Password",
                                   hintStyle: TextStyle(
-                                      fontWeight: AppFonts.interRegularWeight,
-                                      fontFamily: AppFonts.inter),
+                                    color: Color.fromRGBO(128, 137, 129, 0.354),
+                                  ),
                                   border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(10),
+                                    borderSide: BorderSide.none,
+                                    borderRadius: BorderRadius.circular(20),
                                   ),
                                 ),
                               ),
@@ -190,14 +194,18 @@ class SettingsPage extends StatelessWidget {
                                 focusNode: emailFocusNode,
                                 onTap: () => setState(() {}),
                                 decoration: InputDecoration(
+                                  labelStyle: TextStyle(
+                                      color: Color.fromRGBO(128, 137, 129, 1)),
                                   filled: true,
-                                  fillColor: Colors.white,
-                                  hintText: "New Password",
+                                  fillColor: Color.fromRGBO(220, 237, 222, 1),
+                                  hintText: "new password",
+                                  labelText: "New Password",
                                   hintStyle: TextStyle(
-                                      fontWeight: AppFonts.interRegularWeight,
-                                      fontFamily: AppFonts.inter),
+                                    color: Color.fromRGBO(128, 137, 129, 0.354),
+                                  ),
                                   border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(10),
+                                    borderSide: BorderSide.none,
+                                    borderRadius: BorderRadius.circular(20),
                                   ),
                                 ),
                               ),
@@ -206,14 +214,18 @@ class SettingsPage extends StatelessWidget {
                                 focusNode: mobileFocusNode,
                                 onTap: () => setState(() {}),
                                 decoration: InputDecoration(
+                                  labelStyle: TextStyle(
+                                      color: Color.fromRGBO(128, 137, 129, 1)),
                                   filled: true,
-                                  fillColor: Colors.white,
-                                  hintText: "Confirm Password",
+                                  fillColor: Color.fromRGBO(220, 237, 222, 1),
+                                  hintText: "confirm password",
+                                  labelText: "Confirm Password",
                                   hintStyle: TextStyle(
-                                      fontWeight: AppFonts.interRegularWeight,
-                                      fontFamily: AppFonts.inter),
+                                    color: Color.fromRGBO(128, 137, 129, 0.354),
+                                  ),
                                   border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(10),
+                                    borderSide: BorderSide.none,
+                                    borderRadius: BorderRadius.circular(20),
                                   ),
                                 ),
                               ),
@@ -222,7 +234,7 @@ class SettingsPage extends StatelessWidget {
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: Colors.black,
                                   shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(10),
+                                    borderRadius: BorderRadius.circular(20),
                                   ),
                                 ),
                                 onPressed: () {
