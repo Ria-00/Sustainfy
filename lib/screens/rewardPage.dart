@@ -57,7 +57,7 @@ class _RewardPageState extends State<RewardPage> {
             clipper: CustomCurvedEdges(),
             child: Container(
               height: 150, // Specify a height for the curved app bar
-              color: Colors.green,
+              color: const Color.fromRGBO(52, 168, 83, 1),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
@@ -105,15 +105,6 @@ class _RewardPageState extends State<RewardPage> {
                   SizedBox(
                     width: 15,
                   )
-                  // IconButton(
-                  //   icon: Icon(
-                  //     Icons.search,
-                  //     color: AppColors.white,
-                  //   ),
-                  //   onPressed: () {
-                  //     // Handle search button press
-                  //   },
-                  // ),
                 ],
               ),
             ),
@@ -139,7 +130,7 @@ class _RewardPageState extends State<RewardPage> {
                       fontFamily: AppFonts.inter,
                       fontSize: 42,
                       fontWeight: AppFonts.interSemiBoldWeight,
-                      color: AppColors.black,
+                      color: const Color.fromRGBO(50, 50, 55, 1),
                     ),
                   ),
                 ],
@@ -155,6 +146,7 @@ class _RewardPageState extends State<RewardPage> {
               child: Text(
                 'Claim Rewards',
                 style: TextStyle(
+                  color: const Color.fromRGBO(50, 50, 55, 1),
                   fontSize: 17,
                   fontWeight: FontWeight.w600,
                 ),

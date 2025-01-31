@@ -20,7 +20,7 @@ class LandingPage extends StatelessWidget {
                 clipper: CustomCurvedEdges(),
                 child: Container(
                   height: 150, // Specify a height for the curved app bar
-                  color: Colors.green,
+                  color: const Color.fromRGBO(52, 168, 83, 1),
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
@@ -33,15 +33,6 @@ class LandingPage extends StatelessWidget {
                         ),
                       ),
                       SizedBox(width: 7),
-                      // const Text(
-                      //   'Sustainify',
-                      //   style: TextStyle(
-                      //     color: AppColors.white,
-                      //     fontFamily: AppFonts.inter,
-                      //     fontSize: AppFonts.interRegular18,
-                      //     fontWeight: AppFonts.interRegularWeight,
-                      //   ),
-                      // ),
                       SizedBox(
                           width: 10), // Add spacing between Text and TextField
                       Expanded(
@@ -69,15 +60,6 @@ class LandingPage extends StatelessWidget {
                       SizedBox(
                         width: 15,
                       )
-                      // IconButton(
-                      //   icon: Icon(
-                      //     Icons.search,
-                      //     color: AppColors.white,
-                      //   ),
-                      //   onPressed: () {
-                      //     // Handle search button press
-                      //   },
-                      // ),
                     ],
                   ),
                 ),
@@ -91,7 +73,9 @@ class LandingPage extends StatelessWidget {
                         alignment: Alignment.centerLeft,
                         child: Text("Categories",
                             style: TextStyle(
-                                fontSize: 20, fontWeight: FontWeight.bold)),
+                                color: const Color.fromRGBO(50, 50, 55, 1),
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold)),
                       ),
                       SizedBox(height: 15),
                       Container(
@@ -119,8 +103,10 @@ class LandingPage extends StatelessWidget {
                 child: Align(
                   alignment: Alignment.centerLeft,
                   child: Text("Live Activities",
-                      style:
-                          TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                      style: TextStyle(
+                          color: const Color.fromRGBO(50, 50, 55, 1),
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold)),
                 ),
               ),
               SizedBox(height: 20),
@@ -132,15 +118,61 @@ class LandingPage extends StatelessWidget {
                         builder: (context) => EventDescriptionPage()),
                   );
                 },
-                child: Image.asset('assets/images/Rectangle16.png'),
+                child: Padding(
+                  padding: const EdgeInsets.only(left: 10.0, right: 10),
+                  child: ClipRRect(
+                      borderRadius: BorderRadius.circular(40),
+                      child: Image.asset('assets/images/Rectangle16.png')),
+                ),
               ),
-              // Image.asset('assets/images/Rectangle16.png'),
               SizedBox(height: 20),
-              Image.asset('assets/images/Rectangle17.png'),
+              GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => EventDescriptionPage()),
+                  );
+                },
+                child: Padding(
+                  padding: const EdgeInsets.only(left: 10.0, right: 10),
+                  child: ClipRRect(
+                      borderRadius: BorderRadius.circular(40),
+                      child: Image.asset('assets/images/Rectangle17.png')),
+                ),
+              ),
               SizedBox(height: 20),
-              Image.asset('assets/images/Rectangle18.png'),
+              GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => EventDescriptionPage()),
+                  );
+                },
+                child: Padding(
+                  padding: const EdgeInsets.only(left: 10.0, right: 10),
+                  child: ClipRRect(
+                      borderRadius: BorderRadius.circular(40),
+                      child: Image.asset('assets/images/Rectangle18.png')),
+                ),
+              ),
               SizedBox(height: 20),
-              Image.asset('assets/images/Rectangle16.png'),
+              GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => EventDescriptionPage()),
+                  );
+                },
+                child: Padding(
+                  padding: const EdgeInsets.only(left: 10.0, right: 10),
+                  child: ClipRRect(
+                      borderRadius: BorderRadius.circular(40),
+                      child: Image.asset('assets/images/Rectangle16.png')),
+                ),
+              ),
             ],
           ),
         ),

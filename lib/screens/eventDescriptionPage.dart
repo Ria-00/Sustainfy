@@ -28,7 +28,7 @@ class _EventDescriptionScreenState extends State<EventDescriptionPage> {
                       IconButton(
                         icon: Row(
                           children: [
-                            Icon(Icons.arrow_back_ios, color: Colors.black),
+                            Icon(Icons.arrow_back_ios, color: Colors.white),
                           ],
                         ),
                         onPressed: () {
@@ -59,16 +59,20 @@ class _EventDescriptionScreenState extends State<EventDescriptionPage> {
               ),
             ),
             SizedBox(
-              height: 20,
+              height: 10,
             ),
-            Align(
-              alignment: Alignment.center,
-              child: Image.asset(
-                'assets/images/Rectangle16.png',
+            Padding(
+              padding: const EdgeInsets.only(left: 10.0, right: 10),
+              child: Align(
+                alignment: Alignment.center,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(40), // Adjust as needed
+                  child: Image.asset(
+                    'assets/images/Rectangle16.png',
+                  ),
+                ),
               ),
-              heightFactor: 0.5,
             ),
-            // Image.asset('assets/images/Rectangle16.png'),
           ],
         ),
       ),

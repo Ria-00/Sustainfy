@@ -29,7 +29,7 @@ class _ProfilePageState extends State<ProfilePage> {
               child: SizedBox(
                 height: 150,
                 child: Container(
-                  color: Colors.green,
+                  color: const Color.fromRGBO(52, 168, 83, 1),
                   child: Row(
                     children: [
                       Padding(
@@ -75,6 +75,7 @@ class _ProfilePageState extends State<ProfilePage> {
                         Text(
                           'Rohan Sharma',
                           style: TextStyle(
+                            color: const Color.fromRGBO(50, 50, 55, 1),
                             fontSize: 20,
                             fontWeight: FontWeight.bold,
                           ),
@@ -147,7 +148,9 @@ class _ProfilePageState extends State<ProfilePage> {
                     contentPadding: EdgeInsets.zero,
                     title: Text(
                       'Settings',
-                      style: TextStyle(fontSize: 20),
+                      style: TextStyle(
+                          color: const Color.fromRGBO(50, 50, 55, 1),
+                          fontSize: 20),
                     ),
                     trailing: Icon(Icons.arrow_forward_ios),
                     onTap: () {
@@ -160,7 +163,10 @@ class _ProfilePageState extends State<ProfilePage> {
                   Divider(),
                   ListTile(
                     contentPadding: EdgeInsets.zero,
-                    title: Text('Log out', style: TextStyle(fontSize: 20)),
+                    title: Text('Log out',
+                        style: TextStyle(
+                            color: const Color.fromRGBO(50, 50, 55, 1),
+                            fontSize: 20)),
                     trailing: Icon(Icons.arrow_forward_ios),
                     onTap: () {
                       showLogoutModal(context);
@@ -237,7 +243,7 @@ class _ProfilePageState extends State<ProfilePage> {
                         child: Container(
                           padding: EdgeInsets.symmetric(horizontal: 20),
                           decoration: BoxDecoration(
-                            color: Colors.green,
+                            color: const Color.fromRGBO(52, 168, 83, 1),
                             borderRadius:
                                 BorderRadius.vertical(top: Radius.circular(30)),
                           ),
