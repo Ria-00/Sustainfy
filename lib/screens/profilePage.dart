@@ -65,7 +65,8 @@ class _ProfilePageState extends State<ProfilePage> {
                 children: [
                   CircleAvatar(
                     radius: 50,
-                    backgroundImage: AssetImage('assets/images/pfp2.png'),
+                    backgroundImage:
+                        AssetImage('assets/images/profileImages/pfp2.png'),
                   ),
                   SizedBox(width: 15),
                   Expanded(
@@ -253,8 +254,8 @@ class _ProfilePageState extends State<ProfilePage> {
                               SizedBox(height: 20),
                               CircleAvatar(
                                 radius: 50,
-                                backgroundImage:
-                                    AssetImage('assets/images/pfp2.png'),
+                                backgroundImage: AssetImage(
+                                    'assets/images/profileImages/pfp2.png'),
                                 child: Align(
                                   alignment: Alignment.bottomRight,
                                   child: Icon(
