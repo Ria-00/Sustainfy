@@ -8,7 +8,6 @@ class EventDescriptionPage extends StatefulWidget {
   final EventModel event;
 
   EventDescriptionPage({required this.event});
-
   @override
   State<EventDescriptionPage> createState() => _EventDescriptionScreenState();
 }

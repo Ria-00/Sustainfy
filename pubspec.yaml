@@ -41,6 +41,8 @@ dependencies:
   share_plus: ^10.0.0
   firebase_auth: ^5.2.0
   cloud_firestore: ^5.4.0
+  firebase_core: ^3.10.1
+  google_sign_in: ^6.2.2
 
 dev_dependencies:
   flutter_test:
@@ -76,7 +78,6 @@ flutter:
     # - assets/images/mcdLogo.png
     # - assets/images/pumaLogo.png
     # - assets/images/zaraLogo.png
-
     # fonts
     # - assets/fonts/Inter_28pt-Regular.ttf
     # - assets/fonts/Jost-Regular.ttf

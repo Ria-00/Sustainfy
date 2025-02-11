@@ -22,9 +22,6 @@ class UserClassOperations {
         print("Email or password is null");
         return 0;
       }
-      print("done");
-      await create(user);
-      return 1;
       // throws exception in case of failure & returns registration failed message
     } catch (e) {
       print("no");

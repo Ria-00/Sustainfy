@@ -1,4 +1,4 @@
-package com.example.sustainfy
+package com.ncu.sustainfy
 
 import io.flutter.embedding.android.FlutterActivity
 
