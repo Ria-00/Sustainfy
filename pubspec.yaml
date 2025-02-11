@@ -73,9 +73,11 @@ flutter:
   assets:
     # images
     - assets/images/
-    - assets/images/mcdLogo.png
-    - assets/images/pumaLogo.png
-    - assets/images/zaraLogo.png
+    - assets/images/unGoals/
+    - assets/images/profileImages/
+    # - assets/images/mcdLogo.png
+    # - assets/images/pumaLogo.png
+    # - assets/images/zaraLogo.png
     # fonts
     # - assets/fonts/Inter_28pt-Regular.ttf
     # - assets/fonts/Jost-Regular.ttf

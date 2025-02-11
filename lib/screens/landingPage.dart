@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
+import 'package:sustainfy/model/eventModel.dart';
 import 'package:sustainfy/screens/eventDescriptionPage.dart';
 import 'package:sustainfy/screens/settingsPage.dart';
 import 'package:sustainfy/utils/colors.dart';
@@ -8,6 +9,90 @@ import 'package:sustainfy/widgets/customAppBar.dart';
 import 'package:sustainfy/widgets/customCurvedEdges.dart';
 
 class LandingPage extends StatelessWidget {
+  List<EventModel> dummyEvents = [
+    EventModel(
+      eventName: "Beach Cleanup",
+      eventDetails: "Join us to clean the beach!",
+      eventImage: 'assets/images/Rectangle16.png',
+      eventStatus: "Live",
+      eventStartDate: "2025-02-10",
+      eventEndDate: "2025-02-15",
+      eventDescription:
+          "This initiative focuses on removing plastic waste and other pollutants from Miami Beach. Volunteers will work together "
+          "to clean the shoreline, helping to protect marine life and improve the environment. Gloves, trash bags, and refreshments "
+          "will be provided to all participants.",
+      eventLocation: "Miami Beach, FL",
+      UNgoals: ["Life Below Water", "Sustainable Communities"],
+      UNgoalImages: [
+        "assets/images/unGoals/E_SDG_Icons-14.jpg", // Life Below Water
+        "assets/images/unGoals/E_SDG_Icons-11.jpg", // Sustainable Cities & Communities
+      ],
+      eventStartTime: '8am',
+      eventEndTime: '12pm',
+    ),
+    EventModel(
+      eventName: "Tree Plantation Drive",
+      eventDetails: "Let's plant trees together!",
+      eventImage: 'assets/images/Rectangle17.png',
+      eventStatus: "Upcoming",
+      eventStartDate: "2025-03-01",
+      eventEndDate: "2025-03-05",
+      eventDescription:
+          "Join us in planting 1000 trees to combat climate change and promote greener cities. Participants will receive guidance "
+          "from environmental experts on tree planting techniques and their impact on the ecosystem. This event aims to restore urban "
+          "green spaces and provide fresh air for future generations.",
+      eventLocation: "Central Park, NY",
+      UNgoals: ["Climate Action", "Life on Land"],
+      UNgoalImages: [
+        "assets/images/unGoals/E_SDG_Icons-13.jpg", // Climate Action
+        "assets/images/unGoals/E_SDG_Icons-15.jpg", // Life on Land
+      ],
+      eventStartTime: '10am',
+      eventEndTime: '3pm',
+    ),
+    EventModel(
+      eventName: "Donation Drive",
+      eventDetails: "Help those in need with your donations!",
+      eventImage: 'assets/images/Rectangle18.png',
+      eventStatus: "Closed",
+      eventStartDate: "2025-03-01",
+      eventEndDate: "2025-03-05",
+      eventDescription:
+          "This donation drive aimed to support underprivileged communities by collecting clothes, food, and essential items. "
+          "Participants contributed by donating reusable clothes, non-perishable food, books, and hygiene kits. "
+          "The event successfully impacted over 500 families, thanks to generous donors and volunteers.",
+      eventLocation: "Central Park, NY",
+      UNgoals: ["No Poverty", "Zero Hunger", "Climate Action"],
+      UNgoalImages: [
+        "assets/images/unGoals/E_SDG_Icons-01.jpg", // No Poverty
+        "assets/images/unGoals/E_SDG_Icons-02.jpg", // Zero Hunger
+        "assets/images/unGoals/E_SDG_Icons-13.jpg", // Climate Action
+      ],
+      eventStartTime: '10am',
+      eventEndTime: '4pm',
+    ),
+  ];
+
+  final List<String> unGoalImages = [
+    'assets/images/unGoals/E_SDG_Icons-01.jpg',
+    'assets/images/unGoals/E_SDG_Icons-02.jpg',
+    'assets/images/unGoals/E_SDG_Icons-03.jpg',
+    'assets/images/unGoals/E_SDG_Icons-04.jpg',
+    'assets/images/unGoals/E_SDG_Icons-05.jpg',
+    'assets/images/unGoals/E_SDG_Icons-06.jpg',
+    'assets/images/unGoals/E_SDG_Icons-07.jpg',
+    'assets/images/unGoals/E_SDG_Icons-08.jpg',
+    'assets/images/unGoals/E_SDG_Icons-09.jpg',
+    'assets/images/unGoals/E_SDG_Icons-10.jpg',
+    'assets/images/unGoals/E_SDG_Icons-11.jpg',
+    'assets/images/unGoals/E_SDG_Icons-12.jpg',
+    'assets/images/unGoals/E_SDG_Icons-13.jpg',
+    'assets/images/unGoals/E_SDG_Icons-14.jpg',
+    'assets/images/unGoals/E_SDG_Icons-15.jpg',
+    'assets/images/unGoals/E_SDG_Icons-16.jpg',
+    'assets/images/unGoals/E_SDG_Icons-17.jpg',
+  ];
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -79,24 +164,26 @@ class LandingPage extends StatelessWidget {
                       ),
                       SizedBox(height: 15),
                       Container(
-                        child: SingleChildScrollView(
+                        height: 150,
+                        child: ListView.builder(
                           scrollDirection: Axis.horizontal,
-                          child: Row(
-                            children: [
-                              Image.asset('assets/images/Rectangle13.png'),
-                              SizedBox(width: 15),
-                              Image.asset('assets/images/Rectangle14.png'),
-                              SizedBox(width: 15),
-                              Image.asset('assets/images/Rectangle15.png'),
-                              SizedBox(width: 15),
-                              Image.asset('assets/images/Rectangle13.png'),
-                              SizedBox(width: 15),
-                            ],
-                          ),
+                          itemCount: unGoalImages.length,
+                          itemBuilder: (context, index) {
+                            return Padding(
+                              padding: const EdgeInsets.only(right: 15),
+                              child: Image.asset(
+                                unGoalImages[index],
+                                height: 150,
+                                width: 150,
+                                fit: BoxFit.cover,
+                              ),
+                            );
+                          },
                         ),
                       ),
                     ],
                   )),
+              //categories end here
               SizedBox(height: 25),
               Container(
                 padding: EdgeInsets.only(left: 20, right: 20),
@@ -109,69 +196,33 @@ class LandingPage extends StatelessWidget {
                           fontWeight: FontWeight.bold)),
                 ),
               ),
-              SizedBox(height: 20),
-              GestureDetector(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => EventDescriptionPage()),
+              SizedBox(height: 5),
+              ListView.builder(
+                shrinkWrap: true,
+                physics: NeverScrollableScrollPhysics(),
+                itemCount: dummyEvents.length,
+                itemBuilder: (context, index) {
+                  final event = dummyEvents[index];
+                  return GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              EventDescriptionPage(event: event),
+                        ),
+                      );
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.only(
+                          left: 10.0, right: 10, bottom: 20),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(40),
+                        child: Image.asset(event.eventImage),
+                      ),
+                    ),
                   );
                 },
-                child: Padding(
-                  padding: const EdgeInsets.only(left: 10.0, right: 10),
-                  child: ClipRRect(
-                      borderRadius: BorderRadius.circular(40),
-                      child: Image.asset('assets/images/Rectangle16.png')),
-                ),
-              ),
-              SizedBox(height: 20),
-              GestureDetector(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => EventDescriptionPage()),
-                  );
-                },
-                child: Padding(
-                  padding: const EdgeInsets.only(left: 10.0, right: 10),
-                  child: ClipRRect(
-                      borderRadius: BorderRadius.circular(40),
-                      child: Image.asset('assets/images/Rectangle17.png')),
-                ),
-              ),
-              SizedBox(height: 20),
-              GestureDetector(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => EventDescriptionPage()),
-                  );
-                },
-                child: Padding(
-                  padding: const EdgeInsets.only(left: 10.0, right: 10),
-                  child: ClipRRect(
-                      borderRadius: BorderRadius.circular(40),
-                      child: Image.asset('assets/images/Rectangle18.png')),
-                ),
-              ),
-              SizedBox(height: 20),
-              GestureDetector(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => EventDescriptionPage()),
-                  );
-                },
-                child: Padding(
-                  padding: const EdgeInsets.only(left: 10.0, right: 10),
-                  child: ClipRRect(
-                      borderRadius: BorderRadius.circular(40),
-                      child: Image.asset('assets/images/Rectangle16.png')),
-                ),
               ),
             ],
           ),

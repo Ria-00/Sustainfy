@@ -19,22 +19,40 @@ class _CommunityPageState extends State<CommunityPage> {
       eventDetails: 'Car Free Event',
       eventImage: 'assets/images/Rectangle16.png',
       eventName: 'Car Event',
+      UNgoalImages: [],
+      eventStatus: '',
+      eventStartDate: '',
+      eventEndDate: '',
+      eventDescription: '',
+      eventLocation: '',
+      UNgoals: [],
+      eventStartTime: '',
+      eventEndTime: '',
     ),
     EventModel(
       eventDetails: 'Save Planet Events',
       eventImage: 'assets/images/Rectangle17.png',
       eventName: 'Planet Event',
+      UNgoalImages: [],
+      eventStatus: '',
+      eventStartDate: '',
+      eventEndDate: '',
+      eventDescription: '',
+      eventLocation: '',
+      UNgoals: [],
+      eventStartTime: '',
+      eventEndTime: '',
     ),
   ];
 
   final List<UserClass> users = [
     UserClass.withPhoto(
       userName: "John Wick",
-      userProfilePhoto: "assets/images/pfp1.png",
+      userProfilePhoto: "assets/images/profileImages/pfp1.png",
     ),
     UserClass.withPhoto(
       userName: "Chomu Singh",
-      userProfilePhoto: "assets/images/pfp2.png",
+      userProfilePhoto: "assets/images/profileImages/pfp2.png",
     ),
   ];
 
@@ -60,15 +78,7 @@ class _CommunityPageState extends State<CommunityPage> {
                     ),
                   ),
                   SizedBox(width: 7),
-                  // const Text(
-                  //   'Sustainify',
-                  //   style: TextStyle(
-                  //     color: AppColors.white,
-                  //     fontFamily: AppFonts.inter,
-                  //     fontSize: AppFonts.interRegular18,
-                  //     fontWeight: AppFonts.interRegularWeight,
-                  //   ),
-                  // ),
+
                   SizedBox(width: 10), // Add spacing between Text and TextField
                   Expanded(
                     child: TextField(
@@ -95,15 +105,6 @@ class _CommunityPageState extends State<CommunityPage> {
                   SizedBox(
                     width: 15,
                   )
-                  // IconButton(
-                  //   icon: Icon(
-                  //     Icons.search,
-                  //     color: AppColors.white,
-                  //   ),
-                  //   onPressed: () {
-                  //     // Handle search button press
-                  //   },
-                  // ),
                 ],
               ),
             ),
@@ -152,11 +153,6 @@ class _EventCardState extends State<EventCard> {
       isLiked = !isLiked;
     });
   }
-
-  // void shareEvent() {
-  //   // Add your sharing logic here
-  //   print("Sharing event: ${widget.event.eventName}");
-  // }
 
   @override
   Widget build(BuildContext context) {
