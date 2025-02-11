@@ -3,9 +3,6 @@ class UserClass {
    String? usermail;
    String? password;
    int? phone;
-   String? address;
-   Map<dynamic,dynamic>? cart;
-   Map<dynamic,dynamic>? orders;
    String? userProfilePhoto;
 
 
@@ -14,6 +11,13 @@ class UserClass {
   UserClass({
     required this.usermail,
     required this.password,
+  });
+
+  UserClass.register({
+    required this.userName,
+    required this.usermail,
+    required this.password,
+    required this.phone
   });
 
   UserClass.withPhoto({
@@ -27,10 +31,7 @@ class UserClass {
         "userName":userName,
         "email":usermail,
         "password":password,
-        "phone":phone,
-        "address":address,
-        "cart":cart,
-        "orders":orders
+        "phone":phone
 
       }
     );

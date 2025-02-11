@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -24,32 +26,37 @@ class _LoginState extends State<Login> {
 
   User? _user;
 
-  // @override
-  // void initState() {
-  //   super.initState();
-  //   _auth.authStateChanges().listen(
-  //     (event) {
-  //       setState(() {
-  //         _user = event;
-  //       });
-  //     },
-  //   );
-  // }
+  @override
+  void initState() {
+    super.initState();
+
+    // Listeners to rebuild UI based on focus changes
+    _passwordFocusNode.addListener(() {
+      setState(() {});
+    });
+  }
 
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  final GlobalKey<FormState> _formKey1 = GlobalKey<FormState>();
   UserClassOperations operate = UserClassOperations();
   UserClass u = UserClass(usermail: '', password: '');
   final TextEditingController _usermailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _registermailController = TextEditingController();
+  final TextEditingController _registerpasswordController =
+      TextEditingController();
+  final TextEditingController _confirmpasswordController =
+      TextEditingController();
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _mobileController = TextEditingController();
   bool _isHidden = false;
+
   double _containerHeight1 = 280.0; // Initial height of the container
   final double _minHeight1 = 70.0; // Minimum height when collapsed
   final double _maxHeight1 = 280.0; // Maximum height when expanded
   double _containerHeight = 60.0; // Initial height of the container
   final double _minHeight = 60.0; // Minimum height when collapsed
   final double _maxHeight = 580.0; // Maximum height when expanded
-  String? _usernameError;
-  String? _passwordError;
   final FocusNode _emailFocusNode = FocusNode();
   final FocusNode _passwordFocusNode = FocusNode();
 
@@ -71,6 +78,34 @@ class _LoginState extends State<Login> {
         _isHidden = true;
       }
     });
+  }
+
+  Widget _buildTextField(
+      {required String labelText,
+      required String hintText,
+      required bool obsure,
+      required TextEditingController nController,
+      String? Function(String?)? validate}) {
+    return TextFormField(
+      autovalidateMode: AutovalidateMode.onUserInteraction,
+      validator: validate,
+      controller: nController,
+      obscureText: obsure,
+      decoration: InputDecoration(
+        floatingLabelBehavior: FloatingLabelBehavior.never,
+        labelText: labelText,
+        labelStyle: const TextStyle(color: Color.fromRGBO(128, 137, 129, 1)),
+        hintText: hintText,
+        hintStyle: const TextStyle(color: Color.fromRGBO(128, 137, 129, 0.354)),
+        border: OutlineInputBorder(
+          borderSide: BorderSide.none,
+          borderRadius: BorderRadius.circular(20),
+        ),
+        filled: true,
+        fillColor: const Color.fromRGBO(220, 237, 222, 1),
+        contentPadding: const EdgeInsets.all(16),
+      ),
+    );
   }
 
   @override
@@ -130,6 +165,36 @@ class _LoginState extends State<Login> {
       return null; // No error
     }
 
+    String? _confirmPasswordValidator(String? value, String originalPassword) {
+      if (value == null || value.isEmpty) {
+        return "Confirm password is required";
+      }
+      if (value != originalPassword) {
+        return "Passwords do not match";
+      }
+      return null;
+    }
+
+    String? _mobileValidator(String? value) {
+      if (value == null || value.isEmpty) {
+        return "Mobile number is required";
+      }
+      if (!RegExp(r"^[0-9]{10}$").hasMatch(value)) {
+        return "Enter a valid 10-digit mobile number";
+      }
+      return null;
+    }
+
+    String? _nameValidator(String? value) {
+      if (value == null || value.isEmpty) {
+        return "Name is required";
+      }
+      if (value.length < 2) {
+        return "Name must be at least 2 characters long";
+      }
+      return null;
+    }
+
     // Form submit logic
     Future<void> _submitForm() async {
       u.usermail = _usermailController.text.trim();
@@ -150,6 +215,100 @@ class _LoginState extends State<Login> {
         }
       } else {
         print("Error in form");
+      }
+    }
+
+    Future<void> _submitRegisterForm() async {
+      setState(() {
+        _containerHeight = _minHeight; // Shrink the register section
+        _containerHeight1 = _maxHeight1; // Expand the login section
+        _isHidden = false; // Show the login section
+      });
+      FocusScope.of(context).unfocus();
+      String name = _nameController.text.trim();
+      String email = _registermailController.text.trim();
+      String mobile = _mobileController.text.trim();
+      mobile = "+91" + mobile;
+      String password = _registerpasswordController.text.trim();
+      String confirmPassword = _confirmpasswordController.text.trim();
+
+      UserClass user1 = UserClass.register(
+        userName: name,
+        usermail: email,
+        password: password,
+        phone: int.parse(mobile),
+      );
+
+      final form = _formKey1.currentState;
+
+      if (form!.validate()) {
+        if (password != confirmPassword) {
+          showFloatingWarning(context, "Passwords do not match");
+          return;
+        }
+        print("Valid Registration Form");
+        int a = await operate.create(user1);
+        int b = await operate.add(user1);
+        if (a == 1 && b == 1) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => Login(),
+            ),
+          );
+        } else {
+          showFloatingWarning(context, "User already exists");
+        }
+      } else {
+        print("Error in form");
+      }
+    }
+
+    Future<void> _submitRegisterForm1() async {
+      // Extract user details from text controllers
+      String name = _nameController.text.trim();
+      String email = _usermailController.text.trim();
+      String mobile = _mobileController.text.trim();
+      mobile = "+91" + mobile;
+      String password = _registerpasswordController.text.trim();
+      String confirmPassword = _confirmpasswordController.text.trim();
+
+      UserClass user1 = UserClass.register(
+        userName: name,
+        usermail: email,
+        password: password,
+        phone: int.parse(mobile),
+      );
+
+      final form = _formKey1.currentState;
+
+      if (form!.validate()) {
+        if (password != confirmPassword) {
+          showFloatingWarning(context, "Passwords do not match");
+          return;
+        }
+        print("Valid Registration Form");
+
+        // Assume `operate.register` handles the registration logic
+        String? verificationId = await operate.sendOtp(mobile);
+
+        if (verificationId != null) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => OTPVerifyPage(
+                user: user1,
+                verificationId: verificationId,
+              ), // Navigate to OTP verification
+            ),
+          );
+        } else {
+          showFloatingWarning(context, "Error in sending OTP");
+          print("Error in sending OTP");
+        }
+      } else {
+        showFloatingWarning(context, "Error in form");
+        print("Error in registration form");
       }
     }
 
@@ -316,27 +475,6 @@ class _LoginState extends State<Login> {
                                           ),
                                         ),
                                       ),
-                                      if (_usernameError != null)
-                                        Padding(
-                                          padding: const EdgeInsets.only(
-                                              top: 8, left: 8),
-                                          child: Align(
-                                            alignment: Alignment.centerLeft,
-                                            child: Text(
-                                              _usernameError!,
-                                              style: TextStyle(
-                                                fontWeight: FontWeight.normal,
-                                                fontSize:
-                                                    12.0, // Adjust the font size as needed
-                                                color: Color.fromARGB(
-                                                    255,
-                                                    206,
-                                                    46,
-                                                    46), // Customize the error text color
-                                              ),
-                                            ),
-                                          ),
-                                        ),
                                       const SizedBox(height: 20),
                                       Container(
                                         child: TextFormField(
@@ -381,27 +519,6 @@ class _LoginState extends State<Login> {
                                           ),
                                         ),
                                       ),
-                                      if (_passwordError != null)
-                                        Padding(
-                                          padding: const EdgeInsets.only(
-                                              top: 8.0, left: 8.0),
-                                          child: Align(
-                                            alignment: Alignment.centerLeft,
-                                            child: Text(
-                                              _passwordError!,
-                                              style: TextStyle(
-                                                fontWeight: FontWeight.normal,
-                                                fontSize:
-                                                    12.0, // Adjust the font size as needed
-                                                color: Color.fromARGB(
-                                                    255,
-                                                    206,
-                                                    46,
-                                                    46), // Customize the error text color
-                                              ),
-                                            ),
-                                          ),
-                                        ),
                                       const SizedBox(height: 35),
                                       ElevatedButton(
                                         style: ElevatedButton.styleFrom(
@@ -410,7 +527,11 @@ class _LoginState extends State<Login> {
                                           foregroundColor: Color.fromARGB(
                                               204, 255, 255, 255),
                                           padding: EdgeInsets.symmetric(
-                                              horizontal: 133, vertical: 13),
+                                              horizontal: MediaQuery.of(context)
+                                                      .size
+                                                      .width *
+                                                  0.35,
+                                              vertical: 13),
                                           shape: RoundedRectangleBorder(
                                             borderRadius:
                                                 BorderRadius.circular(25),
@@ -518,228 +639,167 @@ class _LoginState extends State<Login> {
                 ),
               ],
             ),
-            Positioned(
-              bottom: 0,
-              left: 0,
-              right: 0,
-              child: GestureDetector(
-                onVerticalDragUpdate: _onVerticalDragUpdate,
-                child: AnimatedContainer(
-                  duration:
-                      const Duration(milliseconds: 300), // Smooth animation
-                  height: _containerHeight,
-                  decoration: BoxDecoration(
-                    borderRadius: const BorderRadius.only(
-                      topLeft: Radius.circular(30.0),
-                      topRight: Radius.circular(30.0),
+            if ((!_passwordFocusNode.hasFocus &&
+                    !_emailFocusNode.hasFocus) ||
+                _containerHeight > _minHeight || ((_passwordFocusNode.hasFocus || _emailFocusNode.hasFocus) && MediaQuery.of(context).viewInsets.bottom == 0))
+              Positioned(
+                bottom: MediaQuery.of(context).viewInsets.bottom > 0
+                    ? MediaQuery.of(context)
+                        .viewInsets
+                        .bottom // Move the form up
+                    : 0, // Default position when the keyboard is not visible
+                left: 0,
+                right: 0,
+                child: GestureDetector(
+                  onVerticalDragUpdate: _onVerticalDragUpdate,
+                  child: AnimatedContainer(
+                    duration:
+                        const Duration(milliseconds: 300), // Smooth animation
+                    height: _containerHeight,
+                    decoration: BoxDecoration(
+                      borderRadius: const BorderRadius.only(
+                        topLeft: Radius.circular(30.0),
+                        topRight: Radius.circular(30.0),
+                      ),
+                      color: const Color.fromRGBO(52, 168, 83, 1),
                     ),
-                    color: const Color.fromRGBO(52, 168, 83, 1),
-                  ),
-                  child: Column(
-                    children: [
-                      const SizedBox(height: 14),
-                      Container(
-                        height: 4,
-                        width: 49,
-                        decoration: BoxDecoration(
-                          color: const Color.fromRGBO(50, 50, 55, 1),
-                          borderRadius:
-                              const BorderRadius.all(Radius.circular(3)),
+                    child: Column(
+                      children: [
+                        const SizedBox(height: 14),
+                        Container(
+                          height: 4,
+                          width: 49,
+                          decoration: BoxDecoration(
+                            color: const Color.fromRGBO(50, 50, 55, 1),
+                            borderRadius:
+                                const BorderRadius.all(Radius.circular(3)),
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 4),
-                      Center(
-                        child: _containerHeight > _minHeight
-                            ? const Text(
-                                "Swipe down to login",
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.normal,
+                        const SizedBox(height: 4),
+                        Center(
+                          child: _containerHeight > _minHeight
+                              ? const Text(
+                                  "Swipe down to login",
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.normal,
+                                  ),
+                                )
+                              : const Text(
+                                  "Swipe up to register",
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.normal,
+                                  ),
                                 ),
-                              )
-                            : const Text(
-                                "Swipe up to register",
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.normal,
-                                ),
-                              ),
-                      ),
-                      AnimatedContainer(
-                        duration: const Duration(
-                            milliseconds: 300), // Smooth expand animation
-                        height: _containerHeight - 50, // Adjust as needed
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 40, vertical: 20),
-                          child: SingleChildScrollView(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.end,
-                              children: [
-                                Container(
-                                  child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.end,
-                                      children: [
-                                        const Text(
-                                          "Register",
-                                          style: TextStyle(
-                                            fontSize: 30,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                        const SizedBox(height: 35),
-                                        TextField(
-                                          // controller: ,
-                                          decoration: InputDecoration(
-                                              hintText: 'Enter name',
-                                              hintStyle: TextStyle(
-                                                  color: Color.fromRGBO(
-                                                      128, 137, 129, 0.354)),
-                                              labelText: "Name",
-                                              labelStyle: TextStyle(
-                                                  color: Color.fromRGBO(
-                                                      128, 137, 129, 1)),
-                                              border: OutlineInputBorder(
-                                                  borderSide: BorderSide.none,
-                                                  borderRadius:
-                                                      BorderRadius.circular(
-                                                          20)),
-                                              filled: true,
-                                              fillColor: Color.fromRGBO(
-                                                  220, 237, 222, 1),
-                                              contentPadding:
-                                                  EdgeInsets.all(16)),
-                                        ),
-                                        const SizedBox(height: 12),
-                                        TextField(
-                                          // controller: ,
-                                          decoration: InputDecoration(
-                                              hintText: 'Enter Mobile No.',
-                                              hintStyle: TextStyle(
-                                                  color: Color.fromRGBO(
-                                                      128, 137, 129, 0.354)),
-                                              labelText: "Mobile",
-                                              labelStyle: TextStyle(
-                                                  color: Color.fromRGBO(
-                                                      128, 137, 129, 1)),
-                                              border: OutlineInputBorder(
-                                                  borderSide: BorderSide.none,
-                                                  borderRadius:
-                                                      BorderRadius.circular(
-                                                          20)),
-                                              filled: true,
-                                              fillColor: Color.fromRGBO(
-                                                  220, 237, 222, 1),
-                                              contentPadding:
-                                                  EdgeInsets.all(16)),
-                                        ),
-                                        const SizedBox(height: 12),
-                                        TextField(
-                                          // controller: ,
-                                          decoration: InputDecoration(
-                                              hintText: 'Enter Email',
-                                              hintStyle: TextStyle(
-                                                  color: Color.fromRGBO(
-                                                      128, 137, 129, 0.354)),
-                                              labelText: "Email",
-                                              labelStyle: TextStyle(
-                                                  color: Color.fromRGBO(
-                                                      128, 137, 129, 1)),
-                                              border: OutlineInputBorder(
-                                                  borderSide: BorderSide.none,
-                                                  borderRadius:
-                                                      BorderRadius.circular(
-                                                          20)),
-                                              filled: true,
-                                              fillColor: Color.fromRGBO(
-                                                  220, 237, 222, 1),
-                                              contentPadding:
-                                                  EdgeInsets.all(16)),
-                                        ),
-                                        const SizedBox(height: 12),
-                                        TextField(
-                                          obscureText: true,
-                                          decoration: InputDecoration(
-                                              labelText: "Password",
-                                              labelStyle: TextStyle(
-                                                  color: Color.fromRGBO(
-                                                      128, 137, 129, 1)),
-                                              hintText: 'Enter Password',
-                                              hintStyle: TextStyle(
-                                                  color: Color.fromRGBO(
-                                                      128, 137, 129, 0.354)),
-                                              border: OutlineInputBorder(
-                                                  borderSide: BorderSide.none,
-                                                  borderRadius:
-                                                      BorderRadius.circular(
-                                                          20)),
-                                              filled: true,
-                                              fillColor: Color.fromRGBO(
-                                                  220, 237, 222, 1),
-                                              contentPadding:
-                                                  EdgeInsets.all(16)),
-                                        ),
-                                        const SizedBox(height: 12),
-                                        TextField(
-                                          // controller: ,
-                                          decoration: InputDecoration(
-                                              hintText: 'Enter Password Again',
-                                              hintStyle: TextStyle(
-                                                  color: Color.fromRGBO(
-                                                      128, 137, 129, 0.354)),
-                                              labelText: "Confirm Password",
-                                              labelStyle: TextStyle(
-                                                  color: Color.fromRGBO(
-                                                      128, 137, 129, 1)),
-                                              border: OutlineInputBorder(
-                                                  borderSide: BorderSide.none,
-                                                  borderRadius:
-                                                      BorderRadius.circular(
-                                                          20)),
-                                              filled: true,
-                                              fillColor: Color.fromRGBO(
-                                                  220, 237, 222, 1),
-                                              contentPadding:
-                                                  EdgeInsets.all(16)),
-                                        ),
-                                        const SizedBox(height: 30),
-                                        ElevatedButton(
-                                          style: ElevatedButton.styleFrom(
-                                            backgroundColor:
-                                                Color.fromRGBO(50, 50, 55, 1),
-                                            foregroundColor: Color.fromARGB(
-                                                204, 255, 255, 255),
-                                            padding: EdgeInsets.symmetric(
-                                                horizontal: 140, vertical: 13),
-                                            shape: RoundedRectangleBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(25),
+                        ),
+                        AnimatedContainer(
+                          duration: const Duration(
+                              milliseconds: 300), // Smooth expand animation
+                          height: _containerHeight - 50, // Adjust as needed
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 40, vertical: 20),
+                            child: SingleChildScrollView(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                children: [
+                                  Form(
+                                    key: _formKey1,
+                                    child: Container(
+                                      child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.end,
+                                          children: [
+                                            const Text(
+                                              "Register",
+                                              style: TextStyle(
+                                                fontSize: 30,
+                                                fontWeight: FontWeight.bold,
+                                              ),
                                             ),
-                                          ),
-                                          onPressed: () {
-                                            Navigator.push(
-                                                context,
-                                                MaterialPageRoute(
-                                                    builder: (context) =>
-                                                        OTPVerifyPage()));
-                                          },
-                                          child: const Text("Next"),
-                                        ),
-                                      ]),
-                                ),
-                              ],
+                                            const SizedBox(height: 35),
+                                            _buildTextField(
+                                                labelText: "Name",
+                                                hintText: "Enter name",
+                                                nController: _nameController,
+                                                validate: _nameValidator,
+                                                obsure: false),
+                                            const SizedBox(height: 12),
+                                            _buildTextField(
+                                                labelText: "Mobile",
+                                                hintText: "Enter Mobile No.",
+                                                nController: _mobileController,
+                                                validate: _mobileValidator,
+                                                obsure: false),
+                                            const SizedBox(height: 12),
+                                            _buildTextField(
+                                                labelText: "Email",
+                                                hintText: "Enter Email",
+                                                nController:
+                                                    _registermailController,
+                                                validate: _validateUsername,
+                                                obsure: false),
+                                            const SizedBox(height: 12),
+                                            _buildTextField(
+                                                labelText: "Password",
+                                                hintText: "Enter Password",
+                                                obsure: true,
+                                                validate: _validatePassword,
+                                                nController:
+                                                    _registerpasswordController),
+                                            const SizedBox(height: 12),
+                                            _buildTextField(
+                                              labelText: "Confirm Password",
+                                              hintText: "Enter Password Again",
+                                              obsure: true,
+                                              nController:
+                                                  _confirmpasswordController,
+                                              validate: (value) =>
+                                                  _confirmPasswordValidator(
+                                                      value,
+                                                      _registerpasswordController
+                                                          .text),
+                                            ),
+                                            const SizedBox(height: 30),
+                                            ElevatedButton(
+                                              style: ElevatedButton.styleFrom(
+                                                backgroundColor: Color.fromRGBO(
+                                                    50, 50, 55, 1),
+                                                foregroundColor: Color.fromARGB(
+                                                    204, 255, 255, 255),
+                                                padding: EdgeInsets.symmetric(
+                                                    horizontal:
+                                                        MediaQuery.of(context)
+                                                                .size
+                                                                .width *
+                                                            0.37,
+                                                    vertical: 13),
+                                                shape: RoundedRectangleBorder(
+                                                  borderRadius:
+                                                      BorderRadius.circular(25),
+                                                ),
+                                              ),
+                                              onPressed: () {
+                                                _submitRegisterForm();
+                                              },
+                                              child: const Text("Next"),
+                                            ),
+                                          ]),
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               ),
-            ),
           ],
         ),
       ),

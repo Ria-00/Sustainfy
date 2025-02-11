@@ -1,7 +1,18 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:sustainfy/model/userModel.dart';
 
 class OTPVerifyPage extends StatefulWidget {
+
+  final UserClass user;
+  final String verificationId;
+
+  OTPVerifyPage({
+    Key? key,
+    required this.user,
+    required this.verificationId,
+    }) : super(key: key);
+
   @override
   _OTPVerifyPageState createState() => _OTPVerifyPageState();
 }
