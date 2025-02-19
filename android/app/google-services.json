@@ -14,6 +14,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "196279097755-1303sm14mutecam03lt6dlrhb80k8tir.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.ncu.sustainfy",
+            "certificate_hash": "f35a68fd9ab77a63fb32d87933490efecfc476c4"
+          }
+        },
+        {
           "client_id": "196279097755-96ne286e89frscul944vqsn6ak4l7m7u.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
