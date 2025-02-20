@@ -12,9 +12,10 @@ class EventModel {
   final String eventEndTime;
   final List<String> UNgoals;
   final List<String> UNgoalImages;
-
+  final String eventPoints;
 
   EventModel({
+    required this.eventPoints,
     required this.eventStartTime,
     required this.eventEndTime,
     required this.eventName,
