@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:sustainfy/screens/RoleLoginPage.dart';
 import 'package:sustainfy/utils/font.dart';
 import 'package:sustainfy/widgets/customCurvedEdges.dart';
 
@@ -80,7 +81,12 @@ class SettingsPage extends StatelessWidget {
                       style: TextStyle(color: Colors.green, fontSize: 20)),
                   trailing: Icon(Icons.arrow_forward_ios, color: Colors.green),
                   onTap: () {
-                    //notifications
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) =>
+                              RoleLoginPage()), // Replace LoginPage() with your actual login page widget
+                    );
                   },
                 ),
                 Divider(),

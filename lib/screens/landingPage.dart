@@ -15,13 +15,11 @@ class LandingPage extends StatefulWidget {
 }
 
 class _LandingPageState extends State<LandingPage> {
-
-  UserClassOperations operations=UserClassOperations();
-  List<EventModel> dummyEvents =[];
+  UserClassOperations operations = UserClassOperations();
+  List<EventModel> dummyEvents = [];
 
   final List<String> unGoalImages = List.generate(
-  17, (index) => "assets/images/unGoals/E_SDG_Icons-${index+1}.jpg" 
-);
+      17, (index) => "assets/images/unGoals/E_SDG_Icons-${index + 1}.jpg");
 
   void initState() {
     super.initState();
@@ -29,9 +27,8 @@ class _LandingPageState extends State<LandingPage> {
   }
 
   void _getevents() async {
+    List<EventModel>? fetchedEvents = await operations.getAllEvents();
 
-      List<EventModel>? fetchedEvents = await operations.getAllEvents();
-    
     if (fetchedEvents != null && mounted) {
       setState(() {
         dummyEvents = fetchedEvents;
@@ -39,142 +36,151 @@ class _LandingPageState extends State<LandingPage> {
     } else {
       print("User not found!");
     }
-}
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Padding(
-        padding: const EdgeInsets.all(0.0),
-        child: SingleChildScrollView(
-          child: Column(
+      body: Stack(
+        children: [
+          Column(
             children: [
-              ClipPath(
-                clipper: CustomCurvedEdges(),
-                child: Container(
-                  height: 150, // Specify a height for the curved app bar
-                  color: const Color.fromRGBO(52, 168, 83, 1),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.only(left: 17.0),
-                        child: Image.asset(
-                          'assets/images/SustainifyLogo.png',
-                          width: 50,
-                          height: 60,
-                        ),
-                      ),
-                      SizedBox(width: 7),
-                      SizedBox(
-                          width: 10), // Add spacing between Text and TextField
-                      Expanded(
-                        child: TextField(
-                          decoration: InputDecoration(
-                            hintText: 'Search an event...',
-                            hintStyle: TextStyle(
-                              color: AppColors.white,
-                              fontFamily: AppFonts.inter,
-                              fontWeight: AppFonts.interRegularWeight,
-                            ),
-                            prefixIcon: Icon(
-                              Icons.search,
-                              color: AppColors.white,
-                            ),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(25.0),
-                              borderSide: BorderSide.none,
-                            ),
-                            filled: true,
-                            fillColor: Colors.white.withOpacity(0.1),
-                          ),
-                        ),
-                      ),
-                      SizedBox(
-                        width: 15,
-                      )
-                    ],
-                  ),
-                ),
+              SizedBox(
+                height: 150, // Same height as the ClipPath to prevent overlap
               ),
-              SizedBox(height: 15),
-              Container(
-                  padding: EdgeInsets.only(left: 20, right: 20),
-                  child: Column(
-                    children: [
-                      Align(
+              Expanded(
+                child: ListView(
+                  padding: EdgeInsets.only(top: 15),
+                  children: [
+                    Container(
+                      padding: EdgeInsets.symmetric(horizontal: 20),
+                      child: Column(
+                        children: [
+                          Align(
+                            alignment: Alignment.centerLeft,
+                            child: Text("Categories",
+                                style: TextStyle(
+                                    color: Color.fromRGBO(50, 50, 55, 1),
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold)),
+                          ),
+                          SizedBox(height: 15),
+                          Container(
+                            height: 150,
+                            child: ListView.builder(
+                              scrollDirection: Axis.horizontal,
+                              itemCount: unGoalImages.length,
+                              itemBuilder: (context, index) {
+                                return Padding(
+                                  padding: const EdgeInsets.only(right: 15),
+                                  child: Image.asset(
+                                    unGoalImages[index],
+                                    height: 150,
+                                    width: 150,
+                                    fit: BoxFit.cover,
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    SizedBox(height: 25),
+                    Container(
+                      padding: EdgeInsets.symmetric(horizontal: 20),
+                      child: Align(
                         alignment: Alignment.centerLeft,
-                        child: Text("Categories",
+                        child: Text("Live Activities",
                             style: TextStyle(
-                                color: const Color.fromRGBO(50, 50, 55, 1),
+                                color: Color.fromRGBO(50, 50, 55, 1),
                                 fontSize: 20,
                                 fontWeight: FontWeight.bold)),
                       ),
-                      SizedBox(height: 15),
-                      Container(
-                        height: 150,
-                        child: ListView.builder(
-                          scrollDirection: Axis.horizontal,
-                          itemCount: unGoalImages.length,
-                          itemBuilder: (context, index) {
-                            return Padding(
-                              padding: const EdgeInsets.only(right: 15),
-                              child: Image.asset(
-                                unGoalImages[index],
-                                height: 150,
-                                width: 150,
-                                fit: BoxFit.cover,
+                    ),
+                    SizedBox(height: 5),
+                    ListView.builder(
+                      shrinkWrap: true,
+                      physics: NeverScrollableScrollPhysics(),
+                      itemCount: dummyEvents.length,
+                      itemBuilder: (context, index) {
+                        final event = dummyEvents[index];
+                        return GestureDetector(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    EventDescriptionPage(event: event),
                               ),
                             );
                           },
-                        ),
-                      ),
-                    ],
-                  )),
-              //categories end here
-              SizedBox(height: 25),
-              Container(
-                padding: EdgeInsets.only(left: 20, right: 20),
-                child: Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text("Live Activities",
-                      style: TextStyle(
-                          color: const Color.fromRGBO(50, 50, 55, 1),
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold)),
-                ),
-              ),
-              SizedBox(height: 5),
-              ListView.builder(
-                shrinkWrap: true,
-                physics: NeverScrollableScrollPhysics(),
-                itemCount: dummyEvents.length,
-                itemBuilder: (context, index) {
-                  final event = dummyEvents[index];
-                  return GestureDetector(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) =>
-                              EventDescriptionPage(event: event),
-                        ),
-                      );
-                    },
-                    child: Padding(
-                      padding: const EdgeInsets.only(
-                          left: 10.0, right: 10, bottom: 20),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(40),
-                        child: Image.network(event.eventImg, fit: BoxFit.cover,height: 150,),
-                      ),
+                          child: Padding(
+                            padding: const EdgeInsets.only(
+                                left: 10.0, right: 10, bottom: 20),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(40),
+                              child: Image.network(event.eventImg),
+                            ),
+                          ),
+                        );
+                      },
                     ),
-                  );
-                },
+                  ],
+                ),
               ),
             ],
           ),
-        ),
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: ClipPath(
+              clipper: CustomCurvedEdges(),
+              child: Container(
+                height: 150,
+                color: Color.fromRGBO(52, 168, 83, 1),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.only(left: 17.0),
+                      child: Image.asset(
+                        'assets/images/SustainifyLogo.png',
+                        width: 50,
+                        height: 60,
+                      ),
+                    ),
+                    SizedBox(width: 7),
+                    Expanded(
+                      child: TextField(
+                        decoration: InputDecoration(
+                          hintText: 'Search an event or ngo...',
+                          hintStyle: TextStyle(
+                            color: AppColors.white,
+                            fontFamily: AppFonts.inter,
+                            fontWeight: AppFonts.interRegularWeight,
+                          ),
+                          prefixIcon: Icon(
+                            Icons.search,
+                            color: AppColors.white,
+                          ),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(25.0),
+                            borderSide: BorderSide.none,
+                          ),
+                          filled: true,
+                          fillColor: Colors.white.withOpacity(0.1),
+                        ),
+                      ),
+                    ),
+                    SizedBox(width: 15),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
