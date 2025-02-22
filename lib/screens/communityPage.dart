@@ -28,7 +28,6 @@ class _CommunityPageState extends State<CommunityPage> {
       UNgoals: [],
       eventStartTime: '',
       eventEndTime: '',
-      eventPoints: '',
     ),
     EventModel(
       eventDetails: 'Save Planet Events',
@@ -43,7 +42,6 @@ class _CommunityPageState extends State<CommunityPage> {
       UNgoals: [],
       eventStartTime: '',
       eventEndTime: '',
-      eventPoints: '',
     ),
   ];
 

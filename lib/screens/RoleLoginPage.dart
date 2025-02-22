@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:sustainfy/screens/NGOScreens/NgoLoginPage.dart';
 import 'package:sustainfy/utils/font.dart';
 
 class RoleLoginPage extends StatefulWidget {
@@ -58,13 +59,18 @@ class _NgoLoginPageState extends State<RoleLoginPage> {
                     ),
                     child: IconButton(
                       onPressed: () {
-                        // Add your onPressed code for the corporate fare icon here!
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) =>
+                                  NgoLoginPage()), // Replace LoginPage() with your actual login page widget
+                        );
                       },
                       icon: const Icon(Icons.corporate_fare_outlined),
                       iconSize: 70,
                     ),
                   ),
-                  Text("Organization")
+                  Text("NGO")
                 ],
               ),
             ],

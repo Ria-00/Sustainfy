@@ -6,15 +6,15 @@ import 'package:sustainfy/utils/colors.dart';
 import 'package:sustainfy/utils/font.dart';
 import 'package:sustainfy/widgets/customCurvedEdges.dart';
 
-class EventDescriptionPage extends StatefulWidget {
+class NgoEventDescriptionPage extends StatefulWidget {
   final EventModel event;
 
-  EventDescriptionPage({required this.event});
+  NgoEventDescriptionPage({required this.event});
   @override
-  State<EventDescriptionPage> createState() => _EventDescriptionScreenState();
+  State<NgoEventDescriptionPage> createState() => _NgoEventDescriptionPage();
 }
 
-class _EventDescriptionScreenState extends State<EventDescriptionPage> {
+class _NgoEventDescriptionPage extends State<NgoEventDescriptionPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -307,25 +307,25 @@ class _EventDescriptionScreenState extends State<EventDescriptionPage> {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             // Join Now Button
-                            ElevatedButton(
-                              onPressed: () {
-                                // TODO: Add Join Now functionality
-                              },
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Color.fromRGBO(52, 168, 83, 1),
-                                shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(30)),
-                                padding: EdgeInsets.symmetric(
-                                    horizontal: 30, vertical: 15),
-                              ),
-                              child: Text(
-                                "Join Now",
-                                style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.white),
-                              ),
-                            ),
+                            // ElevatedButton(
+                            //   onPressed: () {
+                            //     // TODO: Add Join Now functionality
+                            //   },
+                            //   style: ElevatedButton.styleFrom(
+                            //     backgroundColor: Color.fromRGBO(52, 168, 83, 1),
+                            //     shape: RoundedRectangleBorder(
+                            //         borderRadius: BorderRadius.circular(30)),
+                            //     padding: EdgeInsets.symmetric(
+                            //         horizontal: 30, vertical: 15),
+                            //   ),
+                            //   child: Text(
+                            //     "Join Now",
+                            //     style: TextStyle(
+                            //         fontSize: 16,
+                            //         fontWeight: FontWeight.bold,
+                            //         color: Colors.white),
+                            //   ),
+                            // ),
 
                             SizedBox(width: 15), // Space between buttons
 
@@ -355,7 +355,7 @@ class _EventDescriptionScreenState extends State<EventDescriptionPage> {
                                     horizontal: 30, vertical: 15),
                               ),
                               child: Text(
-                                "View QR Code",
+                                "View All Participants",
                                 style: TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.bold,

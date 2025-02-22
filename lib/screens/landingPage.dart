@@ -29,7 +29,6 @@ class LandingPage extends StatelessWidget {
       ],
       eventStartTime: '8am',
       eventEndTime: '12pm',
-      eventPoints: '300 pts',
     ),
     EventModel(
       eventName: "Tree Plantation Drive",
@@ -50,7 +49,6 @@ class LandingPage extends StatelessWidget {
       ],
       eventStartTime: '10am',
       eventEndTime: '3pm',
-      eventPoints: '200 pts',
     ),
     EventModel(
       eventName: "Donation Drive",
@@ -72,7 +70,6 @@ class LandingPage extends StatelessWidget {
       ],
       eventStartTime: '10am',
       eventEndTime: '4pm',
-      eventPoints: '400 pts',
     ),
   ];
 
@@ -213,7 +210,7 @@ class LandingPage extends StatelessWidget {
                     Expanded(
                       child: TextField(
                         decoration: InputDecoration(
-                          hintText: 'Search an event...',
+                          hintText: 'Search an event or ngo...',
                           hintStyle: TextStyle(
                             color: AppColors.white,
                             fontFamily: AppFonts.inter,
