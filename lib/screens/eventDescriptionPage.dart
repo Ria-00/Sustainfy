@@ -25,7 +25,7 @@ class _EventDescriptionScreenState extends State<EventDescriptionPage> {
               child: SizedBox(
                 height: 150,
                 child: Container(
-                  color: Colors.green,
+                  color:  const Color.fromRGBO(52, 168, 83, 1),
                   child: Row(
                     children: [
                       SizedBox(width: 7),
@@ -73,7 +73,7 @@ class _EventDescriptionScreenState extends State<EventDescriptionPage> {
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(40),
                   child:
-                      Image.asset(widget.event.eventImage, fit: BoxFit.cover),
+                      Image.network(widget.event.eventImg, fit: BoxFit.cover),
                 ),
               ),
             ),
@@ -149,7 +149,7 @@ class _EventDescriptionScreenState extends State<EventDescriptionPage> {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 5),
               child: Text(
-                widget.event.eventDescription,
+                widget.event.eventDetails,
                 style: TextStyle(fontSize: 14, color: Colors.grey[700]),
               ),
             ),
@@ -186,7 +186,7 @@ class _EventDescriptionScreenState extends State<EventDescriptionPage> {
                           fontWeight: FontWeight.bold,
                           color: Colors.green)),
                   Text(
-                      "${widget.event.eventStartTime} - ${widget.event.eventEndTime}",
+                      "${widget.event.eventStartDate} - ${widget.event.eventEndDate}",
                       style: TextStyle(fontSize: 14)),
                 ],
               ),
@@ -200,7 +200,7 @@ class _EventDescriptionScreenState extends State<EventDescriptionPage> {
                   Icon(Icons.location_on, color: Colors.green),
                   SizedBox(width: 5),
                   Expanded(
-                    child: Text(widget.event.eventLocation,
+                    child: Text(widget.event.eventAddress,
                         style: TextStyle(fontSize: 14)),
                   ),
                 ],
@@ -217,12 +217,12 @@ class _EventDescriptionScreenState extends State<EventDescriptionPage> {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Row(
-                children: widget.event.UNgoalImages.map((goalImage) {
+                children: widget.event.UNGoals.map((goalImage) {
                   return Padding(
                     padding: const EdgeInsets.only(right: 10),
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(50),
-                      child: Image.asset(goalImage, width: 60, height: 60),
+                      child: Image.asset("assets/images/unGoals/E_SDG_Icons-$goalImage.jpg", width: 60, height: 60),
                     ),
                   );
                 }).toList(),

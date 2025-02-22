@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:provider/provider.dart';
+import 'package:sustainfy/model/eventModel.dart';
 import 'package:sustainfy/model/userModel.dart';
 
 class UserClassOperations {
@@ -13,9 +14,9 @@ class UserClassOperations {
   Future<int> add(UserClass user) async {
     // If registration is successful
     try {
-      if (user.usermail != null && user.password != null) {
+      if (user.userMail != null && user.userPassword != null) {
         await _auth.createUserWithEmailAndPassword(
-            email: user.usermail!, password: user.password!);
+            email: user.userMail!, password: user.userPassword!);
         print("done");
         return 1;
       } else {
@@ -54,7 +55,7 @@ class UserClassOperations {
   Future<int> login(UserClass user) async {
     try {
       await _auth.signInWithEmailAndPassword(
-          email: user.usermail!, password: user.password!);
+          email: user.userMail!, password: user.userPassword!);
       print("Login successful");
       return 1;
     } catch (e) {
@@ -70,7 +71,7 @@ class UserClassOperations {
     // Check if a user with the same email already exists
     QuerySnapshot snapshot = await firestore
         .collection("users")
-        .where("usermail", isEqualTo: user.usermail)
+        .where("usermail", isEqualTo: user.userMail)
         .get();
 
     if (snapshot.docs.isEmpty) {
@@ -88,6 +89,44 @@ class UserClassOperations {
     return -1; // Error occurred
   }
 }
+
+
+Future<UserClass?> getUser(String umail) async {
+  FirebaseFirestore firestore = FirebaseFirestore.instance;
+
+  try {
+    QuerySnapshot snapshot = await firestore
+        .collection("users")
+        .where("userMail", isEqualTo: umail) // Ensure this field name matches Firestore
+        .limit(1)
+        .get();
+
+    if (snapshot.docs.isNotEmpty) {
+      // Convert Firestore document to UserClass
+      print(UserClass.fromMap(snapshot.docs.first.data() as Map<String, dynamic>));
+      return UserClass.fromMap(snapshot.docs.first.data() as Map<String, dynamic>);
+    } else {
+      print("nothing");
+      return null;
+    }
+  } catch (e) {
+    print("Error fetching user: $e");
+    return null;
+  }
+}
+
+Future<List<EventModel>> getAllEvents() async {
+    try {
+      QuerySnapshot snapshot = await firestore.collection("events").get();
+
+      return snapshot.docs.map((doc) {
+        return EventModel.fromMap(doc.data() as Map<String, dynamic>);
+      }).toList();
+    } catch (e) {
+      print("Error fetching events: $e");
+      return [];
+    }
+  }
 
   Future<String?> sendOtp(String phoneNumber) async {
     try {

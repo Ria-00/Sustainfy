@@ -1,22 +1,53 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:sustainfy/model/userModel.dart';
+import 'package:sustainfy/providers/userProvider.dart';
 import 'package:sustainfy/screens/login.dart';
 import 'package:sustainfy/screens/settingsPage.dart';
+import 'package:sustainfy/services/userOperations.dart';
 import 'package:sustainfy/utils/font.dart';
 import 'package:sustainfy/widgets/customCurvedEdges.dart';
 
 class ProfilePage extends StatefulWidget {
+
+  const ProfilePage({super.key});
+  
   @override
   State<ProfilePage> createState() => _ProfilePageState();
 }
 
+
 class _ProfilePageState extends State<ProfilePage> {
+  UserClass? _user;
+  UserClassOperations operations=UserClassOperations();
   String currentCategory = "Used"; // Default category
   final Map<String, int> cardCounts = {
     "Used": 0,
     "Wishlist": 3,
     "Expired": 4,
   };
+
+  void initState() {
+    super.initState();
+    _getuserInformation();
+  }
+
+  void _getuserInformation() async {
+
+  String userEmail = Provider.of<userProvider>(context, listen: false).email ?? '';
+
+    UserClass? fetchedUser = await operations.getUser(userEmail);
+    print(userEmail);
+  
+  if (fetchedUser != null) {
+    setState(() {
+      _user = fetchedUser;
+    });
+  } else {
+    print("User not found!");
+  }
+}
 
   @override
   Widget build(BuildContext context) {
@@ -76,7 +107,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Rohan Sharma',
+                           _user?.userName ?? "Unknown",
                           style: TextStyle(
                             color: const Color.fromRGBO(50, 50, 55, 1),
                             fontSize: 20,
@@ -84,13 +115,13 @@ class _ProfilePageState extends State<ProfilePage> {
                           ),
                         ),
                         Text(
-                          'rohan@gmail.com',
+                           _user?.userMail ?? "Unknown",
                           style:
                               TextStyle(fontSize: 16, color: Colors.grey[600]),
                         ),
                         SizedBox(height: 4),
                         Text(
-                          '+91 9352637465',
+                          '+91 ' + (_user?.userPhone?.toString() ?? "Unknown"),
                           style:
                               TextStyle(fontSize: 16, color: Colors.grey[600]),
                         ),
