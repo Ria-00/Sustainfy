@@ -7,8 +7,11 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:provider/provider.dart';
 import 'package:sustainfy/main.dart';
 import 'package:sustainfy/model/userModel.dart';
+import 'package:sustainfy/providers/userProvider.dart';
+import 'package:sustainfy/screens/homePage.dart';
 import 'package:sustainfy/screens/landingPage.dart';
 import 'package:sustainfy/screens/otpVerification.dart';
 import 'package:sustainfy/services/userOperations.dart';
@@ -39,7 +42,7 @@ class _LoginState extends State<Login> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final GlobalKey<FormState> _formKey1 = GlobalKey<FormState>();
   UserClassOperations operate = UserClassOperations();
-  UserClass u = UserClass(usermail: '', password: '');
+  UserClass u = UserClass(userMail: '', userPassword: '');
   final TextEditingController _usermailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _registermailController = TextEditingController();
@@ -197,13 +200,16 @@ class _LoginState extends State<Login> {
 
     // Form submit logic
     Future<void> _submitForm() async {
-      u.usermail = _usermailController.text.trim();
-      u.password = _passwordController.text.trim();
+      u.userMail = _usermailController.text.trim();
+      u.userPassword = _passwordController.text.trim();
       final form = _formKey.currentState;
       if (form!.validate()) {
         print("Valid Form");
         int a = await operate.login(u);
         if (a == 1) {
+          Provider.of<userProvider>(context, listen: false).setValue(u.userMail!);
+          print("523647357864754583");
+          print(Provider.of<userProvider>(context, listen: false).email);
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(
@@ -234,9 +240,9 @@ class _LoginState extends State<Login> {
 
       UserClass user1 = UserClass.register(
         userName: name,
-        usermail: email,
-        password: password,
-        phone: int.parse(mobile),
+        userMail: email,
+        userPassword: password,
+        userPhone: mobile,
       );
 
       final form = _formKey1.currentState;
@@ -275,9 +281,9 @@ class _LoginState extends State<Login> {
 
       UserClass user1 = UserClass.register(
         userName: name,
-        usermail: email,
-        password: password,
-        phone: int.parse(mobile),
+        userMail: email,
+        userPassword: password,
+        userPhone:mobile,
       );
 
       final form = _formKey1.currentState;

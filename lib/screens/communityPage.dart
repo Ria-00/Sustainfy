@@ -15,44 +15,16 @@ class CommunityPage extends StatefulWidget {
 
 class _CommunityPageState extends State<CommunityPage> {
   final List<EventModel> events = [
-    EventModel(
-      eventDetails: 'Car Free Event',
-      eventImage: 'assets/images/Rectangle16.png',
-      eventName: 'Car Event',
-      UNgoalImages: [],
-      eventStatus: '',
-      eventStartDate: '',
-      eventEndDate: '',
-      eventDescription: '',
-      eventLocation: '',
-      UNgoals: [],
-      eventStartTime: '',
-      eventEndTime: '',
-    ),
-    EventModel(
-      eventDetails: 'Save Planet Events',
-      eventImage: 'assets/images/Rectangle17.png',
-      eventName: 'Planet Event',
-      UNgoalImages: [],
-      eventStatus: '',
-      eventStartDate: '',
-      eventEndDate: '',
-      eventDescription: '',
-      eventLocation: '',
-      UNgoals: [],
-      eventStartTime: '',
-      eventEndTime: '',
-    ),
   ];
 
   final List<UserClass> users = [
     UserClass.withPhoto(
       userName: "John Wick",
-      userProfilePhoto: "assets/images/profileImages/pfp1.png",
+      userImg: "assets/images/profileImages/pfp1.png",
     ),
     UserClass.withPhoto(
       userName: "Chomu Singh",
-      userProfilePhoto: "assets/images/profileImages/pfp2.png",
+      userImg: "assets/images/profileImages/pfp2.png",
     ),
   ];
 
@@ -164,7 +136,7 @@ class _EventCardState extends State<EventCard> {
         children: [
           ListTile(
             leading: CircleAvatar(
-              backgroundImage: AssetImage(widget.user.userProfilePhoto!),
+              backgroundImage: AssetImage(widget.user.userImg!),
               // backgroundColor: Colors.grey[300],
             ),
             title: Text(
@@ -182,7 +154,7 @@ class _EventCardState extends State<EventCard> {
               children: [
                 SizedBox(height: 10.0),
                 Image.asset(
-                  widget.event.eventImage,
+                  widget.event.eventImg,
                   width: double.infinity,
                   fit: BoxFit.cover,
                 ),
