@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:provider/provider.dart';
+import 'package:sustainfy/model/couponModel.dart';
 import 'package:sustainfy/model/eventModel.dart';
 import 'package:sustainfy/model/userModel.dart';
 
@@ -27,26 +28,26 @@ class UserClassOperations {
     } catch (e) {
       print("no");
       if (e is FirebaseAuthException) {
-      switch (e.code) {
-        case 'email-already-in-use':
-          print("Email is already in use.");
-          break;
-        case 'invalid-email':
-          print("Invalid email format.");
-          break;
-        case 'weak-password':
-          print("Weak password.");
-          break;
-        case 'network-request-failed':
-          print("network-request-failed.");
-          break;
-        case 'operation-not-allowed':
-          print("operation-not-allowed.");
-          break;
-        default:
-          print("Registration failed: ${e.message}");
+        switch (e.code) {
+          case 'email-already-in-use':
+            print("Email is already in use.");
+            break;
+          case 'invalid-email':
+            print("Invalid email format.");
+            break;
+          case 'weak-password':
+            print("Weak password.");
+            break;
+          case 'network-request-failed':
+            print("network-request-failed.");
+            break;
+          case 'operation-not-allowed':
+            print("operation-not-allowed.");
+            break;
+          default:
+            print("Registration failed: ${e.message}");
+        }
       }
-    }
       return 0;
     }
   }
@@ -65,57 +66,59 @@ class UserClassOperations {
   }
 
   Future<int> create(UserClass user) async {
-  FirebaseFirestore firestore = FirebaseFirestore.instance;
+    FirebaseFirestore firestore = FirebaseFirestore.instance;
 
-  try {
-    // Check if a user with the same email already exists
-    QuerySnapshot snapshot = await firestore
-        .collection("users")
-        .where("usermail", isEqualTo: user.userMail)
-        .get();
+    try {
+      // Check if a user with the same email already exists
+      QuerySnapshot snapshot = await firestore
+          .collection("users")
+          .where("usermail", isEqualTo: user.userMail)
+          .get();
 
-    if (snapshot.docs.isEmpty) {
-      // If no user exists, create a new user
-      await firestore.collection("users").add(user.toMap());
-      print("User created successfully");
-      return 1; // Success
-    } else {
-      // User already exists
-      print("User already exists");
-      return 0; // User exists
+      if (snapshot.docs.isEmpty) {
+        // If no user exists, create a new user
+        await firestore.collection("users").add(user.toMap());
+        print("User created successfully");
+        return 1; // Success
+      } else {
+        // User already exists
+        print("User already exists");
+        return 0; // User exists
+      }
+    } catch (e) {
+      print("Error: $e");
+      return -1; // Error occurred
     }
-  } catch (e) {
-    print("Error: $e");
-    return -1; // Error occurred
   }
-}
 
+  Future<UserClass?> getUser(String umail) async {
+    FirebaseFirestore firestore = FirebaseFirestore.instance;
 
-Future<UserClass?> getUser(String umail) async {
-  FirebaseFirestore firestore = FirebaseFirestore.instance;
+    try {
+      QuerySnapshot snapshot = await firestore
+          .collection("users")
+          .where("userMail",
+              isEqualTo: umail) // Ensure this field name matches Firestore
+          .limit(1)
+          .get();
 
-  try {
-    QuerySnapshot snapshot = await firestore
-        .collection("users")
-        .where("userMail", isEqualTo: umail) // Ensure this field name matches Firestore
-        .limit(1)
-        .get();
-
-    if (snapshot.docs.isNotEmpty) {
-      // Convert Firestore document to UserClass
-      print(UserClass.fromMap(snapshot.docs.first.data() as Map<String, dynamic>));
-      return UserClass.fromMap(snapshot.docs.first.data() as Map<String, dynamic>);
-    } else {
-      print("nothing");
+      if (snapshot.docs.isNotEmpty) {
+        // Convert Firestore document to UserClass
+        print(UserClass.fromMap(
+            snapshot.docs.first.data() as Map<String, dynamic>));
+        return UserClass.fromMap(
+            snapshot.docs.first.data() as Map<String, dynamic>);
+      } else {
+        print("nothing");
+        return null;
+      }
+    } catch (e) {
+      print("Error fetching user: $e");
       return null;
     }
-  } catch (e) {
-    print("Error fetching user: $e");
-    return null;
   }
-}
 
-Future<List<EventModel>> getAllEvents() async {
+  Future<List<EventModel>> getAllEvents() async {
     try {
       QuerySnapshot snapshot = await firestore.collection("events").get();
 
@@ -127,6 +130,116 @@ Future<List<EventModel>> getAllEvents() async {
       return [];
     }
   }
+
+  Future<String?> getCompanyImage(DocumentReference compRef) async {
+    try {
+      DocumentSnapshot companyDoc = await compRef.get();
+      // print("Document Data: ${companyDoc.data()}");
+
+      if (companyDoc.exists && companyDoc.data() != null) {
+        var data = companyDoc.data() as Map<String, dynamic>;
+        return data['compImg'];
+      } else {
+        print("Company document not found or no data!");
+        return null;
+      }
+    } catch (e) {
+      print("Error fetching company image: $e");
+      return null;
+    }
+  }
+
+  Future<bool> hasUserClaimedCoupon(
+      String mail, DocumentReference couponRef) async {
+    try {
+      // Reference to the user document
+      QuerySnapshot userDoc = await FirebaseFirestore.instance
+          .collection('users')
+          .where("userMail", isEqualTo: mail)
+          .limit(1).get();
+
+      if (userDoc.docs.isNotEmpty) {
+        List<dynamic> claimedCoupons = userDoc.docs.first['claimedCoupons'] ?? [];
+
+        // Check if the couponRef exists in claimedCoupons array
+        return claimedCoupons.contains(couponRef);
+      }
+    } catch (e) {
+      print("Error checking claimed coupon: $e");
+    }
+    return false; // Default to false if an error occurs or user doesn't exist
+  }
+
+  Future<DocumentReference?> getDocumentRef({
+    required String collection,
+    required String field,
+    required dynamic value,
+  }) async {
+    try {
+      QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+          .collection(collection)
+          .where(field, isEqualTo: value)
+          .limit(1)
+          .get();
+
+      if (querySnapshot.docs.isNotEmpty) {
+        return querySnapshot.docs.first
+            .reference; // Return the first matched document's reference
+      }
+    } on Exception catch (e) {
+      print("Error:${e}");
+      return null;
+    }
+// Return null if no document matches
+  }
+
+  Future<List<CouponModel>> getAllCoupons() async {
+    try {
+      QuerySnapshot snapshot = await firestore.collection("coupons").get();
+
+      return snapshot.docs.map((doc) {
+        return CouponModel.fromFirestore(doc);
+      }).toList();
+    } catch (e) {
+      print("Error fetching coupons: $e");
+      return [];
+    }
+  }
+
+  Future<int> getUserPoints(String userEmail) async {
+  try {
+    QuerySnapshot userQuery = await FirebaseFirestore.instance
+        .collection("users")
+        .where("userMail", isEqualTo: userEmail) // Querying by email
+        .limit(1) // Limiting to 1 document for efficiency
+        .get();
+
+    if (userQuery.docs.isNotEmpty) {
+      print(userQuery.docs.first["userPoints"]);
+      return (userQuery.docs.first["userPoints"] ?? 0) as int; // Default to 0 if null
+    } else {
+      print("User not found!");
+      return 0;
+    }
+  } catch (e) {
+    print("Error fetching user points: $e");
+    return 0;
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
   Future<String?> sendOtp(String phoneNumber) async {
     try {
@@ -198,219 +311,4 @@ Future<List<EventModel>> getAllEvents() async {
     }
   }
 
-  // Update cart
-  Future<int> updateCart(
-      String id, String name, String image, String email) async {
-    FirebaseFirestore firestore = FirebaseFirestore.instance;
-    final userQuery =
-        firestore.collection('users').where('email', isEqualTo: email);
-
-    return await firestore.runTransaction((transaction) async {
-      final querySnapshot = await userQuery.get();
-
-      if (querySnapshot.docs.isEmpty) {
-        throw Exception("UserClass document does not exist!");
-      }
-
-      final userDoc = querySnapshot.docs.first;
-
-      Map<String, dynamic> currentCart = userDoc.data()!['cart'] ?? {};
-
-      String newProductId = id;
-      Map<String, dynamic> newProductData = {
-        'pname': name,
-        'pimg': image,
-        'pqty': 1,
-      };
-
-      currentCart[newProductId] = newProductData;
-
-      // Update the cart field in the user document
-      transaction.update(userDoc.reference, {'cart': currentCart});
-
-      return 1; // Indicate successful update
-    }).catchError((error) {
-      print("Transaction failed: $error");
-      return 0; // Indicate failure
-    });
-  }
-
-  Future<int> updateProductQuantity(String productId, String userEmail) async {
-    final firestore = FirebaseFirestore.instance;
-    final user = FirebaseAuth.instance.currentUser;
-
-    await firestore.runTransaction((transaction) async {
-      final userRef =
-          firestore.collection('users').where('email', isEqualTo: userEmail);
-      final querySnapshot = await userRef.get();
-
-      if (querySnapshot.docs.isEmpty) {
-        throw Exception("UserClass document not found!");
-      }
-
-      final userDoc = querySnapshot.docs.first;
-      final currentCart = userDoc.data()!['cart'] ?? {};
-
-      if (!currentCart.containsKey(productId)) {
-        throw Exception("Product not found in cart!");
-      }
-
-      currentCart[productId]['pqty'] += 1;
-      int qty = currentCart[productId]['pqty'];
-
-      transaction.update(userDoc.reference, {'cart': currentCart});
-      return qty;
-    }).catchError((error) {
-      print("Error updating cart: $error");
-      return 0;
-    });
-    return 0;
-  }
-
-  Future<int> decreaseProductQuantity(
-      String productId, String userEmail) async {
-    final firestore = FirebaseFirestore.instance;
-    final user = FirebaseAuth.instance.currentUser;
-
-    await firestore.runTransaction((transaction) async {
-      final userRef =
-          firestore.collection('users').where('email', isEqualTo: userEmail);
-      final querySnapshot = await userRef.get();
-
-      if (querySnapshot.docs.isEmpty) {
-        throw Exception("UserClass document not found!");
-      }
-
-      final userDoc = querySnapshot.docs.first;
-      final currentCart = userDoc.data()!['cart'] ?? {};
-
-      if (!currentCart.containsKey(productId)) {
-        throw Exception("Product not found in cart!");
-      }
-
-      currentCart[productId]['pqty'] -= 1;
-      int qty = currentCart[productId]['pqty'];
-
-      transaction.update(userDoc.reference, {'cart': currentCart});
-      return qty;
-    }).catchError((error) {
-      print("Error updating cart: $error");
-      return 0;
-    });
-    return 0;
-  }
-
-  Future<int> getCartQuantity(String productId, String email) async {
-    final firestore = FirebaseFirestore.instance;
-
-    final userRef =
-        firestore.collection('users').where('email', isEqualTo: email);
-    final querySnapshot = await userRef.get();
-
-    final userDoc = querySnapshot.docs.first;
-    final cartData = userDoc.data()!['cart'];
-
-    if (cartData == null || !cartData.containsKey(productId)) {
-      return 0; // Product not found in cart
-    }
-
-    return cartData[productId]['pqty'];
-  }
-
-  Future<void> removeProductFromCart(String productId, String email) async {
-    final firestore = FirebaseFirestore.instance;
-    final user = FirebaseAuth.instance.currentUser;
-
-    if (user == null) {
-      throw Exception("UserClass not logged in!");
-    }
-
-    final userEmail = user.email;
-
-    await firestore.runTransaction((transaction) async {
-      final userRef =
-          firestore.collection('users').where('email', isEqualTo: userEmail);
-      final querySnapshot = await userRef.get();
-
-      if (querySnapshot.docs.isEmpty) {
-        throw Exception("UserClass document not found!");
-      }
-
-      final userDoc = querySnapshot.docs.first;
-      final currentCart = userDoc.data()!['cart'] ?? {};
-
-      if (!currentCart.containsKey(productId)) {
-        throw Exception("Product not found in cart!");
-      }
-
-      currentCart.remove(productId); // Remove the product using remove
-
-      transaction.update(userDoc.reference, {'cart': currentCart});
-    }).catchError((error) {
-      print("Error removing product from cart: $error");
-    });
-  }
-
-  Future<int> getCartLength(String email) async {
-    final firestore = FirebaseFirestore.instance;
-
-    final userRef =
-        firestore.collection('users').where('email', isEqualTo: email);
-    final querySnapshot = await userRef.get();
-
-    if (querySnapshot.docs.isEmpty) {
-      return 0; // UserClass document not found
-    }
-
-    final userDoc = querySnapshot.docs.first;
-    final cartData = userDoc.data()!['cart'];
-
-    if (cartData == null) {
-      return 0; // No cart data found
-    }
-
-    return cartData.length; // Get the length of the cart map
-  }
-
-  Future<List<Map<String, dynamic>>> getCartProducts(String email) async {
-    final firestore = FirebaseFirestore.instance;
-
-    final userRef =
-        firestore.collection('users').where('email', isEqualTo: email);
-    final querySnapshot = await userRef.get();
-
-    if (querySnapshot.docs.isEmpty) {
-      return []; // UserClass document not found
-    }
-
-    final userDoc = querySnapshot.docs.first;
-    final cartData = userDoc.data()!['cart'] ?? {};
-
-    final List<Map<String, dynamic>> cartProducts = [];
-    cartData.forEach((productId, productData) {
-      cartProducts.add(productData);
-    });
-
-    return cartProducts;
-  }
-
-  Future<List<String>> getCartProductIds(String email) async {
-    final firestore = FirebaseFirestore.instance;
-
-    final userRef =
-        firestore.collection('users').where('email', isEqualTo: email);
-    final querySnapshot = await userRef.get();
-
-    if (querySnapshot.docs.isEmpty) {
-      return []; // UserClass document not found
-    }
-
-    final userDoc = querySnapshot.docs.first;
-    final cartData = userDoc.data()!['cart'] ?? {};
-
-    // Instead of iterating over the entire product data, extract just the IDs
-    final List<String> cartProductIds = cartData.keys.toList();
-
-    return cartProductIds;
-  }
 }

@@ -25,7 +25,6 @@ class _ProfilePageState extends State<ProfilePage> {
   final Map<String, int> cardCounts = {
     "Used": 0,
     "Wishlist": 3,
-    "Expired": 4,
   };
 
   void initState() {

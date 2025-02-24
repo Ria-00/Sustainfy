@@ -7,8 +7,8 @@ class EventModel {
   final String eventImg;
   final String eventStatus;
   final String eventAddress;
-  final DateTime eventStartDate;
-  final DateTime eventEndDate;
+  final Timestamp eventStartDate;
+  final Timestamp eventEndDate;
   final List<int> UNGoals;
   final Map<String, dynamic> eventLoc;
   final List<EventParticipant> eventParticipants;
@@ -37,8 +37,8 @@ class EventModel {
     eventImg: map["eventImg"] ?? "",
     eventStatus: map["eventStatus"] ?? "",
     eventAddress: map["eventAddress"] ?? "",
-    eventStartDate: (map["eventStart_date"] as Timestamp?)?.toDate() ?? DateTime.now(),  
-    eventEndDate: (map["eventEnd_date"] as Timestamp?)?.toDate() ?? DateTime.now(),
+    eventStartDate: map["eventStart_date"] ?? Timestamp.now(),  
+    eventEndDate: map["eventEnd_date"] ?? Timestamp.now(),
     UNGoals: List<int>.from(map["UNGoals"] ?? []),
     
     // ✅ Convert GeoPoint to Map
@@ -65,8 +65,8 @@ class EventModel {
     "eventStatus": eventStatus,
     "eventAddress": eventAddress,
 
-    "eventStart_date": eventStartDate != null ? Timestamp.fromDate(eventStartDate!) : null,
-    "eventEnd_date": eventEndDate != null ? Timestamp.fromDate(eventEndDate!) : null,
+    "eventStart_date": eventStartDate != null ? Timestamp.fromMillisecondsSinceEpoch(eventStartDate!.millisecondsSinceEpoch) : null,
+    "eventEnd_date": eventEndDate != null ? Timestamp.fromMillisecondsSinceEpoch(eventEndDate!.millisecondsSinceEpoch) : null,
 
     "UNGoals": UNGoals,
 

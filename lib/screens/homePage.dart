@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
 import 'package:provider/provider.dart';
+import 'package:sustainfy/model/couponModel.dart';
 import 'package:sustainfy/providers/userProvider.dart';
 import 'package:sustainfy/screens/communityPage.dart';
 import 'package:sustainfy/screens/landingPage.dart';
@@ -28,7 +29,7 @@ class _HomePageState extends State<HomePage> {
     _pages = [
       LandingPage(),
       CommunityPage(),
-      RewardPage(),
+      CouponPage(),
       ProfilePage(),
     ];
   }
