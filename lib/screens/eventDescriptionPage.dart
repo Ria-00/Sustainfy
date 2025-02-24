@@ -4,6 +4,7 @@ import 'package:sustainfy/screens/participantQRPage.dart';
 import 'package:sustainfy/screens/profilePage.dart';
 import 'package:sustainfy/utils/colors.dart';
 import 'package:sustainfy/utils/font.dart';
+import 'package:intl/intl.dart';
 import 'package:sustainfy/widgets/customCurvedEdges.dart';
 
 class EventDescriptionPage extends StatefulWidget {
@@ -44,16 +45,16 @@ class _EventDescriptionScreenState extends State<EventDescriptionPage> {
                               context); // Navigate back to the previous screen
                         },
                       ),
-                      Image.asset(
-                        'assets/images/SustainifyLogo.png',
-                        width: 50,
-                        height: 60,
-                      ),
+                      // Image.asset(
+                      //   'assets/images/SustainifyLogo.png',
+                      //   width: 50,
+                      //   height: 60,
+                      // ),
                       SizedBox(
                         width: 5,
                       ),
-                      const Text(
-                        "Sustainfy", // event name
+                      Text(
+                        widget.event.eventName, // event name
                         style: TextStyle(
                           color: Colors.white,
                           fontFamily: AppFonts.inter,
@@ -194,7 +195,7 @@ class _EventDescriptionScreenState extends State<EventDescriptionPage> {
                                 borderRadius: BorderRadius.circular(10),
                               ),
                               child: Text(
-                                "200 pts",
+                                "${widget.event.eventPoints} Points",
                                 style: TextStyle(
                                   fontSize: 16,
                                   color: Color.fromRGBO(50, 50, 55, 1),
@@ -239,9 +240,13 @@ class _EventDescriptionScreenState extends State<EventDescriptionPage> {
                                     fontSize: 16,
                                     fontWeight: FontWeight.bold,
                                     color: Colors.green)),
+                            SizedBox(width: 10),
                             Text(
-                                "${widget.event.eventStartDate} - ${widget.event.eventEndDate}",
-                                style: TextStyle(fontSize: 14)),
+                              widget.event.eventStartDate.toDate().day == widget.event.eventEndDate.toDate().day
+                                ? "${DateFormat('d MMM yyyy').format(widget.event.eventStartDate.toDate())}"
+                                : "${DateFormat('d MMM yyyy').format(widget.event.eventStartDate.toDate())} - ${DateFormat('d MMM yyyy').format(widget.event.eventEndDate.toDate())}",
+                              style: TextStyle(fontSize: 14),
+                            ),
                           ],
                         ),
                       ),
@@ -256,7 +261,8 @@ class _EventDescriptionScreenState extends State<EventDescriptionPage> {
                                     fontSize: 16,
                                     fontWeight: FontWeight.bold,
                                     color: Colors.green)),
-                            Text("${widget.event.eventStartDate}",
+                            SizedBox(width: 10),
+                            Text("${DateFormat('h:mm a').format(widget.event.eventStartDate.toDate())} - ${DateFormat('h:mm a').format(widget.event.eventEndDate.toDate())}",
                                 style: TextStyle(fontSize: 14)),
                           ],
                         ),
@@ -267,8 +273,9 @@ class _EventDescriptionScreenState extends State<EventDescriptionPage> {
                         padding: const EdgeInsets.symmetric(horizontal: 16),
                         child: Row(
                           children: [
+                            SizedBox(width: 7),
                             Icon(Icons.location_on, color: Colors.green),
-                            SizedBox(width: 5),
+                            SizedBox(width: 25),
                             Expanded(
                               child: Text(widget.event.eventAddress,
                                   style: TextStyle(fontSize: 14)),
@@ -276,7 +283,7 @@ class _EventDescriptionScreenState extends State<EventDescriptionPage> {
                           ],
                         ),
                       ),
-                      SizedBox(height: 15),
+                      SizedBox(height: 20),
                       // UN Goals
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 16),

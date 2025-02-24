@@ -1,52 +1,108 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:sustainfy/model/rewardModel.dart';
-import 'package:sustainfy/model/rewardModel.dart';
+import 'package:provider/provider.dart';
+import 'package:sustainfy/model/couponModel.dart';
+import 'package:sustainfy/model/couponModel.dart';
+import 'package:sustainfy/providers/userProvider.dart';
+import 'package:sustainfy/services/userOperations.dart';
 import 'package:sustainfy/utils/colors.dart';
 import 'package:sustainfy/utils/font.dart';
 import 'package:sustainfy/widgets/customCurvedEdges.dart';
 
-class RewardPage extends StatefulWidget {
+class CouponPage extends StatefulWidget {
   @override
-  _RewardPageState createState() => _RewardPageState();
+  _CouponModelPageState createState() => _CouponModelPageState();
 }
 
-class _RewardPageState extends State<RewardPage> {
-  // List of rewards
-  final List<Reward> rewards = [
-    Reward(
-      logo: 'assets/images/pumaLogo.png',
-      description: '10% Discount on all t-shirts',
-      pointsRequired: 500,
-    ),
-    Reward(
-      logo: 'assets/images/mcdLogo.png',
-      description: 'Free coke with your next meal',
-      pointsRequired: 200,
-    ),
-    Reward(
-      logo: 'assets/images/zaraLogo.png',
-      description: '10% Discount on all t-shirts',
-      pointsRequired: 500,
-    ),
+class _CouponModelPageState extends State<CouponPage> {
+
+  UserClassOperations operations = UserClassOperations();
+
+  // List of coupons
+  final List<CouponModel> coupons = [
   ];
 
-  int _currentPoints = 300; // Store the current points
+  int? _currentPoints; // Store the current points
 
-  // Redeem reward logic
-  void _redeemReward(Reward reward) {
-    if (_currentPoints >= reward.pointsRequired) {
+  // Redeem coupon logic
+  void _redeemCouponModel(CouponModel coupon) {
+    if (_currentPoints! >= coupon.couponPoint) {
       setState(() {
-        _currentPoints -= reward.pointsRequired; // Deduct points on redeem
+        _currentPoints = (_currentPoints ?? 0) - coupon.couponPoint; // Deduct points on redeem
       });
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Reward redeemed!')),
+        SnackBar(content: Text('CouponModel redeemed!')),
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Not enough points to redeem this reward')),
+        SnackBar(content: Text('Not enough points to redeem this coupon')),
       );
     }
   }
+
+  void initState() {
+    super.initState();
+    _getUserPoints();
+    _getcoupons();
+  }
+
+  void _getUserPoints(){
+    String userEmail = Provider.of<userProvider>(context, listen: false).email ?? '';
+    operations.getUserPoints(userEmail).then((value) {
+      setState(() {
+        _currentPoints = value;
+      });
+    });
+  }
+
+  void _getcoupons() async {
+  List<CouponModel>? fetchedCoupons = await operations.getAllCoupons();
+  String userEmail = Provider.of<userProvider>(context, listen: false).email ?? '';
+  print(userEmail);
+
+  if (fetchedCoupons != null && mounted) {
+    List<Future<bool>> claimCheckFutures = [];
+
+    // Create a list of coupon references
+    List<Future<DocumentReference?>> refFutures = fetchedCoupons.map((coupon) {
+      return operations.getDocumentRef(collection: "coupons", field: "couponId", value: coupon.couponId);
+    }).toList();
+
+    // Wait for all document references to be fetched
+    List<DocumentReference?> couponRefs = await Future.wait(refFutures);
+
+    // Check if user has claimed each coupon in parallel
+    for (int i = 0; i < fetchedCoupons.length; i++) {
+      if (couponRefs[i] != null) {
+        claimCheckFutures.add(operations.hasUserClaimedCoupon(userEmail, couponRefs[i]!));
+      } else {
+        claimCheckFutures.add(Future.value(false)); // Default to unclaimed if ref is null
+      }
+    }
+
+    // Wait for all claim checks to complete
+    List<bool> claimResults = await Future.wait(claimCheckFutures);
+
+    // Filter unclaimed coupons efficiently
+    List<CouponModel> unclaimedCoupons = [];
+    for (int i = 0; i < fetchedCoupons.length; i++) {
+      if (!claimResults[i]) {
+        print("CouponModel not claimed: ${fetchedCoupons[i].couponDesc}");
+        unclaimedCoupons.add(fetchedCoupons[i]);
+      }
+    }
+
+    if (mounted) {
+      setState(() {
+        coupons.addAll(unclaimedCoupons);
+      });
+    }
+  } else {
+    print("User not found!");
+  }
+}
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -69,21 +125,12 @@ class _RewardPageState extends State<RewardPage> {
                       height: 60,
                     ),
                   ),
-                  SizedBox(width: 7),
-                  // const Text(
-                  //   'Sustainify',
-                  //   style: TextStyle(
-                  //     color: AppColors.white,
-                  //     fontFamily: AppFonts.inter,
-                  //     fontSize: AppFonts.interRegular18,
-                  //     fontWeight: AppFonts.interRegularWeight,
-                  //   ),
-                  // ),
-                  SizedBox(width: 10), // Add spacing between Text and TextField
+                  SizedBox(width: 17),
+              
                   Expanded(
                     child: TextField(
                       decoration: InputDecoration(
-                        hintText: 'Search a reward...',
+                        hintText: 'Search a coupon...',
                         hintStyle: TextStyle(
                           color: AppColors.white,
                           fontFamily: AppFonts.inter,
@@ -137,14 +184,14 @@ class _RewardPageState extends State<RewardPage> {
               ),
             ),
           ),
-
-          // Claim Rewards Title
+          SizedBox(height: 20),
+          // Claim CouponModels Title
           Container(
             padding: EdgeInsets.only(left: 20, right: 20),
             child: Align(
               alignment: Alignment.centerLeft,
               child: Text(
-                'Claim Rewards',
+                'Claim Coupons',
                 style: TextStyle(
                   color: const Color.fromRGBO(50, 50, 55, 1),
                   fontSize: 17,
@@ -153,18 +200,16 @@ class _RewardPageState extends State<RewardPage> {
               ),
             ),
           ),
-
-          SizedBox(height: 8),
-          // List of reward cards
+          SizedBox(height: 10),
+          // List of coupon cards
           Container(
-            // padding: EdgeInsets.only(left: 3, right: 3),
             child: Expanded(
               child: ListView.builder(
-                itemCount: rewards.length,
+                itemCount: coupons.length,
                 itemBuilder: (context, index) {
-                  return RewardCard(
-                    reward: rewards[index],
-                    redeemReward: _redeemReward,
+                  return CouponModelCard(
+                    coupon: coupons[index],
+                    redeemCouponModel: _redeemCouponModel,
                   );
                 },
               ),
@@ -176,21 +221,22 @@ class _RewardPageState extends State<RewardPage> {
   }
 }
 
-class RewardCard extends StatelessWidget {
-  final Reward reward;
-  final Function(Reward) redeemReward;
+class CouponModelCard extends StatelessWidget {
+  UserClassOperations operations = UserClassOperations();
+  final CouponModel coupon;
+  final Function(CouponModel) redeemCouponModel;
 
-  const RewardCard({
+  CouponModelCard({
     Key? key,
-    required this.reward,
-    required this.redeemReward,
+    required this.coupon,
+    required this.redeemCouponModel,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Card(
       elevation: 3,
-      margin: EdgeInsets.symmetric(vertical: 8, horizontal: 20),
+      margin: EdgeInsets.symmetric(vertical: 10, horizontal: 25),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(10),
       ),
@@ -198,20 +244,31 @@ class RewardCard extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.all(8.0),
         child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Image.asset(
-              reward.logo,
-              width: 100,
-              height: 100,
-              fit: BoxFit.contain,
+            SizedBox(width: 15),
+            FutureBuilder<String?>(
+              future: operations.getCompanyImage(coupon.compRef),
+              builder: (context, snapshot) {
+                if (snapshot.hasError || !snapshot.hasData) {
+                  return Icon(Icons.image_not_supported); // Show fallback if no image
+                }
+                return Image.network(
+                    snapshot.data!,
+                    width: 100,
+                    height: 100,
+                    fit: BoxFit.contain,
+                  );
+              },
             ),
-            SizedBox(width: 16),
+            SizedBox(width: 30),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    reward.description,
+                    coupon.couponDesc,
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.normal,
@@ -232,7 +289,7 @@ class RewardCard extends StatelessWidget {
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Text(
-                          '${reward.pointsRequired} points',
+                          '${coupon.couponPoint} points',
                           style: TextStyle(
                             fontSize: 12,
                             color: Colors.green.shade800,
@@ -243,7 +300,7 @@ class RewardCard extends StatelessWidget {
                         width: 15,
                       ),
                       ElevatedButton(
-                        onPressed: () => redeemReward(reward),
+                        onPressed: () => redeemCouponModel(coupon),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppColors.darkGreen,
                           minimumSize: Size(30, 30),
