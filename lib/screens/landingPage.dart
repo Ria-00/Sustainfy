@@ -105,6 +105,12 @@ class _LandingPageState extends State<LandingPage> {
                       itemCount: dummyEvents.length,
                       itemBuilder: (context, index) {
                         final event = dummyEvents[index];
+                        DateTime startDateTime = event.eventStartDate.toDate();
+                        String formattedDate =
+                            "${startDateTime.day} ${_getMonthName(startDateTime.month)} ${startDateTime.year}";
+                        String formattedTime =
+                            "${startDateTime.hour % 12 == 0 ? 12 : startDateTime.hour % 12}:${startDateTime.minute.toString().padLeft(2, '0')} ${startDateTime.hour >= 12 ? 'PM' : 'AM'}";
+
                         return GestureDetector(
                           onTap: () {
                             Navigator.push(
@@ -116,11 +122,59 @@ class _LandingPageState extends State<LandingPage> {
                             );
                           },
                           child: Padding(
-                            padding: const EdgeInsets.only(
-                                left: 10.0, right: 10, bottom: 20),
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(40),
-                              child: Image.network(event.eventImg),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 20.0, vertical: 10),
+                            child: Card(
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(15)),
+                              elevation: 4,
+                              child: Padding(
+                                padding: const EdgeInsets.all(12.0),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Expanded(
+                                          child: Text(
+                                            "${event.eventName} \nNgo: Smile Foundation",
+                                            style: TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 18),
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    SizedBox(height: 8),
+                                    Row(
+                                      children: [
+                                        Text(" Date: ",
+                                            style: TextStyle(
+                                                fontWeight: FontWeight.bold)),
+                                        Text(formattedDate),
+                                        SizedBox(
+                                          width: 10,
+                                        ),
+                                        Text(" Time: ",
+                                            style: TextStyle(
+                                                fontWeight: FontWeight.bold)),
+                                        Text(formattedTime),
+                                      ],
+                                    ),
+                                    SizedBox(height: 8),
+                                    ClipRRect(
+                                      borderRadius: BorderRadius.circular(12),
+                                      child: Image.network(event.eventImg,
+                                          fit: BoxFit.cover,
+                                          height: 150,
+                                          width: double.infinity),
+                                    ),
+                                  ],
+                                ),
+                              ),
                             ),
                           ),
                         );
@@ -183,5 +237,23 @@ class _LandingPageState extends State<LandingPage> {
         ],
       ),
     );
+  }
+
+  String _getMonthName(int month) {
+    List<String> months = [
+      "January",
+      "February",
+      "March",
+      "April",
+      "May",
+      "June",
+      "July",
+      "August",
+      "September",
+      "October",
+      "November",
+      "December"
+    ];
+    return months[month - 1];
   }
 }
