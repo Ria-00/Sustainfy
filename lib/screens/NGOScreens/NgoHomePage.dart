@@ -11,8 +11,8 @@ class _NgoHomePage extends State<NgoHomePage> {
   int _selectedIndex = 0;
 
   final List<Widget> _pages = [
-    // NgoLandingPage(),
-    Center(child: Text("Ngo Home Page")),
+    NgoLandingPage(),
+    // Center(child: Text("Ngo Home Page")),
     Center(child: Text("Ngo Community Page")),
     Center(child: Text("Ngo QR Scanner Page")),
     Center(child: Text("Ngo Profile Page")),
