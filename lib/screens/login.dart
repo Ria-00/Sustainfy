@@ -11,6 +11,7 @@ import 'package:provider/provider.dart';
 import 'package:sustainfy/main.dart';
 import 'package:sustainfy/model/userModel.dart';
 import 'package:sustainfy/providers/userProvider.dart';
+import 'package:sustainfy/screens/fillerScreen.dart';
 import 'package:sustainfy/screens/homePage.dart';
 import 'package:sustainfy/screens/landingPage.dart';
 import 'package:sustainfy/screens/otpVerification.dart';
@@ -213,7 +214,7 @@ class _LoginState extends State<Login> {
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(
-              builder: (context) => HomePage(),
+              builder: (context) => Fillerscreen(),
             ),
           );
         } else {
@@ -322,32 +323,66 @@ class _LoginState extends State<Login> {
       FocusScope.of(context).unfocus();
     }
 
-    Future<dynamic> signInWithGoogle() async {
-      try {
-        // Trigger the Google Sign-In flow
-        GoogleAuthProvider _authprovider = GoogleAuthProvider();
-        _authprovider
-            .addScope('email')
-            .setCustomParameters({'prompt': 'select_account'});
+  Future<void> registerUserAfterGoogleSignIn(String email) async {
+  try {
+   
+    UserClass? fetchedUser = await operate.getUser(email);
 
-        final UserCredential userCredential =
-            await FirebaseAuth.instance.signInWithProvider(_authprovider);
+    if (fetchedUser == null) {
+      UserClass _user1= UserClass(userMail: email);
+      // If the user doesn't exist in Firestore, register them
+      await operate.create(_user1);
 
-        // Retrieve the signed-in user directly from UserCredential
-        _user = userCredential.user;
-
-        if (_user != null) {
-          print("Google Sign-In successful:");
-          print("Profile Data: ${userCredential.additionalUserInfo?.profile}");
-
-          print("Name: ${_user!.displayName}");
-          print("Email: ${_user!.email}");
-        }
-      } catch (e) {
-        print("Error during Google Sign-In: $e");
-        _user = null; // Ensure notifier reflects failure
-      }
+      print("User registered successfully in Firestore.");
+    } else {
+      print("User already exists in Firestore.");
     }
+  } catch (e) {
+    print("Error registering user in Firestore: $e");
+  }
+}
+
+    Future<dynamic> signInWithGoogle() async {
+  try {
+    // **Ensure previous user session is cleared before new login**
+    await FirebaseAuth.instance.signOut();
+
+    GoogleAuthProvider _authprovider = GoogleAuthProvider();
+    _authprovider
+        .addScope('email')
+        .setCustomParameters({'prompt': 'select_account'}); // Forces account selection
+
+    final UserCredential userCredential =
+        await FirebaseAuth.instance.signInWithProvider(_authprovider);
+
+    _user = userCredential.user;
+
+    if (_user != null) {
+      print("Google Sign-In successful:");
+      print("Profile Data: ${userCredential.toString()}");
+      print("Name: ${_user!.displayName}");
+      print("Email: ${_user!.email}");
+
+      // **Ensure provider updates immediately**
+      Provider.of<userProvider>(context, listen: false).setValue(_user!.email!);
+      
+      await registerUserAfterGoogleSignIn(_user!.email!);
+      // **Navigate after provider update**
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => HomePage(),
+        ),
+      );
+    }
+  } catch (e) {
+    print("Error during Google Sign-In: $e");
+    _user = null; 
+  }
+}
+
+
+
 
     Future<bool> signOutFromGoogle() async {
       try {
@@ -618,15 +653,6 @@ class _LoginState extends State<Login> {
                                           IconButton(
                                             onPressed: () async {
                                               await signInWithGoogle();
-                                              // if (_user != null) {
-                                              //   Navigator.pushReplacement(
-                                              //     context,
-                                              //     MaterialPageRoute(
-                                              //       builder: (context) =>
-                                              //           HomePage(),
-                                              //     ),
-                                              //   );
-                                              // }
                                             },
                                             icon: FaIcon(
                                               FontAwesomeIcons.google,

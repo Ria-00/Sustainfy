@@ -1,3 +1,4 @@
+import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
 import 'package:provider/provider.dart';
@@ -45,21 +46,20 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
       body: _pages[_selectedIndex],
 
-      bottomNavigationBar: GNav(
-        backgroundColor: Colors.white,
-        color: const Color.fromRGBO(50, 50, 55, 1),
-        activeColor: const Color.fromRGBO(50, 50, 55, 1),
-        tabBackgroundColor: const Color.fromRGBO(52, 168, 83, 1),
-        gap: 8,
-        padding: EdgeInsets.all(16),
-        tabs: [
-          GButton(icon: Icons.home, text: "Home"),
-          GButton(icon: Icons.people, text: "Community"),
-          GButton(icon: Icons.card_giftcard_rounded, text: "Rewards"),
-          GButton(icon: Icons.account_circle_outlined, text: "Profile"),
+      bottomNavigationBar: CurvedNavigationBar(
+        backgroundColor: const Color.fromARGB(0, 210, 21, 21),
+        color:  const Color.fromRGBO(52, 168, 83, 1),
+        buttonBackgroundColor: const Color.fromRGBO(52, 168, 83, 1),
+        height: 60,
+        items: [
+          Icon(Icons.home,size: 30,color:  Colors.white,),
+          Icon(Icons.people,size: 30,color:  Colors.white,),
+          Icon(Icons.card_giftcard_rounded,size: 30,color:  Colors.white,),
+          Icon(Icons.account_circle_outlined,size: 30,color:  Colors.white,),
         ],
-        selectedIndex: _selectedIndex,
-        onTabChange: _onTabSelected,
+        onTap: (index) {
+          _onTabSelected(index);
+        },
       ),
     );
   }

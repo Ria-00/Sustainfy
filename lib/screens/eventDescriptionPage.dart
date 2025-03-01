@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:sustainfy/model/eventModel.dart';
+import 'package:sustainfy/model/userModel.dart';
+import 'package:sustainfy/providers/userProvider.dart';
 import 'package:sustainfy/screens/participantQRPage.dart';
 import 'package:sustainfy/screens/profilePage.dart';
+import 'package:sustainfy/services/userOperations.dart';
 import 'package:sustainfy/utils/colors.dart';
 import 'package:sustainfy/utils/font.dart';
 import 'package:intl/intl.dart';
@@ -16,6 +20,26 @@ class EventDescriptionPage extends StatefulWidget {
 }
 
 class _EventDescriptionScreenState extends State<EventDescriptionPage> {
+
+  UserClassOperations operations =UserClassOperations();
+  
+  late String mail= Provider.of<userProvider>(context, listen: false).email ?? '';
+  late bool participation=false;
+
+  @override
+  void initState(){
+    super.initState();
+    _checkParticipation();
+  }
+
+  void _checkParticipation() async {
+    bool ans = await operations.isUserParticipating(mail,widget.event.eventId);
+    setState(() {
+      participation = ans;
+    });
+  }
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -316,24 +340,39 @@ class _EventDescriptionScreenState extends State<EventDescriptionPage> {
                           children: [
                             // Join Now Button
                             ElevatedButton(
-                              onPressed: () {
-                                // TODO: Add Join Now functionality
+                              onPressed: () async {
+                                if (!participation) {
+                                  int i=await operations.addEventToUser(mail, widget.event.eventId);
+                                  if (i==1) {
+                                    setState(() {
+                                      participation = true;
+                                    });
+                                  }
+                                } else {
+                                  int i=await operations.removeEventFromUser(mail, widget.event.eventId); // Function to leave event
+                                  if (i==1) {
+                                    setState(() {
+                                      participation = false;
+                                    });
+                                  }
+                                }
                               },
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: Color.fromRGBO(52, 168, 83, 1),
-                                shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(30)),
-                                padding: EdgeInsets.symmetric(
-                                    horizontal: 30, vertical: 15),
+                                backgroundColor: participation ? Colors.white : Color.fromRGBO(52, 168, 83, 1),
+                                side: participation ? BorderSide(color: Colors.red, width: 2) : BorderSide.none, // Red border when leaving
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+                                padding: EdgeInsets.symmetric(horizontal: 40, vertical: 15),
                               ),
                               child: Text(
-                                "Join Now",
+                                participation ? "Leave" : "Join Now",
                                 style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.white),
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  color: participation ? Colors.red : Colors.white, // Red text when leaving
+                                ),
                               ),
                             ),
+
 
                             SizedBox(width: 15), // Space between buttons
 
@@ -343,7 +382,7 @@ class _EventDescriptionScreenState extends State<EventDescriptionPage> {
                                               .toLowerCase() ==
                                           "live" ||
                                       widget.event.eventStatus.toLowerCase() ==
-                                          "upcoming")
+                                          "upcoming") && participation
                                   ? () {
                                       Navigator.push(
                                         context,
