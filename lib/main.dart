@@ -41,7 +41,7 @@ class MyApp1 extends StatelessWidget {
         ),
         home: Consumer<userProvider>(
           builder: (context, userProvider, child) {
-            return userProvider.email != null ? HomePage() : HomePage();
+            return userProvider.email != null ? HomePage() : SplashScreen();
           },
         ),
         routes: {

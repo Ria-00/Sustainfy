@@ -67,6 +67,7 @@ class UserClassOperations {
 
   Future<int> create(UserClass user) async {
     FirebaseFirestore firestore = FirebaseFirestore.instance;
+
     try {
       // Check if a user with the same email already exists
       QuerySnapshot snapshot = await firestore
@@ -285,6 +286,7 @@ Future<int> addEventToUser(String userEmail, String eventId) async {
     print("Error adding event: $e");
     return 0;
   }
+}
 
 Future<int> removeEventFromUser(String userEmail, String eventId) async {
   try {
@@ -314,116 +316,6 @@ Future<int> removeEventFromUser(String userEmail, String eventId) async {
     return 0;
   }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  Future<String?> getCompanyImage(DocumentReference compRef) async {
-    try {
-      DocumentSnapshot companyDoc = await compRef.get();
-      // print("Document Data: ${companyDoc.data()}");
-
-      if (companyDoc.exists && companyDoc.data() != null) {
-        var data = companyDoc.data() as Map<String, dynamic>;
-        return data['compImg'];
-      } else {
-        print("Company document not found or no data!");
-        return null;
-      }
-    } catch (e) {
-      print("Error fetching company image: $e");
-      return null;
-    }
-  }
-
-  Future<bool> hasUserClaimedCoupon(
-      String mail, DocumentReference couponRef) async {
-    try {
-      // Reference to the user document
-      QuerySnapshot userDoc = await FirebaseFirestore.instance
-          .collection('users')
-          .where("userMail", isEqualTo: mail)
-          .limit(1).get();
-
-      if (userDoc.docs.isNotEmpty) {
-        List<dynamic> claimedCoupons = userDoc.docs.first['claimedCoupons'] ?? [];
-
-        // Check if the couponRef exists in claimedCoupons array
-        return claimedCoupons.contains(couponRef);
-      }
-    } catch (e) {
-      print("Error checking claimed coupon: $e");
-    }
-    return false; // Default to false if an error occurs or user doesn't exist
-  }
-
-  Future<DocumentReference?> getDocumentRef({
-    required String collection,
-    required String field,
-    required dynamic value,
-  }) async {
-    try {
-      QuerySnapshot querySnapshot = await FirebaseFirestore.instance
-          .collection(collection)
-          .where(field, isEqualTo: value)
-          .limit(1)
-          .get();
-
-      if (querySnapshot.docs.isNotEmpty) {
-        return querySnapshot.docs.first
-            .reference; // Return the first matched document's reference
-      }
-    } on Exception catch (e) {
-      print("Error:${e}");
-      return null;
-    }
-// Return null if no document matches
-  }
-
-  Future<List<CouponModel>> getAllCoupons() async {
-    try {
-      QuerySnapshot snapshot = await firestore.collection("coupons").get();
-
-      return snapshot.docs.map((doc) {
-        return CouponModel.fromFirestore(doc);
-      }).toList();
-    } catch (e) {
-      print("Error fetching coupons: $e");
-      return [];
-    }
-  }
-
-  Future<int> getUserPoints(String userEmail) async {
-  try {
-    QuerySnapshot userQuery = await FirebaseFirestore.instance
-        .collection("users")
-        .where("userMail", isEqualTo: userEmail) // Querying by email
-        .limit(1) // Limiting to 1 document for efficiency
-        .get();
-
-    if (userQuery.docs.isNotEmpty) {
-      print(userQuery.docs.first["userPoints"]);
-      return (userQuery.docs.first["userPoints"] ?? 0) as int; // Default to 0 if null
-    } else {
-      print("User not found!");
-      return 0;
-    }
-  } catch (e) {
-    print("Error fetching user points: $e");
-    return 0;
-  }
-}
-
 
 
 
