@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:provider/provider.dart';
 import 'package:sustainfy/model/userModel.dart';
 import 'package:sustainfy/providers/userProvider.dart';
@@ -23,7 +24,7 @@ class _ProfilePageState extends State<ProfilePage> {
   UserClassOperations operations=UserClassOperations();
   String currentCategory = "Used"; // Default category
   final Map<String, int> cardCounts = {
-    "Used": 0,
+    "Used": 3,
     "Wishlist": 3,
   };
 
@@ -96,17 +97,21 @@ class _ProfilePageState extends State<ProfilePage> {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   CircleAvatar(
-                    radius: 50,
-                    backgroundImage:
-                        AssetImage('assets/images/profileImages/pfp2.png'),
+                    radius: 40,
+                  backgroundImage: _user?.userImg != null 
+                      ? NetworkImage(_user!.userImg!) 
+                      : null,
+                  child: _user?.userImg == null 
+                      ? Icon(Icons.image_not_supported) 
+                      : null,
                   ),
-                  SizedBox(width: 15),
+                  SizedBox(width: 30),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                           _user?.userName ?? "Unknown",
+                           _user?.userName ?? Provider.of<userProvider>(context).email!.split("@")[0],
                           style: TextStyle(
                             color: const Color.fromRGBO(50, 50, 55, 1),
                             fontSize: 20,
@@ -120,7 +125,8 @@ class _ProfilePageState extends State<ProfilePage> {
                         ),
                         SizedBox(height: 4),
                         Text(
-                          '+91 ' + (_user?.userPhone?.toString() ?? "Unknown"),
+                          '${_user?.userPhone != null ? "+91 ${_user?.userPhone}" : "N/A"}',
+
                           style:
                               TextStyle(fontSize: 16, color: Colors.grey[600]),
                         ),
@@ -448,19 +454,31 @@ class _ProfilePageState extends State<ProfilePage> {
                               borderRadius: BorderRadius.circular(20),
                             ),
                           ),
-                          onPressed: () async{
-                            Navigator.of(context).pop(); // Close modal
-                            // Add logout logic here
-                            await FirebaseAuth.instance.signOut();
-                            Navigator.of(context).pushAndRemoveUntil(
-                              MaterialPageRoute(
-                                  builder: (context) => Login()),
-                              (Route<dynamic> route) =>
-                                  false, // This ensures no routes remain in the stack
-                            );
-                            
-                            
-                          },
+                          onPressed: () async {
+                              try {
+                                Navigator.of(context).pop(); // Close modal
+
+                                // Ensure provider is cleared before navigating
+                                Provider.of<userProvider>(context, listen: false).removeValue();
+
+                                // Sign out from Firebase
+                                await FirebaseAuth.instance.signOut();
+
+                                // Sign out from Google as well (if using Google SSO)
+                                GoogleSignIn googleSignIn = GoogleSignIn();
+                                if (await googleSignIn.isSignedIn()) {
+                                  await googleSignIn.signOut();
+                                }
+
+                                // Navigate to login, removing all previous routes
+                                Navigator.of(context).pushAndRemoveUntil(
+                                  MaterialPageRoute(builder: (context) => Login()),
+                                  (Route<dynamic> route) => false, // Clears all previous screens
+                                );
+                              } catch (e) {
+                                print("Error during logout: $e");
+                              }
+                            },
                           child: Text(
                             "Yes",
                             style: TextStyle(color: Colors.green),

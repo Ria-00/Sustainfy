@@ -227,6 +227,95 @@ class UserClassOperations {
   }
 }
 
+Future<bool> isUserParticipating(String userEmail, String eventId) async {
+  try {
+    // Query Firestore for the user document based on email
+    QuerySnapshot userQuery = await FirebaseFirestore.instance
+        .collection('users')
+        .where('userMail', isEqualTo: userEmail)
+        .limit(1) // Assuming email is unique
+        .get();
+
+    if (userQuery.docs.isNotEmpty) {
+      var userDoc = userQuery.docs.first;
+      List<dynamic> events = userDoc['eventParticipated'] ?? [];
+      print("events${events}");
+      print("8667878679798789");
+      print(events.any((event) => (event['eventRef'] as DocumentReference).id == eventId));
+
+      // Check if any eventRef matches eventId
+      return events.any((event) => (event['eventRef'] as DocumentReference).id == eventId);
+    }
+  } catch (e) {
+    print("Error checking participation: $e");
+  }
+  return false;
+}
+
+Future<int> addEventToUser(String userEmail, String eventId) async {
+  try {
+    // Query Firestore for the user document based on email
+    QuerySnapshot userQuery = await FirebaseFirestore.instance
+        .collection('users')
+        .where('userMail', isEqualTo: userEmail)
+        .limit(1) // Assuming email is unique
+        .get();
+
+    if (userQuery.docs.isNotEmpty) {
+      DocumentReference userDocRef = userQuery.docs.first.reference;
+
+
+      // Define the new event entry
+      Map<String, dynamic> newEvent = {
+        'eventRef': FirebaseFirestore.instance.collection('events').doc(eventId),
+        'status': "participated",
+      };
+
+      // Add event to the user's eventParticipated array
+      await userDocRef.update({
+        'eventParticipated': FieldValue.arrayUnion([newEvent])
+      });
+
+      print("Event added successfully!");
+      return 1;
+    } else {
+      print("User not found.");
+      return 0;
+    }
+  } catch (e) {
+    print("Error adding event: $e");
+    return 0;
+  }
+}
+
+Future<int> removeEventFromUser(String userEmail, String eventId) async {
+  try {
+    QuerySnapshot userQuery = await FirebaseFirestore.instance
+        .collection('users')
+        .where('userMail', isEqualTo: userEmail)
+        .limit(1)
+        .get();
+
+    if (userQuery.docs.isNotEmpty) {
+      DocumentReference userDocRef = userQuery.docs.first.reference;
+
+      await userDocRef.update({
+        'eventParticipated': FieldValue.arrayRemove([
+          {'eventRef': FirebaseFirestore.instance.collection('events').doc(eventId), 'status': 'participated'} // Must exactly match Firestore
+        ])
+      });
+
+      print("Event removed successfully!");
+      return 1;
+    } else {
+      print("User not found.");
+      return 0;
+    }
+  } catch (e) {
+    print("Error removing event: $e");
+    return 0;
+  }
+}
 
 
 

@@ -163,7 +163,7 @@ class _CouponModelPageState extends State<CouponPage> {
               text: TextSpan(
                 children: [
                   TextSpan(
-                    text: '$_currentPoints',
+                    text: '${_currentPoints ?? 0}',
                     style: TextStyle(
                       color: AppColors.greenappBar,
                       fontFamily: AppFonts.inter,

@@ -14,7 +14,7 @@ class UserClass {
 
   UserClass({
     required this.userMail,
-    required this.userPassword,
+    this.userPassword,
     this.userName,
     this.userPhone,
     this.userImg,

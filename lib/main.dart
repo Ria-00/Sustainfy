@@ -4,11 +4,13 @@ import 'package:google_nav_bar/google_nav_bar.dart';
 import 'package:provider/provider.dart';
 import 'package:sustainfy/providers/userProvider.dart';
 import 'package:sustainfy/screens/communityPage.dart';
+import 'package:sustainfy/screens/fillerScreen.dart';
 import 'package:sustainfy/screens/homePage.dart';
 import 'package:sustainfy/screens/landingPage.dart';
 import 'package:sustainfy/screens/login.dart';
 import 'package:sustainfy/screens/profilePage.dart';
 import 'package:sustainfy/screens/rewardPage.dart';
+import 'package:sustainfy/screens/splashScreen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -39,12 +41,13 @@ class MyApp1 extends StatelessWidget {
         ),
         home: Consumer<userProvider>(
           builder: (context, userProvider, child) {
-            return userProvider.email != null ? HomePage() : Login();
+            return userProvider.email != null ? HomePage() : HomePage();
           },
         ),
         routes: {
           '/profile': (context) => ProfilePage(),
           '/login': (context) => Login(),
+          '/splash': (context) =>SplashScreen(),
         },
       ),
     );
