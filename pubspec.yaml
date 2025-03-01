@@ -44,6 +44,8 @@ dependencies:
   firebase_core: ^3.10.1
   google_sign_in: ^6.2.2
   intl: ^0.20.2
+  mobile_scanner: ^6.0.6
+  pretty_qr_code: ^3.3.0
 
 dev_dependencies:
   flutter_test:

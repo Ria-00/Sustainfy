@@ -1,20 +1,17 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:sustainfy/model/eventModel.dart';
-import 'package:sustainfy/screens/NGOScreens/CreateEventPage.dart';
 import 'package:sustainfy/screens/NGOScreens/NgoEventDescriptionPage.dart';
-import 'package:sustainfy/screens/eventDescriptionPage.dart';
 import 'package:sustainfy/utils/colors.dart';
 import 'package:sustainfy/utils/font.dart';
 import 'package:sustainfy/widgets/customCurvedEdges.dart';
-import 'package:intl/intl.dart';
 
-class NgoLandingPage extends StatefulWidget {
+class NgoCommunityPage extends StatefulWidget {
   @override
-  State<NgoLandingPage> createState() => _NgoLandingPageState();
+  State<NgoCommunityPage> createState() => _NgoCommunityPageState();
 }
 
-class _NgoLandingPageState extends State<NgoLandingPage> {
+class _NgoCommunityPageState extends State<NgoCommunityPage> {
   List<EventModel> dummyEvents = [
     EventModel(
       eventId: "1",
@@ -91,11 +88,6 @@ class _NgoLandingPageState extends State<NgoLandingPage> {
                     SizedBox(
                       height: 10,
                     ),
-                    // Drafts Section (Modified to Include Edit Icon)
-                    buildDraftsSection(),
-                    SizedBox(
-                      height: 10,
-                    ),
                   ],
                 ),
               ),
@@ -126,7 +118,7 @@ class _NgoLandingPageState extends State<NgoLandingPage> {
                     Expanded(
                       child: TextField(
                         decoration: InputDecoration(
-                          hintText: 'Search for your event...',
+                          hintText: 'Search for an event...',
                           hintStyle: TextStyle(
                             color: AppColors.white,
                             fontFamily: AppFonts.inter,
@@ -147,29 +139,6 @@ class _NgoLandingPageState extends State<NgoLandingPage> {
                   ],
                 ),
               ),
-            ),
-          ),
-          Positioned(
-            bottom: 10, // Adjust this value based on navigation bar height
-            right: MediaQuery.of(context).size.width / 2 -
-                28, // Centering the button
-            child: SizedBox(
-              width: 80, // Set desired width
-              height: 80,
-              child: FloatingActionButton(
-                  onPressed: () {
-                    // Navigator.push(
-                    //   context,
-                    //   MaterialPageRoute(
-                    //       builder: (context) =>
-                    //           CreateEventPage()), // Navigate to Create Event
-                    // );
-                  },
-                  backgroundColor: Colors.green, // Adjust color
-                  child: Icon(Icons.add, size: 40, color: Colors.white),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(40),
-                  )),
             ),
           ),
         ],
@@ -304,77 +273,6 @@ class _NgoLandingPageState extends State<NgoLandingPage> {
                 padding:
                     const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                 child: Text("No events available",
-                    style: TextStyle(color: Colors.grey, fontSize: 16)),
-              ),
-      ],
-    );
-  }
-
-  // Function for Draft Events (Modified to Include Edit Icon)
-  Widget buildDraftsSection() {
-    List<EventModel> draftEvents =
-        dummyEvents.where((event) => event.eventStatus == "Draft").toList();
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20),
-          child: Text(
-            "Drafts",
-            style: TextStyle(
-                color: Color.fromRGBO(50, 50, 55, 1),
-                fontSize: 20,
-                fontWeight: FontWeight.bold),
-          ),
-        ),
-        SizedBox(height: 5),
-        draftEvents.isNotEmpty
-            ? ListView.builder(
-                shrinkWrap: true,
-                physics: NeverScrollableScrollPhysics(),
-                itemCount: draftEvents.length,
-                itemBuilder: (context, index) {
-                  final event = draftEvents[index];
-
-                  return Stack(
-                    children: [
-                      GestureDetector(
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) =>
-                                  NgoEventDescriptionPage(event: event),
-                            ),
-                          );
-                        },
-                        child: eventCard(event), // Using eventCard
-                      ),
-                      Positioned(
-                        top: 10,
-                        right: 10,
-                        child: IconButton(
-                          icon: Icon(Icons.edit, color: Colors.blue),
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) =>
-                                    NgoEventDescriptionPage(event: event),
-                              ),
-                            );
-                          },
-                        ),
-                      ),
-                    ],
-                  );
-                },
-              )
-            : Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                child: Text("No drafts available",
                     style: TextStyle(color: Colors.grey, fontSize: 16)),
               ),
       ],

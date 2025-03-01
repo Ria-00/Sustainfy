@@ -1,13 +1,33 @@
 import 'package:flutter/material.dart';
+import 'package:pretty_qr_code/pretty_qr_code.dart';
 import 'package:sustainfy/model/eventModel.dart';
 import 'package:sustainfy/utils/colors.dart';
 import 'package:sustainfy/utils/font.dart';
 import 'package:sustainfy/widgets/customCurvedEdges.dart';
 
-class ParticipantQRPage extends StatelessWidget {
+class ParticipantQRPage extends StatefulWidget {
   final EventModel event;
 
   ParticipantQRPage({required this.event});
+
+  @override
+  State<ParticipantQRPage> createState() => _ParticipantQRPageState();
+}
+
+class _ParticipantQRPageState extends State<ParticipantQRPage> {
+  String? qrData;
+  // var qrData = "Sanidhya Ka Data, ${widget.event.eventId}";
+
+  void setQrData() {
+    setState(() {
+      qrData = "Sanidhya Ka Data ${widget.event.eventId}";
+    });
+  }
+
+  void initState() {
+    super.initState();
+    setQrData();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -63,26 +83,31 @@ class ParticipantQRPage extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Text(
-                    event.eventName,
+                    widget.event.eventName,
                     style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
                     textAlign: TextAlign.center,
                   ),
                   SizedBox(height: 10),
-                  Text(event.eventDetails,
+                  Text(widget.event.eventDetails,
                       style: TextStyle(color: Colors.grey[700])),
                   SizedBox(height: 20),
                   Text(
-                      "Date: ${event.eventStartDate},  Time: ${event.eventStartDate} ",
+                      "Date: ${widget.event.eventStartDate},  Time: ${widget.event.eventStartDate} ",
                       style: TextStyle(color: Colors.grey[700])),
                   SizedBox(height: 20),
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(12),
-                    child: Image.asset(
-                      "assets/images/qrCodeImage.jpg",
-                      width: 200,
-                      height: 200,
-                    ),
-                  ),
+                  if (qrData != null)
+                    Container(
+                        width: 200,
+                        height: 200,
+                        child: PrettyQrView.data(data: qrData!)),
+                  // ClipRRect(
+                  //   borderRadius: BorderRadius.circular(12),
+                  //   child: Image.asset(
+                  //     "assets/images/qrCodeImage.jpg",
+                  //     width: 200,
+                  //     height: 200,
+                  //   ),
+                  // ),
                   SizedBox(height: 20),
                   Text(
                     'Instructions',
