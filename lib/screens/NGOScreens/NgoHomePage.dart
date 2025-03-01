@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
+import 'package:sustainfy/screens/NGOScreens/NgoCommunityPage.dart';
 import 'package:sustainfy/screens/NGOScreens/NgoLandingPage.dart';
+import 'package:sustainfy/screens/NGOScreens/NgoProfilePage.dart';
+import 'package:sustainfy/screens/NGOScreens/NgoQrScannerPage.dart';
 
 class NgoHomePage extends StatefulWidget {
   @override
@@ -11,15 +14,14 @@ class _NgoHomePage extends State<NgoHomePage> {
   int _selectedIndex = 0;
 
   final List<Widget> _pages = [
-    // NgoLandingPage(),
-    Center(child: Text("Ngo Home Page")),
-    Center(child: Text("Ngo Community Page")),
-    Center(child: Text("Ngo QR Scanner Page")),
-    Center(child: Text("Ngo Profile Page")),
-
-    //   NgoCommunityPage(),
-    //   NgoQrScannerPage(),
-    //   NgoProfilePage(),
+    NgoLandingPage(),
+    // Center(child: Text("Ngo Home Page")),
+    NgoCommunityPage(),
+    // Center(child: Text("Ngo Community Page")),
+    NgoQrScannerPage(),
+    // Center(child: Text("Ngo QR Scanner Page")),
+    NgoProfilePage(),
+    // Center(child: Text("Ngo Profile Page")),
   ];
 
   void _onTabSelected(int index) {
