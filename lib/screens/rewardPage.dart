@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:sustainfy/model/couponModel.dart';
 import 'package:sustainfy/model/couponModel.dart';
 import 'package:sustainfy/providers/userProvider.dart';
+import 'package:sustainfy/screens/discountDetailsPage.dart';
 import 'package:sustainfy/services/userOperations.dart';
 import 'package:sustainfy/utils/colors.dart';
 import 'package:sustainfy/utils/font.dart';
@@ -24,21 +25,26 @@ class _CouponModelPageState extends State<CouponPage> {
 
   int? _currentPoints; // Store the current points
 
-  // Redeem coupon logic
-  void _redeemCouponModel(CouponModel coupon) {
-    if (_currentPoints! >= coupon.couponPoint) {
-      setState(() {
-        _currentPoints = (_currentPoints ?? 0) - coupon.couponPoint; // Deduct points on redeem
-      });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('CouponModel redeemed!')),
-      );
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Not enough points to redeem this coupon')),
-      );
-    }
+    // **Updated Redeem Coupon Logic**
+void _redeemCouponModel(CouponModel coupon) {
+  if (_currentPoints! >= coupon.couponPoint) {
+    setState(() {
+      _currentPoints = (_currentPoints ?? 0) - coupon.couponPoint;
+    });
+
+    // ✅ Pass the correct couponId
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => DiscountDetailsPage(couponId: coupon.couponId), 
+      ),
+    );
+  } else {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Not enough points to redeem this coupon')),
+    );
   }
+}
 
   void initState() {
     super.initState();
@@ -300,7 +306,7 @@ class CouponModelCard extends StatelessWidget {
                         width: 15,
                       ),
                       ElevatedButton(
-                        onPressed: () => redeemCouponModel(coupon),
+                         onPressed: () => redeemCouponModel(coupon),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppColors.darkGreen,
                           minimumSize: Size(30, 30),
