@@ -2,6 +2,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
 import 'package:provider/provider.dart';
+import 'package:sustainfy/providers/EventProvider.dart';
 import 'package:sustainfy/providers/userProvider.dart';
 import 'package:sustainfy/screens/communityPage.dart';
 import 'package:sustainfy/screens/fillerScreen.dart';
@@ -29,8 +30,11 @@ class MyApp1 extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (context) => userProvider(),
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (context) => userProvider()),
+        ChangeNotifierProvider(create: (context) => EventProvider()), 
+      ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
         title: 'Sustainfy',
