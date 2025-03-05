@@ -140,7 +140,7 @@ List<TextSpan> _getStyledText(String text) {
         ClipPath(
           clipper: CustomCurvedEdges(),
           child: Container(
-            height: 120,
+            height: 150,
             color: Color.fromRGBO(52, 168, 83, 1),
             child: Row(
               children: [

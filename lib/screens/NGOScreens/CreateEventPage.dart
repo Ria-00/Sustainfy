@@ -110,7 +110,6 @@ class _CreateEventPageState extends State<CreateEventPage> {
             padding: EdgeInsets.only(top: 160, left: 30, right: 30),
             child: SingleChildScrollView(
               child: Form(
-                // Added Form widget
                 key: _formKey,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
