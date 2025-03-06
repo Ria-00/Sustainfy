@@ -67,6 +67,15 @@ class _NextScreenState extends State<NextScreen> {
                     ), 
                   ),
                   SizedBox(height: 16),
+                 Text("NGO Name", style: TextStyle(color: Color.fromRGBO(50, 50, 55, 1), fontSize: 19, fontWeight: FontWeight.bold)), // Hardcoded label
+                  TextField(
+                    controller: TextEditingController(text: eventProvider.ngoName),
+                    readOnly: true,
+                    decoration: InputDecoration(
+                      hintText: eventProvider.ngoName,
+                      hintStyle: TextStyle(color: Colors.grey, fontSize: 16),
+                    ),
+                  ),
                   _buildTextField("Event Name", eventProvider.eventName),
                   _buildTextField("Description", eventProvider.description),
                   SizedBox(height: 16),
@@ -139,25 +148,25 @@ class _NextScreenState extends State<NextScreen> {
     );
   }
 
-  Widget _buildTextField(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(label, style: TextStyle(color: Color.fromRGBO(50, 50, 55, 1), fontSize: 19, fontWeight: FontWeight.bold)),
-          TextField(
-            controller: TextEditingController(text: value), 
-            readOnly: true, 
-            decoration: InputDecoration(
-              hintText: value.isEmpty ? 'No data' : null, 
-              hintStyle: TextStyle(color: Colors.grey, fontSize: 16),
-            ),
+Widget _buildTextField(String label, String value) { 
+  return Padding(
+    padding: const EdgeInsets.symmetric(vertical: 6.0),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label, style: TextStyle(color: Color.fromRGBO(50, 50, 55, 1), fontSize: 19, fontWeight: FontWeight.bold)), // Use label here
+        TextField(
+          controller: TextEditingController(text: value),
+          readOnly: true,
+          decoration: InputDecoration(
+            hintText: value.isEmpty ? 'No data' : null,
+            hintStyle: TextStyle(color: Colors.grey, fontSize: 16),
           ),
-        ],
-      ),
-    );
-  }
+        ),
+      ],
+    ),
+  );
+}
 
   Widget _buildDateTimeField(String label, String value) {
     return TextField(

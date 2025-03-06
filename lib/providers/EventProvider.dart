@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 class EventProvider extends ChangeNotifier {
+  String ngoName = "Smile Foundation"; 
   String eventName = "";
   String description = ""; 
   String startDate = "";

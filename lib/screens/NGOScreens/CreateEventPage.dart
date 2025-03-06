@@ -116,6 +116,27 @@ class _CreateEventPageState extends State<CreateEventPage> {
                   children: [
                     _buildMainImageSection(),
                     SizedBox(height: 16),
+                    Padding(
+              padding: const EdgeInsets.symmetric(vertical: 6.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                          Text("NGO Name",
+                              style: TextStyle(
+                                  color: Color.fromRGBO(50, 50, 55, 1),
+                                  fontSize: 19,
+                                  fontWeight: FontWeight.bold)),
+                          TextField(
+                          controller: TextEditingController(text: Provider.of<EventProvider>(context).ngoName), 
+                          readOnly: true,
+                          decoration: InputDecoration(
+                            hintText: Provider.of<EventProvider>(context).ngoName, 
+                            hintStyle: TextStyle(color: Colors.grey, fontSize: 16),
+                          ),
+                        ),
+                        ],
+                      ),
+                    ),
                     _buildTextField(
                         "Event Name", "Eg, Care Free Day", "eventName"),
                     _buildTextField(
