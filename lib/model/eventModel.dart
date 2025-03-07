@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class EventModel {
@@ -10,11 +12,28 @@ class EventModel {
   final Timestamp eventStartDate;
   final Timestamp eventEndDate;
   final List<int> UNGoals;
-  final Map<String, dynamic> eventLoc;
+  final GeoPoint eventLoc;
   final List<EventParticipant> eventParticipants;
   final int eventPoints;
+  DocumentReference? ngoRef;
 
   EventModel({
+    required this.eventId,
+    required this.eventName,
+    required this.eventDetails,
+    required this.eventImg,
+    required this.eventStatus,
+    required this.eventAddress,
+    required this.eventStartDate,
+    required this.eventEndDate,
+    required this.UNGoals,
+    required this.eventLoc,
+    required this.eventParticipants,
+    required this.eventPoints,
+    required this.ngoRef,
+  });
+
+  EventModel.draft({
     required this.eventId,
     required this.eventName,
     required this.eventDetails,
@@ -41,18 +60,13 @@ class EventModel {
     eventEndDate: map["eventEnd_date"] ?? Timestamp.now(),
     UNGoals: List<int>.from(map["UNGoals"] ?? []),
     
-    // ✅ Convert GeoPoint to Map
-    eventLoc: map["eventLoc"] is GeoPoint
-        ? {
-            "latitude": (map["eventLoc"] as GeoPoint).latitude,
-            "longitude": (map["eventLoc"] as GeoPoint).longitude
-          }
-        : {},
+    eventLoc: GeoPoint(map['eventLoc']['latitude'], map['eventLoc']['longitude']),
 
     eventParticipants: (map["eventParticipants"] as List<dynamic>?)
         ?.map((e) => EventParticipant.fromMap(Map<String, dynamic>.from(e)))
         .toList() ?? [],
     eventPoints: map["eventPoints"] ?? 0,
+    ngoRef: map["ngoRef"]
   );
 }
 
@@ -70,15 +84,17 @@ class EventModel {
 
     "UNGoals": UNGoals,
 
-    "eventLoc": eventLoc != null && eventLoc!["latitude"] != null && eventLoc!["longitude"] != null
-        ? GeoPoint(eventLoc!["latitude"], eventLoc!["longitude"])
-        : null,
+    "eventLoc":{
+        'latitude': eventLoc.latitude,
+        'longitude': eventLoc.longitude,
+      },
 
     "eventParticipants": eventParticipants != null 
         ? eventParticipants!.map((e) => e is EventParticipant ? e.toMap() : {}).toList()
         : [],
         
     "eventPoints": eventPoints ?? 0,
+    "ngoRef": ngoRef
   };
 }
 }

@@ -237,20 +237,29 @@ Future<bool> isUserParticipating(String userEmail, String eventId) async {
         .get();
 
     if (userQuery.docs.isNotEmpty) {
-      var userDoc = userQuery.docs.first;
-      List<dynamic> events = userDoc['eventParticipated'] ?? [];
-      print("events${events}");
-      print("8667878679798789");
-      print(events.any((event) => (event['eventRef'] as DocumentReference).id == eventId));
+      var userDocRef = userQuery.docs.first.reference; // Get user reference
 
-      // Check if any eventRef matches eventId
-      return events.any((event) => (event['eventRef'] as DocumentReference).id == eventId);
+      // Query Firestore for the event document
+      DocumentSnapshot eventDoc = await FirebaseFirestore.instance
+          .collection('events')
+          .doc(eventId)
+          .get();
+
+      if (eventDoc.exists) {
+        List<dynamic> participants = eventDoc['eventParticipants'] ?? [];
+
+        // Check if userRef exists in eventParticipants array
+        return participants.any((participant) => 
+          (participant['userRef'] as DocumentReference).id == userDocRef.id
+        );
+      }
     }
   } catch (e) {
     print("Error checking participation: $e");
   }
   return false;
 }
+
 
 Future<int> addEventToUser(String userEmail, String eventId) async {
   try {
@@ -263,27 +272,27 @@ Future<int> addEventToUser(String userEmail, String eventId) async {
 
     if (userQuery.docs.isNotEmpty) {
       DocumentReference userDocRef = userQuery.docs.first.reference;
+      DocumentReference eventDocRef = FirebaseFirestore.instance.collection('events').doc(eventId);
 
-
-      // Define the new event entry
-      Map<String, dynamic> newEvent = {
-        'eventRef': FirebaseFirestore.instance.collection('events').doc(eventId),
+      // Define the new participant entry
+      Map<String, dynamic> newParticipant = {
+        'userRef': userDocRef,
         'status': "participated",
       };
 
-      // Add event to the user's eventParticipated array
-      await userDocRef.update({
-        'eventParticipated': FieldValue.arrayUnion([newEvent])
+      // Add participant to the event's eventParticipants array
+      await eventDocRef.update({
+        'eventParticipants': FieldValue.arrayUnion([newParticipant])
       });
 
-      print("Event added successfully!");
+      print("Participant added successfully!");
       return 1;
     } else {
       print("User not found.");
       return 0;
     }
   } catch (e) {
-    print("Error adding event: $e");
+    print("Error adding participant: $e");
     return 0;
   }
 }
@@ -298,24 +307,41 @@ Future<int> removeEventFromUser(String userEmail, String eventId) async {
 
     if (userQuery.docs.isNotEmpty) {
       DocumentReference userDocRef = userQuery.docs.first.reference;
+      DocumentReference eventDocRef = FirebaseFirestore.instance.collection('events').doc(eventId);
 
-      await userDocRef.update({
-        'eventParticipated': FieldValue.arrayRemove([
-          {'eventRef': FirebaseFirestore.instance.collection('events').doc(eventId), 'status': 'participated'} // Must exactly match Firestore
-        ])
-      });
+      // Retrieve event document
+      DocumentSnapshot eventDoc = await eventDocRef.get();
 
-      print("Event removed successfully!");
-      return 1;
-    } else {
-      print("User not found.");
-      return 0;
+      if (eventDoc.exists) {
+        List<dynamic> participants = eventDoc['eventParticipants'] ?? [];
+
+        // Find and remove the exact participant entry
+        Map<String, dynamic>? participantToRemove;
+        for (var participant in participants) {
+          if ((participant['userRef'] as DocumentReference).id == userDocRef.id) {
+            participantToRemove = participant;
+            break;
+          }
+        }
+
+        if (participantToRemove != null) {
+          await eventDocRef.update({
+            'eventParticipants': FieldValue.arrayRemove([participantToRemove])
+          });
+
+          print("Participant removed successfully!");
+          return 1;
+        }
+      }
     }
+    print("User not found or not a participant.");
+    return 0;
   } catch (e) {
-    print("Error removing event: $e");
+    print("Error removing participant: $e");
     return 0;
   }
 }
+
 
 
 

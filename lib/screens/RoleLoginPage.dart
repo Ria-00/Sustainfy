@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:sustainfy/screens/NGOScreens/NgoLoginPage.dart';
+import 'package:sustainfy/screens/login.dart';
 import 'package:sustainfy/utils/font.dart';
 
 class RoleLoginPage extends StatefulWidget {
@@ -15,12 +16,14 @@ class _NgoLoginPageState extends State<RoleLoginPage> {
       body: Column(
         children: [
           SizedBox(height: 300),
-          Text(
-            " Select your \nAccount Type",
-            style: TextStyle(
-                fontSize: 40,
-                fontWeight: AppFonts.jostSemiBoldWeight,
-                fontFamily: AppFonts.jost),
+          Center(
+            child: Text(
+              "     Select\nAccount Type",
+              style: TextStyle(
+                  fontSize: 35,
+                  fontWeight: AppFonts.jostSemiBoldWeight,
+                  fontFamily: AppFonts.jost),
+            ),
           ),
           SizedBox(
             height: 25,
@@ -38,7 +41,12 @@ class _NgoLoginPageState extends State<RoleLoginPage> {
                     ),
                     child: IconButton(
                       onPressed: () {
-                        // Add your onPressed code for the person icon here!
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => Login(),
+                          ),
+                        );
                       },
                       icon: const Icon(Icons.person_2_outlined),
 
