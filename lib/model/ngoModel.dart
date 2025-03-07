@@ -22,13 +22,17 @@ class Ngo {
   // Factory constructor to create an instance from JSON
   factory Ngo.fromJson(Map<String, dynamic> json) {
     return Ngo(
-      ngoId: json['ngoId'],
-      ngoName: json['ngoName'],
-      ngoMail: json['ngoMail'],
-      ngoPhone: json['ngoPhone'],
-      ngoAdd: json['ngoAdd'],
-      ngoPassword: json['ngoPassword'],
-      ngoLoc: GeoPoint(json['ngoLoc']['latitude'], json['ngoLoc']['longitude']),
+      ngoId: json['ngoId'] ?? "",
+      ngoName: json['ngoName'] ?? "",
+      ngoMail: json['ngoMail'] ?? "",
+      ngoPhone: json['ngoPhone'] ?? "",
+      ngoAdd: json['ngoAdd'] ?? "",
+      ngoPassword: json['ngoPassword'] ?? "",
+
+      // ✅ Fix: Use `GeoPoint` directly if it's already a `GeoPoint`
+      ngoLoc: json['ngoLoc'] is GeoPoint
+          ? json['ngoLoc']
+          : GeoPoint(json['ngoLoc']['latitude'], json['ngoLoc']['longitude']),
     );
   }
 
@@ -41,10 +45,9 @@ class Ngo {
       'ngoPhone': ngoPhone,
       'ngoAdd': ngoAdd,
       'ngoPassword': ngoPassword,
-      'ngoLoc': {
-        'latitude': ngoLoc.latitude,
-        'longitude': ngoLoc.longitude,
-      },
+
+      // ✅ No need to convert GeoPoint manually, Firestore supports it
+      'ngoLoc': ngoLoc,
     };
   }
 }
