@@ -16,7 +16,7 @@ class NgoLandingPage extends StatefulWidget {
 
 class _NgoLandingPageState extends State<NgoLandingPage> {
   List<EventModel> dummyEvents = [
-    EventModel(
+    EventModel.draft(
       eventId: "1",
       eventName: "Beach Cleanup",
       eventDetails: "Join us to clean the beach!",
@@ -26,14 +26,11 @@ class _NgoLandingPageState extends State<NgoLandingPage> {
       eventStartDate: Timestamp.fromDate(DateTime(2025, 2, 26)), // Example Date
       eventEndDate: Timestamp.fromDate(DateTime(2025, 2, 28)), // Same-day event
       UNGoals: [14, 11], // Life Below Water & Sustainable Communities
-      eventLoc: {
-        "latitude": 25.7617,
-        "longitude": -80.1918,
-      },
+      eventLoc: GeoPoint(25.7617, -80.1918),
       eventParticipants: [],
       eventPoints: 50,
     ),
-    EventModel(
+    EventModel.draft(
       eventId: "2",
       eventName: "Tree Plantation Drive",
       eventDetails: "Let's plant trees together!",
@@ -43,14 +40,11 @@ class _NgoLandingPageState extends State<NgoLandingPage> {
       eventStartDate: Timestamp.fromDate(DateTime(2025, 2, 25)),
       eventEndDate: Timestamp.fromDate(DateTime(2025, 3, 5)),
       UNGoals: [13, 15], // Climate Action & Life on Land
-      eventLoc: {
-        "latitude": 40.7851,
-        "longitude": -73.9683,
-      },
+      eventLoc: GeoPoint(40.7851, -73.9683),
       eventParticipants: [],
       eventPoints: 40,
     ),
-    EventModel(
+    EventModel.draft(
       eventId: "3",
       eventName: "Donation Drive",
       eventDetails: "Help those in need with your donations!",
@@ -60,10 +54,7 @@ class _NgoLandingPageState extends State<NgoLandingPage> {
       eventStartDate: Timestamp.fromDate(DateTime(2025, 3, 25)),
       eventEndDate: Timestamp.fromDate(DateTime(2025, 3, 5)),
       UNGoals: [1, 2, 13], // No Poverty, Zero Hunger, Climate Action
-      eventLoc: {
-        "latitude": 40.7851,
-        "longitude": -73.9683,
-      },
+      eventLoc: GeoPoint(40.7851, -73.9683),
       eventParticipants: [],
       eventPoints: 30,
     ),

@@ -8,7 +8,6 @@ class UserClass {
   String? userImg;
   int? userPoints;
   int? totalPoints;
-  List<Map<dynamic,dynamic>>? eventParticipated; // Map of eventId -> status
   List<dynamic>? claimedCpn; // List of claimed coupon IDs
   List<dynamic>? userWishlist; // List of wished items
 
@@ -20,7 +19,6 @@ class UserClass {
     this.userImg,
     this.userPoints = 0,
     this.totalPoints = 0,
-    this.eventParticipated = const [],
     this.claimedCpn = const [],
     this.userWishlist = const [],
   });
@@ -47,7 +45,6 @@ class UserClass {
       "userImg": userImg,
       "userPoints": userPoints,
       "totalPoints": totalPoints,
-      "eventParticipated": eventParticipated, // Firestore stores maps natively
       "claimedCpn": claimedCpn,
       "userWishlist": userWishlist
     };
@@ -63,7 +60,6 @@ class UserClass {
       userImg: map["userImg"],
       userPoints: map["userPoints"] ?? 0,
       totalPoints: map["totalPoints"] ?? 0,
-      eventParticipated: List<Map<dynamic,dynamic>>.from(map["eventParticipated"] ?? {}),
       claimedCpn: List<dynamic>.from(map["claimedCpn"] ?? []),
       userWishlist: List<dynamic>.from(map["userWishlist"] ?? []),
     );

@@ -1,4 +1,9 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:provider/provider.dart';
+import 'package:sustainfy/providers/userProvider.dart';
+import 'package:sustainfy/screens/NGOScreens/NgoLoginPage.dart';
 import 'package:sustainfy/screens/NGOScreens/NgoSettingsPage.dart';
 import 'package:sustainfy/utils/font.dart';
 import 'package:sustainfy/widgets/customCurvedEdges.dart';
@@ -372,19 +377,31 @@ class _NgoProfilePageState extends State<NgoProfilePage> {
                               borderRadius: BorderRadius.circular(20),
                             ),
                           ),
-                          onPressed: () {},
-                          // async{
-                          //   Navigator.of(context).pop(); // Close modal
-                          //   // Add logout logic here
-                          //   await FirebaseAuth.instance.signOut();
-                          //   Navigator.of(context).pushAndRemoveUntil(
-                          //     MaterialPageRoute(
-                          //         builder: (context) => Login()),
-                          //     (Route<dynamic> route) =>
-                          //         false, // This ensures no routes remain in the stack
-                          //   );
+                          onPressed: () async {
+                              try {
+                                Navigator.of(context).pop(); // Close modal
 
-                          // },
+                                // Ensure provider is cleared before navigating
+                                Provider.of<userProvider>(context, listen: false).removeValue();
+
+                                // Sign out from Firebase
+                                await FirebaseAuth.instance.signOut();
+
+                                // Sign out from Google as well (if using Google SSO)
+                                GoogleSignIn googleSignIn = GoogleSignIn();
+                                if (await googleSignIn.isSignedIn()) {
+                                  await googleSignIn.signOut();
+                                }
+
+                                // Navigate to login, removing all previous routes
+                                Navigator.of(context).pushAndRemoveUntil(
+                                  MaterialPageRoute(builder: (context) => NgoLoginPage()),
+                                  (Route<dynamic> route) => false, // Clears all previous screens
+                                );
+                              } catch (e) {
+                                print("Error during logout: $e");
+                              }
+                            },
                           child: Text(
                             "Yes",
                             style: TextStyle(color: Colors.green),
