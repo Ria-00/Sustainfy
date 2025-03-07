@@ -2,9 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:animated_splash_screen/animated_splash_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:sustainfy/providers/userProvider.dart';
-import 'package:sustainfy/screens/fillerScreen.dart';
+import 'package:sustainfy/screens/RoleLoginPage.dart';
 import 'package:sustainfy/screens/homePage.dart';
-import 'package:sustainfy/screens/login.dart';
 
 class SplashScreen extends StatefulWidget {
   @override
@@ -40,7 +39,7 @@ class _SplashScreenState extends State<SplashScreen> {
         ),
       ),
       backgroundColor: Color.fromRGBO(52, 168, 83, 1),
-      nextScreen: Provider.of<userProvider>(context).email != null ? HomePage() : Login(),
+      nextScreen: Provider.of<userProvider>(context).email != null ? HomePage() : RoleLoginPage(),
       splashTransition: SplashTransition.fadeTransition,
       duration: 2500, // Adjusted duration for better UX
     );

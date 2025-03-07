@@ -169,6 +169,15 @@ class _LoginState extends State<Login> {
       return null; // No error
     }
 
+    String? _validateLoginPassword(String? value) {
+      // Check if password is empty
+      if (value == null || value.isEmpty) {
+        return "Required";
+      }
+      return null; // No error
+    }
+
+
     String? _confirmPasswordValidator(String? value, String originalPassword) {
       if (value == null || value.isEmpty) {
         return "Confirm password is required";
@@ -524,7 +533,7 @@ class _LoginState extends State<Login> {
                                           focusNode: _passwordFocusNode,
                                           autovalidateMode: AutovalidateMode
                                               .onUserInteraction,
-                                          validator: _validatePassword,
+                                          validator: _validateLoginPassword,
                                           onFieldSubmitted: (_) =>
                                               _submitForm(),
                                           decoration: InputDecoration(
