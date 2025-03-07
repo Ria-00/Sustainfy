@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class EventModel {
@@ -48,55 +46,61 @@ class EventModel {
     required this.eventPoints,
   });
 
-  factory EventModel.fromMap(Map<String, dynamic> map) {
-  return EventModel(
-    eventId: map["eventId"] ?? "",
-    eventName: map["eventName"] ?? "",
-    eventDetails: map["eventDetails"] ?? "",
-    eventImg: map["eventImg"] ?? "",
-    eventStatus: map["eventStatus"] ?? "",
-    eventAddress: map["eventAddress"] ?? "",
-    eventStartDate: map["eventStart_date"] ?? Timestamp.now(),  
-    eventEndDate: map["eventEnd_date"] ?? Timestamp.now(),
-    UNGoals: List<int>.from(map["UNGoals"] ?? []),
-    
-    eventLoc: GeoPoint(map['eventLoc']['latitude'], map['eventLoc']['longitude']),
 
-    eventParticipants: (map["eventParticipants"] as List<dynamic>?)
-        ?.map((e) => EventParticipant.fromMap(Map<String, dynamic>.from(e)))
-        .toList() ?? [],
-    eventPoints: map["eventPoints"] ?? 0,
-    ngoRef: map["ngoRef"]
-  );
-}
+  factory EventModel.fromMap(Map<String, dynamic> map) {
+    return EventModel(
+      eventId: map["eventId"] ?? "",
+      eventName: map["eventName"] ?? "",
+      eventDetails: map["eventDetails"] ?? "",
+      eventImg: map["eventImg"] ?? "",
+      eventStatus: map["eventStatus"] ?? "",
+      eventAddress: map["eventAddress"] ?? "",
+      eventStartDate: map["eventStart_date"] ?? Timestamp.now(),
+      eventEndDate: map["eventEnd_date"] ?? Timestamp.now(),
+      UNGoals: List<int>.from(map["UNGoals"] ?? []),
+
+      // ✅ Fixed GeoPoint issue
+      eventLoc: map["eventLoc"] is GeoPoint
+          ? map["eventLoc"]
+          : GeoPoint(0.0, 0.0), // Default GeoPoint in case of null
+
+      // ✅ Fixed eventParticipants mapping
+      eventParticipants: (map["eventParticipants"] as List<dynamic>?)
+              ?.map((e) => EventParticipant.fromMap(Map<String, dynamic>.from(e)))
+              .toList() ??
+          [],
+
+      eventPoints: map["eventPoints"] ?? 0,
+      ngoRef: map["ngoRef"],
+    );
+  }
 
   Map<String, dynamic> toMap() {
-  return {
-    "eventId": eventId,
-    "eventName": eventName,
-    "eventDetails": eventDetails,
-    "eventImg": eventImg,
-    "eventStatus": eventStatus,
-    "eventAddress": eventAddress,
+    return {
+      "eventId": eventId,
+      "eventName": eventName,
+      "eventDetails": eventDetails,
+      "eventImg": eventImg,
+      "eventStatus": eventStatus,
+      "eventAddress": eventAddress,
 
-    "eventStart_date": eventStartDate != null ? Timestamp.fromMillisecondsSinceEpoch(eventStartDate!.millisecondsSinceEpoch) : null,
-    "eventEnd_date": eventEndDate != null ? Timestamp.fromMillisecondsSinceEpoch(eventEndDate!.millisecondsSinceEpoch) : null,
+      "eventStart_date": eventStartDate,
+      "eventEnd_date": eventEndDate,
 
-    "UNGoals": UNGoals,
+      "UNGoals": UNGoals,
 
-    "eventLoc":{
+      "eventLoc": {
         'latitude': eventLoc.latitude,
         'longitude': eventLoc.longitude,
       },
 
-    "eventParticipants": eventParticipants != null 
-        ? eventParticipants!.map((e) => e is EventParticipant ? e.toMap() : {}).toList()
-        : [],
-        
-    "eventPoints": eventPoints ?? 0,
-    "ngoRef": ngoRef
-  };
-}
+      // ✅ Fixed eventParticipants serialization
+      "eventParticipants": eventParticipants.map((e) => e.toMap()).toList(),
+
+      "eventPoints": eventPoints,
+      "ngoRef": ngoRef,
+    };
+  }
 }
 
 class EventParticipant {
