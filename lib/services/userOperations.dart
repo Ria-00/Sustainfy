@@ -55,12 +55,13 @@ class UserClassOperations {
   //login
   Future<int> login(UserClass user) async {
     try {
+      print("before login");
       await _auth.signInWithEmailAndPassword(
           email: user.userMail!, password: user.userPassword!);
       print("Login successful");
       return 1;
     } catch (e) {
-      print("error");
+      print("error ${e}");
       return 0;
     }
   }
@@ -156,10 +157,12 @@ class UserClassOperations {
       QuerySnapshot userDoc = await FirebaseFirestore.instance
           .collection('users')
           .where("userMail", isEqualTo: mail)
-          .limit(1).get();
+          .limit(1)
+          .get();
 
       if (userDoc.docs.isNotEmpty) {
-        List<dynamic> claimedCoupons = userDoc.docs.first['claimedCoupons'] ?? [];
+        List<dynamic> claimedCoupons =
+            userDoc.docs.first['claimedCoupons'] ?? [];
 
         // Check if the couponRef exists in claimedCoupons array
         return claimedCoupons.contains(couponRef);
@@ -207,128 +210,122 @@ class UserClassOperations {
   }
 
   Future<int> getUserPoints(String userEmail) async {
-  try {
-    QuerySnapshot userQuery = await FirebaseFirestore.instance
-        .collection("users")
-        .where("userMail", isEqualTo: userEmail) // Querying by email
-        .limit(1) // Limiting to 1 document for efficiency
-        .get();
+    try {
+      QuerySnapshot userQuery = await FirebaseFirestore.instance
+          .collection("users")
+          .where("userMail", isEqualTo: userEmail) // Querying by email
+          .limit(1) // Limiting to 1 document for efficiency
+          .get();
 
-    if (userQuery.docs.isNotEmpty) {
-      print(userQuery.docs.first["userPoints"]);
-      return (userQuery.docs.first["userPoints"] ?? 0) as int; // Default to 0 if null
-    } else {
-      print("User not found!");
+      if (userQuery.docs.isNotEmpty) {
+        print(userQuery.docs.first["userPoints"]);
+        return (userQuery.docs.first["userPoints"] ?? 0)
+            as int; // Default to 0 if null
+      } else {
+        print("User not found!");
+        return 0;
+      }
+    } catch (e) {
+      print("Error fetching user points: $e");
       return 0;
     }
-  } catch (e) {
-    print("Error fetching user points: $e");
-    return 0;
   }
-}
 
-Future<bool> isUserParticipating(String userEmail, String eventId) async {
-  try {
-    // Query Firestore for the user document based on email
-    QuerySnapshot userQuery = await FirebaseFirestore.instance
-        .collection('users')
-        .where('userMail', isEqualTo: userEmail)
-        .limit(1) // Assuming email is unique
-        .get();
+  Future<bool> isUserParticipating(String userEmail, String eventId) async {
+    try {
+      // Query Firestore for the user document based on email
+      QuerySnapshot userQuery = await FirebaseFirestore.instance
+          .collection('users')
+          .where('userMail', isEqualTo: userEmail)
+          .limit(1) // Assuming email is unique
+          .get();
 
-    if (userQuery.docs.isNotEmpty) {
-      var userDoc = userQuery.docs.first;
-      List<dynamic> events = userDoc['eventParticipated'] ?? [];
-      print("events${events}");
-      print("8667878679798789");
-      print(events.any((event) => (event['eventRef'] as DocumentReference).id == eventId));
+      if (userQuery.docs.isNotEmpty) {
+        var userDoc = userQuery.docs.first;
+        List<dynamic> events = userDoc['eventParticipated'] ?? [];
+        print("events${events}");
+        print("8667878679798789");
+        print(events.any(
+            (event) => (event['eventRef'] as DocumentReference).id == eventId));
 
-      // Check if any eventRef matches eventId
-      return events.any((event) => (event['eventRef'] as DocumentReference).id == eventId);
+        // Check if any eventRef matches eventId
+        return events.any(
+            (event) => (event['eventRef'] as DocumentReference).id == eventId);
+      }
+    } catch (e) {
+      print("Error checking participation: $e");
     }
-  } catch (e) {
-    print("Error checking participation: $e");
+    return false;
   }
-  return false;
-}
 
-Future<int> addEventToUser(String userEmail, String eventId) async {
-  try {
-    // Query Firestore for the user document based on email
-    QuerySnapshot userQuery = await FirebaseFirestore.instance
-        .collection('users')
-        .where('userMail', isEqualTo: userEmail)
-        .limit(1) // Assuming email is unique
-        .get();
+  Future<int> addEventToUser(String userEmail, String eventId) async {
+    try {
+      // Query Firestore for the user document based on email
+      QuerySnapshot userQuery = await FirebaseFirestore.instance
+          .collection('users')
+          .where('userMail', isEqualTo: userEmail)
+          .limit(1) // Assuming email is unique
+          .get();
 
-    if (userQuery.docs.isNotEmpty) {
-      DocumentReference userDocRef = userQuery.docs.first.reference;
+      if (userQuery.docs.isNotEmpty) {
+        DocumentReference userDocRef = userQuery.docs.first.reference;
 
+        // Define the new event entry
+        Map<String, dynamic> newEvent = {
+          'eventRef':
+              FirebaseFirestore.instance.collection('events').doc(eventId),
+          'status': "participated",
+        };
 
-      // Define the new event entry
-      Map<String, dynamic> newEvent = {
-        'eventRef': FirebaseFirestore.instance.collection('events').doc(eventId),
-        'status': "participated",
-      };
+        // Add event to the user's eventParticipated array
+        await userDocRef.update({
+          'eventParticipated': FieldValue.arrayUnion([newEvent])
+        });
 
-      // Add event to the user's eventParticipated array
-      await userDocRef.update({
-        'eventParticipated': FieldValue.arrayUnion([newEvent])
-      });
-
-      print("Event added successfully!");
-      return 1;
-    } else {
-      print("User not found.");
+        print("Event added successfully!");
+        return 1;
+      } else {
+        print("User not found.");
+        return 0;
+      }
+    } catch (e) {
+      print("Error adding event: $e");
       return 0;
     }
-  } catch (e) {
-    print("Error adding event: $e");
-    return 0;
   }
-}
 
-Future<int> removeEventFromUser(String userEmail, String eventId) async {
-  try {
-    QuerySnapshot userQuery = await FirebaseFirestore.instance
-        .collection('users')
-        .where('userMail', isEqualTo: userEmail)
-        .limit(1)
-        .get();
+  Future<int> removeEventFromUser(String userEmail, String eventId) async {
+    try {
+      QuerySnapshot userQuery = await FirebaseFirestore.instance
+          .collection('users')
+          .where('userMail', isEqualTo: userEmail)
+          .limit(1)
+          .get();
 
-    if (userQuery.docs.isNotEmpty) {
-      DocumentReference userDocRef = userQuery.docs.first.reference;
+      if (userQuery.docs.isNotEmpty) {
+        DocumentReference userDocRef = userQuery.docs.first.reference;
 
-      await userDocRef.update({
-        'eventParticipated': FieldValue.arrayRemove([
-          {'eventRef': FirebaseFirestore.instance.collection('events').doc(eventId), 'status': 'participated'} // Must exactly match Firestore
-        ])
-      });
+        await userDocRef.update({
+          'eventParticipated': FieldValue.arrayRemove([
+            {
+              'eventRef':
+                  FirebaseFirestore.instance.collection('events').doc(eventId),
+              'status': 'participated'
+            } // Must exactly match Firestore
+          ])
+        });
 
-      print("Event removed successfully!");
-      return 1;
-    } else {
-      print("User not found.");
+        print("Event removed successfully!");
+        return 1;
+      } else {
+        print("User not found.");
+        return 0;
+      }
+    } catch (e) {
+      print("Error removing event: $e");
       return 0;
     }
-  } catch (e) {
-    print("Error removing event: $e");
-    return 0;
   }
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
 
   Future<String?> sendOtp(String phoneNumber) async {
     try {
@@ -399,5 +396,4 @@ Future<int> removeEventFromUser(String userEmail, String eventId) async {
       return 0; // Failure
     }
   }
-
 }

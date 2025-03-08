@@ -22,6 +22,22 @@
           }
         },
         {
+          "client_id": "196279097755-22pao632glg8fds8clkbjip1tavlme9c.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.ncu.sustainfy",
+            "certificate_hash": "697c69115f94938a9ab1d82ea438a85da69b0205"
+          }
+        },
+        {
+          "client_id": "196279097755-6hhbufq83619otr2i9k6ca4pdm42ejk2.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.ncu.sustainfy",
+            "certificate_hash": "f0ab073755dd71c06b55f166bca4c8569f29b627"
+          }
+        },
+        {
           "client_id": "196279097755-96ne286e89frscul944vqsn6ak4l7m7u.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
