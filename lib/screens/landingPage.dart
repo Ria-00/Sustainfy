@@ -17,13 +17,46 @@ class LandingPage extends StatefulWidget {
 class _LandingPageState extends State<LandingPage> {
   UserClassOperations operations = UserClassOperations();
   List<EventModel> dummyEvents = [];
+  List<EventModel> filteredEvents = [];
 
   final List<String> unGoalImages = List.generate(
       17, (index) => "assets/images/unGoals/E_SDG_Icons-${index + 1}.jpg");
 
+  bool _showExpandedNgos = false; // Toggle between scroll and wrapped mode
+  bool _showExpandedCategories = false;
+
+  TextEditingController searchController = TextEditingController();
+
+  final List<String> ngos = [
+    "Help Age India",
+    "Smile Foundation",
+    "Green Earth",
+  ];
+
   void initState() {
     super.initState();
     _getevents();
+    searchController.addListener(_filterEvents);
+  }
+
+  void _filterEvents() {
+    String query = searchController.text.toLowerCase();
+    setState(() {
+      if (query.isEmpty) {
+        filteredEvents =
+            List.from(dummyEvents); // Show all events if search is empty
+      } else {
+        filteredEvents = dummyEvents
+            .where((event) =>
+                event.eventName.toLowerCase().contains(query)) // Partial match
+            .toList();
+
+        // If no partial match is found, show all events instead
+        if (filteredEvents.isEmpty) {
+          filteredEvents = List.from(dummyEvents);
+        }
+      }
+    });
   }
 
   void _getevents() async {
@@ -32,6 +65,7 @@ class _LandingPageState extends State<LandingPage> {
     if (fetchedEvents != null && mounted) {
       setState(() {
         dummyEvents = fetchedEvents;
+        filteredEvents = List.from(dummyEvents); // Initialize with all events
       });
     } else {
       print("User not found!");
@@ -52,40 +86,9 @@ class _LandingPageState extends State<LandingPage> {
                 child: ListView(
                   padding: EdgeInsets.only(top: 15),
                   children: [
-                    Container(
-                      padding: EdgeInsets.symmetric(horizontal: 20),
-                      child: Column(
-                        children: [
-                          Align(
-                            alignment: Alignment.centerLeft,
-                            child: Text("Categories",
-                                style: TextStyle(
-                                    color: Color.fromRGBO(50, 50, 55, 1),
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.bold)),
-                          ),
-                          SizedBox(height: 15),
-                          Container(
-                            height: 150,
-                            child: ListView.builder(
-                              scrollDirection: Axis.horizontal,
-                              itemCount: unGoalImages.length,
-                              itemBuilder: (context, index) {
-                                return Padding(
-                                  padding: const EdgeInsets.only(right: 15),
-                                  child: Image.asset(
-                                    unGoalImages[index],
-                                    height: 150,
-                                    width: 150,
-                                    fit: BoxFit.cover,
-                                  ),
-                                );
-                              },
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
+                    _buildNgoSection(),
+                    SizedBox(height: 15),
+                    _buildCategorySection(),
                     SizedBox(height: 25),
                     Container(
                       padding: EdgeInsets.symmetric(horizontal: 20),
@@ -102,9 +105,9 @@ class _LandingPageState extends State<LandingPage> {
                     ListView.builder(
                       shrinkWrap: true,
                       physics: NeverScrollableScrollPhysics(),
-                      itemCount: dummyEvents.length,
+                      itemCount: filteredEvents.length,
                       itemBuilder: (context, index) {
-                        final event = dummyEvents[index];
+                        final event = filteredEvents[index];
                         DateTime startDateTime = event.eventStartDate.toDate();
                         String formattedDate =
                             "${startDateTime.day} ${_getMonthName(startDateTime.month)} ${startDateTime.year}";
@@ -123,54 +126,83 @@ class _LandingPageState extends State<LandingPage> {
                           },
                           child: Padding(
                             padding: const EdgeInsets.symmetric(
-                                horizontal: 20.0, vertical: 10),
+                                horizontal: 15.0, vertical: 8),
                             child: Card(
                               shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(15)),
-                              elevation: 4,
+                                borderRadius: BorderRadius.circular(15),
+                              ),
+                              elevation: 2, // Soft shadow
                               child: Padding(
-                                padding: const EdgeInsets.all(12.0),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                padding: const EdgeInsets.all(10.0),
+                                child: Row(
                                   children: [
-                                    Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        Expanded(
-                                          child: Text(
-                                            "${event.eventName} \nNgo: Smile Foundation",
-                                            style: TextStyle(
-                                                fontWeight: FontWeight.bold,
-                                                fontSize: 18),
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    SizedBox(height: 8),
-                                    Row(
-                                      children: [
-                                        Text(" Date: ",
-                                            style: TextStyle(
-                                                fontWeight: FontWeight.bold)),
-                                        Text(formattedDate),
-                                        SizedBox(
-                                          width: 10,
-                                        ),
-                                        Text(" Time: ",
-                                            style: TextStyle(
-                                                fontWeight: FontWeight.bold)),
-                                        Text(formattedTime),
-                                      ],
-                                    ),
-                                    SizedBox(height: 8),
+                                    // Event Image (Left Side)
                                     ClipRRect(
                                       borderRadius: BorderRadius.circular(12),
-                                      child: Image.network(event.eventImg,
-                                          fit: BoxFit.cover,
-                                          height: 150,
-                                          width: double.infinity),
+                                      child: Image.network(
+                                        event.eventImg,
+                                        fit: BoxFit.cover,
+                                        height: 70,
+                                        width: 120,
+                                      ),
+                                    ),
+                                    SizedBox(width: 12),
+
+                                    // Event Details (Right Side)
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            event.eventName,
+                                            style: TextStyle(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors
+                                                  .green, // Matches attached image style
+                                            ),
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                          Text(
+                                            "by Smile Foundation", // add ngo name here
+                                            style: TextStyle(
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.w500,
+                                              color: Colors.grey[700],
+                                            ),
+                                          ),
+                                          SizedBox(height: 4),
+                                          Row(
+                                            children: [
+                                              Icon(Icons.calendar_month,
+                                                  size: 16,
+                                                  color: Colors.green),
+                                              SizedBox(width: 4),
+                                              Text(
+                                                formattedDate,
+                                                style: TextStyle(
+                                                    fontSize: 13,
+                                                    color: Colors.grey[700]),
+                                              ),
+                                            ],
+                                          ),
+                                          Row(
+                                            children: [
+                                              Icon(Icons.access_time,
+                                                  size: 16,
+                                                  color: Colors.green),
+                                              SizedBox(width: 4),
+                                              Text(
+                                                formattedTime,
+                                                style: TextStyle(
+                                                    fontSize: 13,
+                                                    color: Colors.grey[700]),
+                                              ),
+                                            ],
+                                          ),
+                                        ],
+                                      ),
                                     ),
                                   ],
                                 ),
@@ -179,7 +211,7 @@ class _LandingPageState extends State<LandingPage> {
                           ),
                         );
                       },
-                    ),
+                    )
                   ],
                 ),
               ),
@@ -208,6 +240,7 @@ class _LandingPageState extends State<LandingPage> {
                     SizedBox(width: 7),
                     Expanded(
                       child: TextField(
+                        controller: searchController,
                         decoration: InputDecoration(
                           hintText: 'Search an event or ngo...',
                           hintStyle: TextStyle(
@@ -255,5 +288,165 @@ class _LandingPageState extends State<LandingPage> {
       "December"
     ];
     return months[month - 1];
+  }
+
+  Widget _buildNgoSection() {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Text(
+                "NGOs",
+                style: TextStyle(
+                  color: Color.fromRGBO(50, 50, 55, 1),
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              Spacer(),
+              GestureDetector(
+                onTap: () {
+                  setState(() {
+                    _showExpandedNgos = !_showExpandedNgos;
+                  });
+                },
+                child: Text(
+                  _showExpandedNgos ? "Less" : "More",
+                  style: TextStyle(
+                    color: Colors.green,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 10),
+          _showExpandedNgos
+              ? Wrap(
+                  spacing: 12, // Added spacing between chips
+                  runSpacing: 8, // Better vertical spacing
+                  children: ngos.map((ngo) => _ngoChip(ngo)).toList(),
+                )
+              : Container(
+                  height: 40,
+                  child: ListView(
+                    scrollDirection: Axis.horizontal,
+                    children: ngos
+                        .map((ngo) => Padding(
+                              padding: EdgeInsets.only(
+                                  right: 12), // Space between chips
+                              child: _ngoChip(ngo),
+                            ))
+                        .toList(),
+                  ),
+                ),
+        ],
+      ),
+    );
+  }
+
+  Widget _ngoChip(String ngoName) {
+    return Padding(
+      padding: EdgeInsets.only(
+          bottom: 4), // Ensures spacing when wrapped inside Wrap/ListView
+      child: Chip(
+        label: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 20,
+              height: 20,
+              color: Colors.grey[300], // Placeholder for an image
+              margin: EdgeInsets.only(right: 5),
+            ),
+            Text(ngoName),
+          ],
+        ),
+        shape: RoundedRectangleBorder(
+          side: BorderSide(color: Colors.green),
+          borderRadius: BorderRadius.circular(20),
+        ),
+        backgroundColor: Colors.white,
+      ),
+    );
+  }
+
+  Widget _buildCategorySection() {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Text(
+                "Categories",
+                style: TextStyle(
+                  color: Color.fromRGBO(50, 50, 55, 1),
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              Spacer(),
+              GestureDetector(
+                onTap: () {
+                  setState(() {
+                    _showExpandedCategories = !_showExpandedCategories;
+                  });
+                },
+                child: Text(
+                  _showExpandedCategories ? "Less" : "More",
+                  style: TextStyle(
+                    color: Colors.green,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 10),
+          _showExpandedCategories
+              ? Wrap(
+                  spacing: 10, // Horizontal spacing
+                  runSpacing: 8, // Vertical spacing
+                  children: unGoalImages
+                      .map((image) => _categoryTile(image, true))
+                      .toList(),
+                )
+              : Container(
+                  height: 100, // Fixed height for horizontal scroll
+                  child: ListView(
+                    scrollDirection: Axis.horizontal,
+                    children: unGoalImages
+                        .map((image) => Padding(
+                              padding: EdgeInsets.only(right: 12),
+                              child: _categoryTile(image, false),
+                            ))
+                        .toList(),
+                  ),
+                ),
+        ],
+      ),
+    );
+  }
+
+  Widget _categoryTile(String imagePath, bool isExpanded) {
+    double size = isExpanded ? 70 : 100; // Smaller when expanded
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(10),
+        image: DecorationImage(
+          image: AssetImage(imagePath),
+          fit: BoxFit.cover,
+        ),
+      ),
+    );
   }
 }

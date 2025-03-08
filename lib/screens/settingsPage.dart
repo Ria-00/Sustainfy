@@ -80,14 +80,7 @@ class SettingsPage extends StatelessWidget {
                   title: Text('Notifications',
                       style: TextStyle(color: Colors.green, fontSize: 20)),
                   trailing: Icon(Icons.arrow_forward_ios, color: Colors.green),
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) =>
-                              RoleLoginPage()), // Replace LoginPage() with your actual login page widget
-                    );
-                  },
+                  onTap: () {},
                 ),
                 Divider(),
                 ListTile(
