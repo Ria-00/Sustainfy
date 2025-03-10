@@ -1,32 +1,59 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:provider/provider.dart';
+import 'package:sustainfy/model/couponModel.dart';
 import 'package:sustainfy/model/userModel.dart';
 import 'package:sustainfy/providers/userProvider.dart';
+import 'package:sustainfy/screens/discountDetailsPage.dart';
 import 'package:sustainfy/screens/login.dart';
 import 'package:sustainfy/screens/settingsPage.dart';
 import 'package:sustainfy/services/userOperations.dart';
+import 'package:sustainfy/utils/colors.dart';
 import 'package:sustainfy/utils/font.dart';
 import 'package:sustainfy/widgets/customCurvedEdges.dart';
 
 class ProfilePage extends StatefulWidget {
-
   const ProfilePage({super.key});
-  
+
   @override
   State<ProfilePage> createState() => _ProfilePageState();
 }
 
-
 class _ProfilePageState extends State<ProfilePage> {
   UserClass? _user;
-  UserClassOperations operations=UserClassOperations();
+  UserClassOperations operations = UserClassOperations();
   String currentCategory = "Used"; // Default category
-  final Map<String, int> cardCounts = {
-    "Used": 3,
-    "Wishlist": 3,
-  };
+  // final Map<String, int> cardCounts = {
+  //   "Used": 3,
+  //   "Wishlist": 3,
+  // };
+
+// Dummy Coupons List
+  final List<Map<String, dynamic>> _usedCoupons = [
+    {
+      "couponId": "JMAo4cubhnu2N0oFbXaM",
+      "couponDesc": "15% Discount on Sony Bravia TVs",
+      "couponPoint": 850,
+      "compRef": "Sony",
+    },
+  ];
+
+  final List<Map<String, dynamic>> _wishlistCoupons = [
+    {
+      "couponId": "Pd4nBbpydpjld82hnNJI",
+      "couponDesc": "20% Discount on Ericsson 5G Equipment",
+      "couponPoint": 500,
+      "compRef": "Ecricsson",
+    },
+    {
+      "couponId": "salLjKyxquJsprTvudAE",
+      "couponDesc": "Flat ₹1000 Off on Zara Clothing",
+      "couponPoint": 300,
+      "compRef": "Zara",
+    },
+  ];
 
   void initState() {
     super.initState();
@@ -34,20 +61,20 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   void _getuserInformation() async {
-
-  String userEmail = Provider.of<userProvider>(context, listen: false).email ?? '';
+    String userEmail =
+        Provider.of<userProvider>(context, listen: false).email ?? '';
 
     UserClass? fetchedUser = await operations.getUser(userEmail);
     print(userEmail);
-  
-  if (fetchedUser != null) {
-    setState(() {
-      _user = fetchedUser;
-    });
-  } else {
-    print("User not found!");
+
+    if (fetchedUser != null) {
+      setState(() {
+        _user = fetchedUser;
+      });
+    } else {
+      print("User not found!");
+    }
   }
-}
 
   @override
   Widget build(BuildContext context) {
@@ -98,12 +125,12 @@ class _ProfilePageState extends State<ProfilePage> {
                 children: [
                   CircleAvatar(
                     radius: 40,
-                  backgroundImage: _user?.userImg != null 
-                      ? NetworkImage(_user!.userImg!) 
-                      : null,
-                  child: _user?.userImg == null 
-                      ? Icon(Icons.image_not_supported) 
-                      : null,
+                    backgroundImage: _user?.userImg != null
+                        ? NetworkImage(_user!.userImg!)
+                        : null,
+                    child: _user?.userImg == null
+                        ? Icon(Icons.image_not_supported)
+                        : null,
                   ),
                   SizedBox(width: 30),
                   Expanded(
@@ -111,7 +138,10 @@ class _ProfilePageState extends State<ProfilePage> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                           _user?.userName ?? Provider.of<userProvider>(context).email!.split("@")[0],
+                          _user?.userName ??
+                              Provider.of<userProvider>(context)
+                                  .email!
+                                  .split("@")[0],
                           style: TextStyle(
                             color: const Color.fromRGBO(50, 50, 55, 1),
                             fontSize: 20,
@@ -119,14 +149,13 @@ class _ProfilePageState extends State<ProfilePage> {
                           ),
                         ),
                         Text(
-                           _user?.userMail ?? "Unknown",
+                          _user?.userMail ?? "Unknown",
                           style:
                               TextStyle(fontSize: 16, color: Colors.grey[600]),
                         ),
                         SizedBox(height: 4),
                         Text(
                           '${_user?.userPhone != null ? "+91 ${_user?.userPhone}" : "N/A"}',
-
                           style:
                               TextStyle(fontSize: 16, color: Colors.grey[600]),
                         ),
@@ -159,21 +188,26 @@ class _ProfilePageState extends State<ProfilePage> {
             SizedBox(height: 10),
 
             // Grid Section
-            cardCounts[currentCategory]! > 0
-                ? GridView.builder(
-                    shrinkWrap: true,
-                    physics: NeverScrollableScrollPhysics(),
-                    padding: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2, // Number of columns
-                      mainAxisSpacing: 10, // Spacing between rows
-                      crossAxisSpacing: 10, // Spacing between columns
-                      childAspectRatio: 1.75, // Aspect ratio for the cards
-                    ),
-                    itemCount: cardCounts[currentCategory]!,
-                    itemBuilder: (context, index) => _buildCard(),
-                  )
-                : SizedBox.shrink(), // If no items, show nothing
+            GridView.builder(
+              shrinkWrap: true,
+              physics: NeverScrollableScrollPhysics(),
+              padding: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                mainAxisSpacing: 10,
+                crossAxisSpacing: 10,
+                childAspectRatio: 1.22,
+              ),
+              itemCount: currentCategory == "Used"
+                  ? _usedCoupons.length
+                  : _wishlistCoupons.length,
+              itemBuilder: (context, index) {
+                Map<String, dynamic> coupon = currentCategory == "Used"
+                    ? _usedCoupons[index]
+                    : _wishlistCoupons[index];
+                return _buildCard(coupon);
+              },
+            ),
 
             SizedBox(height: 20),
 
@@ -455,30 +489,33 @@ class _ProfilePageState extends State<ProfilePage> {
                             ),
                           ),
                           onPressed: () async {
-                              try {
-                                Navigator.of(context).pop(); // Close modal
+                            try {
+                              Navigator.of(context).pop(); // Close modal
 
-                                // Ensure provider is cleared before navigating
-                                Provider.of<userProvider>(context, listen: false).removeValue();
+                              // Ensure provider is cleared before navigating
+                              Provider.of<userProvider>(context, listen: false)
+                                  .removeValue();
 
-                                // Sign out from Firebase
-                                await FirebaseAuth.instance.signOut();
+                              // Sign out from Firebase
+                              await FirebaseAuth.instance.signOut();
 
-                                // Sign out from Google as well (if using Google SSO)
-                                GoogleSignIn googleSignIn = GoogleSignIn();
-                                if (await googleSignIn.isSignedIn()) {
-                                  await googleSignIn.signOut();
-                                }
-
-                                // Navigate to login, removing all previous routes
-                                Navigator.of(context).pushAndRemoveUntil(
-                                  MaterialPageRoute(builder: (context) => Login()),
-                                  (Route<dynamic> route) => false, // Clears all previous screens
-                                );
-                              } catch (e) {
-                                print("Error during logout: $e");
+                              // Sign out from Google as well (if using Google SSO)
+                              GoogleSignIn googleSignIn = GoogleSignIn();
+                              if (await googleSignIn.isSignedIn()) {
+                                await googleSignIn.signOut();
                               }
-                            },
+
+                              // Navigate to login, removing all previous routes
+                              Navigator.of(context).pushAndRemoveUntil(
+                                MaterialPageRoute(
+                                    builder: (context) => Login()),
+                                (Route<dynamic> route) =>
+                                    false, // Clears all previous screens
+                              );
+                            } catch (e) {
+                              print("Error during logout: $e");
+                            }
+                          },
                           child: Text(
                             "Yes",
                             style: TextStyle(color: Colors.green),
@@ -609,18 +646,130 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  Widget _buildCard() {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.grey[300],
-        borderRadius: BorderRadius.circular(8),
+  Widget _buildCard(Map<String, dynamic> coupon) {
+    return GestureDetector( 
+    onTap: currentCategory == "Wishlist" ? () { // Only enable onTap for wishlist
+      // Redirect to discount page for detailed info for wishlist part
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => DiscountDetailsPage(
+            couponId: coupon['couponId'],
+          ),
+        ),
+      );
+    } : null, // No onTap for other categories
+    child:  Card(
+      elevation: 3,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(10),
       ),
-      child: Center(
-        child: Text(
-          "Card",
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 17, vertical: 10),
+        child: IntrinsicHeight(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: FutureBuilder<String?>(
+                  future: operations.getCompanyImage(
+                    FirebaseFirestore.instance
+                        .collection('companies')
+                        .doc(coupon['compRef']), // Convert to DocumentReference
+                  ),
+                  builder: (context, snapshot) {
+                    if (snapshot.hasError) {
+                      print(
+                          "Error: ${snapshot.error}"); // Print the error for debugging
+                      return Icon(Icons.error); // Show an error icon
+                    }
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return CircularProgressIndicator(); // Show a loading indicator
+                    }
+                    if (!snapshot.hasData || snapshot.data == null) {
+                      return Icon(
+                          Icons.image_not_supported); // Show a placeholder icon
+                    }
+                    return Image.network(
+                      snapshot.data!,
+                      width: double.infinity,
+                      height: 50,
+                      fit: BoxFit.contain,
+                    );
+                  },
+                ),
+              ),
+
+//*ONCE CONNECTED TO DB , USE THE BELOW CODE FOR IMAGE ... FOR THE TIME BEING , USING DUMMY DATA , IT WILL WORK WITH ABOVE CODE*
+
+              //  Center(
+              //   child: FutureBuilder<String?>(
+              //     future: operations.getCompanyImage(widget.coupon.compRef),
+              //     builder: (context, snapshot) {
+              //       if (snapshot.hasError || !snapshot.hasData) {
+              //         return Icon(Icons.image_not_supported);
+              //       }
+              //       return Image.network(
+              //         snapshot.data!,
+              //         width: double.infinity,
+              //         height: 50,
+              //         fit: BoxFit.contain,
+              //       );
+              //     },
+              //   ),
+              // ),
+
+              SizedBox(height: 10),
+              Text(
+                coupon['couponDesc'],
+                style: TextStyle(
+                  fontSize: 15,
+                  fontFamily: AppFonts.inter,
+                  fontWeight: AppFonts.interSemiBoldWeight,
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+              SizedBox(height: 15),
+              if (currentCategory == "Wishlist")
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      "Redeem for",
+                      style: TextStyle(fontSize: 15, color: Colors.black),
+                    ),
+                    Container(
+                      padding: EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: AppColors.pointsContainerReward,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        "${coupon['couponPoint']} pts",
+                        style: TextStyle(fontSize: 15, color: Colors.white),
+                      ),
+                    ),
+                  ],
+                )
+              else
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: AppColors.pointsContainerReward,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    currentCategory == "Used"
+                        ? "Redeemed for ${coupon['couponPoint']} pts"
+                        : "${coupon['couponPoint']} pts",
+                    style: TextStyle(fontSize: 13, color: Colors.white),
+                  ),
+                ),
+            ],
+          ),
         ),
       ),
-    );
-  }
-}
+    ),
+  );
+}}
