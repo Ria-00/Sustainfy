@@ -25,17 +25,26 @@ class _EventDescriptionScreenState extends State<EventDescriptionPage> {
   
   late String mail= Provider.of<userProvider>(context, listen: false).email ?? '';
   late bool participation=false;
+  String ngo="";
 
   @override
   void initState(){
     super.initState();
     _checkParticipation();
+    _getNgoName();
   }
 
   void _checkParticipation() async {
     bool ans = await operations.isUserParticipating(mail,widget.event.eventId);
     setState(() {
       participation = ans;
+    });
+  }
+
+  void _getNgoName() async {
+    String ngoName = await operations.getNgoName(widget.event.ngoRef!);
+    setState(() {
+      ngo = ngoName;
     });
   }
 
@@ -230,6 +239,22 @@ class _EventDescriptionScreenState extends State<EventDescriptionPage> {
                         ],
                       ),
                       SizedBox(height: 10),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: Text("NGO",
+                            style: TextStyle(
+                                fontSize: 18, fontWeight: FontWeight.bold)),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 5),
+                        child: Text(
+                          ngo,
+                          style:
+                              TextStyle(fontSize: 14, color: Colors.grey[700]),
+                        ),
+                      ),
+                      SizedBox(height: 15),
                       // Description
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -327,7 +352,7 @@ class _EventDescriptionScreenState extends State<EventDescriptionPage> {
                                 child: Image.asset(
                                     "assets/images/unGoals/E_SDG_Icons-$goalImage.jpg",
                                     width: 60,
-                                    height: 60),
+                                    height: 60,),
                               ),
                             );
                           }).toList(),

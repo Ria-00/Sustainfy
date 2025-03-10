@@ -1,40 +1,55 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:sustainfy/model/eventModel.dart';
+import 'package:sustainfy/model/userModel.dart';
 import 'package:sustainfy/utils/colors.dart';
 import 'package:sustainfy/utils/font.dart';
 import 'package:sustainfy/widgets/customCurvedEdges.dart';
 
-class ViewParticipantPage extends StatelessWidget {
+class ViewParticipantPage extends StatefulWidget {
   final EventModel event;
 
   ViewParticipantPage({required this.event});
 
-  final List<Map<String, dynamic>> participants = [
-    {
-      "name": "Shejal Yadav",
-      "email": "shejal@gmail.com",
-      "phone": "+91 9352637465",
-      "status": "Present"
-    },
-    {
-      "name": "Tanya Sinha",
-      "email": "tanya@gmail.com",
-      "phone": "+91 9352637465",
-      "status": "Absent"
-    },
-    {
-      "name": "Riya Singh",
-      "email": "riya@gmail.com",
-      "phone": "+91 9352637465",
-      "status": "Present"
-    },
-    {
-      "name": "Sanidhya Pundeer",
-      "email": "riya@gmail.com",
-      "phone": "+91 9352637465",
-      "status": "Absent"
+  @override
+  State<ViewParticipantPage> createState() => _ViewParticipantPageState();
+}
+
+class _ViewParticipantPageState extends State<ViewParticipantPage> {
+  List<Map<String, dynamic>> participantDetails = [];
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    fetchParticipants();
+  }
+
+  Future<void> fetchParticipants() async {
+    List<Map<String, dynamic>> tempParticipants = [];
+
+    for (var participant in widget.event.eventParticipants) {
+      try {
+        DocumentSnapshot userDoc = await participant.userRef.get();
+        if (userDoc.exists) {
+          var userData = userDoc.data() as Map<String, dynamic>;
+          UserClass user = UserClass.fromMap(userData);
+          
+          tempParticipants.add({
+            "user": user, // Store as a UserClass object
+            "status": participant.status
+          });
+        }
+      } catch (e) {
+        print("Error fetching user details: $e");
+      }
     }
-  ];
+
+    setState(() {
+      participantDetails = tempParticipants;
+      isLoading = false;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -56,26 +71,14 @@ class ViewParticipantPage extends StatelessWidget {
                     children: [
                       SizedBox(width: 7),
                       IconButton(
-                        icon: Row(
-                          children: [
-                            Icon(Icons.arrow_back_ios, color: Colors.white),
-                          ],
-                        ),
+                        icon: Icon(Icons.arrow_back_ios, color: Colors.white),
                         onPressed: () {
-                          Navigator.pop(
-                              context); // Navigate back to the previous screen
+                          Navigator.pop(context);
                         },
                       ),
-                      // Image.asset(
-                      //   'assets/images/SustainifyLogo.png',
-                      //   width: 50,
-                      //   height: 60,
-                      // ),
-                      SizedBox(
-                        width: 5,
-                      ),
+                      SizedBox(width: 5),
                       Text(
-                        "Participants", // event name
+                        "Participants",
                         style: TextStyle(
                           color: Colors.white,
                           fontFamily: AppFonts.inter,
@@ -91,7 +94,7 @@ class ViewParticipantPage extends StatelessWidget {
           ),
           // Participant List with Padding
           Positioned.fill(
-            top: 130, // Ensures list starts below the header
+            top: 130,
             child: Column(
               children: [
                 Container(
@@ -100,7 +103,7 @@ class ViewParticipantPage extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       Text(
-                        event.eventName,
+                        widget.event.eventName,
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
@@ -108,56 +111,72 @@ class ViewParticipantPage extends StatelessWidget {
                       ),
                       SizedBox(height: 5),
                       Text(
-                        "Total: ${participants.length} Participants",
+                        "Total: ${participantDetails.length} Participants",
                         style: TextStyle(fontSize: 16, color: Colors.grey[700]),
                       ),
                     ],
                   ),
                 ),
                 Expanded(
-                  child: ListView.builder(
-                    padding: EdgeInsets.only(top: 10),
-                    itemCount: participants.length,
-                    itemBuilder: (context, index) {
-                      var participant = participants[index];
-                      return Container(
-                        decoration: BoxDecoration(
-                          border: Border(
-                            bottom: BorderSide(
-                                color: Colors.grey[300]!,
-                                width: 1), // Thin border
-                          ),
-                        ),
-                        child: ListTile(
-                          title: Text(
-                            participant["name"],
-                            style: TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                          subtitle: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(participant["email"]),
-                              Text(participant["phone"]),
-                            ],
-                          ),
-                          trailing: Container(
-                            padding: EdgeInsets.symmetric(
-                                horizontal: 10, vertical: 5),
-                            decoration: BoxDecoration(
-                              color: participant["status"] == "Present"
-                                  ? Colors.green[100]
-                                  : Colors.red[100],
-                              borderRadius: BorderRadius.circular(10),
+                  child: isLoading
+                      ? Center(child: CircularProgressIndicator())
+                      : participantDetails.isEmpty
+                          ? Center(child: Text("No participants yet"))
+                          : ListView.builder(
+                              padding: EdgeInsets.only(top: 10),
+                              itemCount: participantDetails.length,
+                              itemBuilder: (context, index) {
+                                var participantData = participantDetails[index];
+                                UserClass user = participantData["user"];
+                                String status = participantData["status"];
+
+                                return Container(
+                                  decoration: BoxDecoration(
+                                    border: Border(
+                                      bottom: BorderSide(
+                                          color: Colors.grey[300]!, width: 1),
+                                    ),
+                                  ),
+                                  child: ListTile(
+                                    leading: user.userImg != null && user.userImg!.isNotEmpty
+                                        ? CircleAvatar(
+                                            backgroundImage:
+                                                NetworkImage(user.userImg!),
+                                          )
+                                        : CircleAvatar(
+                                            child: Icon(Icons.person),
+                                          ),
+                                    title: Text(
+                                      user.userName ?? "Unknown",
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                    subtitle: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(user.userMail ?? "abc@xyz.com"),
+                                        Text(user.userPhone ?? "+91-"),
+                                      ],
+                                    ),
+                                    trailing: Container(
+                                      padding: EdgeInsets.symmetric(
+                                          horizontal: 10, vertical: 5),
+                                      decoration: BoxDecoration(
+                                        color: status == "attended"
+                                            ? const Color.fromARGB(255, 156, 203, 159)
+                                            : const Color.fromARGB(255, 226, 156, 163),
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                      child:Text(
+                                        status == "attended" ? "Present" : "Absent",
+                                        style: TextStyle(color: const Color.fromARGB(255, 255, 255, 255)),
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              },
                             ),
-                            child: Text(
-                              participant["status"],
-                              style: TextStyle(color: Colors.green),
-                            ),
-                          ),
-                        ),
-                      );
-                    },
-                  ),
                 ),
               ],
             ),

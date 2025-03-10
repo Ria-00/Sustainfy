@@ -9,6 +9,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:provider/provider.dart';
 import 'package:sustainfy/main.dart';
+import 'package:sustainfy/model/ngoModel.dart';
 import 'package:sustainfy/model/userModel.dart';
 import 'package:sustainfy/providers/userProvider.dart';
 import 'package:sustainfy/screens/NGOScreens/NgoHomePage.dart';
@@ -43,7 +44,7 @@ class _NgoLoginPageState extends State<NgoLoginPage> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final GlobalKey<FormState> _formKey1 = GlobalKey<FormState>();
   UserClassOperations operate = UserClassOperations();
-  UserClass u = UserClass(userMail: '', userPassword: '');
+  Ngo u = Ngo.log(ngoMail: '', ngoPassword: '');
   final TextEditingController _usermailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
@@ -112,40 +113,20 @@ class _NgoLoginPageState extends State<NgoLoginPage> {
         return "Required";
       }
 
-      // Check for minimum length
-      if (value.length < 8) {
-        return "Must be at least 8 characters long";
-      }
-
-      // Check for at least one uppercase letter
-      if (!RegExp(r'(?=.*[A-Z])').hasMatch(value)) {
-        return "Must contain one uppercase letter";
-      }
-
-      // Check for at least one number
-      if (!RegExp(r'(?=.*[0-9])').hasMatch(value)) {
-        return "Must contain one number";
-      }
-
-      // Check for at least one special character
-      if (!RegExp(r'(?=.*[!@#$%^&*(),.?":{}|<>])').hasMatch(value)) {
-        return "Must contain one special character";
-      }
-
       return null; // No error
     }
 
     // Form submit logic
     Future<void> _submitForm() async {
-      u.userMail = _usermailController.text.trim();
-      u.userPassword = _passwordController.text.trim();
+      u.ngoMail = _usermailController.text.trim();
+      u.ngoPassword = _passwordController.text.trim();
       final form = _formKey.currentState;
       if (form!.validate()) {
         print("Valid Form");
-        int a = await operate.login(u);
-        if (a == 1) {
+        String? a = await operate.signInAsNgo(u);
+        if (a == null) {
           Provider.of<userProvider>(context, listen: false)
-              .setValue(u.userMail!);
+              .setValue(u.ngoMail);
           print(Provider.of<userProvider>(context, listen: false).email);
           Navigator.pushReplacement(
             context,
@@ -154,6 +135,7 @@ class _NgoLoginPageState extends State<NgoLoginPage> {
             ),
           );
         } else {
+          print(a);
           showFloatingWarning(context, "Incorrect credentials");
         }
       } else {
