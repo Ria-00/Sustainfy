@@ -1,0 +1,2 @@
+/Users/tanyasinha/projects/Sustainfy/android/app/.cxx/Debug/7e413i6w/x86_64/CMakeFiles/edit_cache.dir
+/Users/tanyasinha/projects/Sustainfy/android/app/.cxx/Debug/7e413i6w/x86_64/CMakeFiles/rebuild_cache.dir
