@@ -15,6 +15,7 @@ class NgoCommunityPage extends StatefulWidget {
 }
 
 class _NgoCommunityPageState extends State<NgoCommunityPage> {
+
   List<EventModel> events = [];
   Map<String, String> ngoNames = {};
   UserClassOperations operate = UserClassOperations();

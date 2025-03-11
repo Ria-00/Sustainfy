@@ -57,8 +57,10 @@ class EventModel {
       eventImg: map["eventImg"] ?? "",
       eventStatus: map["eventStatus"] ?? "",
       eventAddress: map["eventAddress"] ?? "",
+
       eventStartDate: map["eventStart_date"] is Timestamp ? map["eventStart_date"] : defaultTimestamp,
     eventEndDate: map["eventEnd_date"] is Timestamp ? map["eventEnd_date"] : defaultTimestamp,
+
       UNGoals: List<int>.from(map["UNGoals"] ?? []),
 
       // ✅ Fixed GeoPoint issue

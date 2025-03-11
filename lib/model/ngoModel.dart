@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class Ngo {
+
   String? ngoId;
   String? ngoName;
   String ngoMail;
@@ -25,7 +26,7 @@ class Ngo {
     required this.ngoMail,
     required this.ngoPassword,
   });
-
+  
   // Factory constructor to create an instance from JSON
   factory Ngo.fromJson(Map<String, dynamic> json) {
     return Ngo(
