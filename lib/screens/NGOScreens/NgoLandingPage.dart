@@ -12,12 +12,15 @@ import 'package:sustainfy/utils/font.dart';
 import 'package:sustainfy/widgets/customCurvedEdges.dart';
 import 'package:intl/intl.dart';
 
+
+
 class NgoLandingPage extends StatefulWidget {
   @override
   State<NgoLandingPage> createState() => _NgoLandingPageState();
 }
 
 class _NgoLandingPageState extends State<NgoLandingPage> {
+
 
   UserClassOperations operate = UserClassOperations();
 
@@ -135,12 +138,12 @@ class _NgoLandingPageState extends State<NgoLandingPage> {
               height: 80,
               child: FloatingActionButton(
                   onPressed: () {
-                    // Navigator.push(
-                    //   context,
-                    //   MaterialPageRoute(
-                    //       builder: (context) =>
-                    //           CreateEventPage()), // Navigate to Create Event
-                    // );
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) =>
+                              CreateEventPage()), // Navigate to Create Event
+                    );
                   },
                   backgroundColor: Colors.green, // Adjust color
                   child: Icon(Icons.add, size: 40, color: Colors.white),

@@ -16,6 +16,7 @@ class NgoCommunityPage extends StatefulWidget {
 
 class _NgoCommunityPageState extends State<NgoCommunityPage> {
 
+
   List<EventModel> events = [];
   Map<String, String> ngoNames = {};
   UserClassOperations operate = UserClassOperations();
@@ -44,7 +45,6 @@ class _NgoCommunityPageState extends State<NgoCommunityPage> {
       ngoNames = fetchedNgoNames;
     });
   }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(

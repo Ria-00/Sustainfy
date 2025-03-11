@@ -545,6 +545,7 @@ Future<int> markUserAsAttended(
 
 
 
+
   Future<String?> sendOtp(String phoneNumber) async {
     try {
       String? verificationId;

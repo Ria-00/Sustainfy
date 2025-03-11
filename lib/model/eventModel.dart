@@ -45,9 +45,7 @@ class EventModel {
     required this.eventParticipants,
     required this.eventPoints,
   });
-
   static final Timestamp defaultTimestamp = Timestamp.fromDate(DateTime(2000, 1, 1));
-
 
   factory EventModel.fromMap(Map<String, dynamic> map) {
     return EventModel(
@@ -56,9 +54,7 @@ class EventModel {
       eventDetails: map["eventDetails"] ?? "",
       eventImg: map["eventImg"] ?? "",
       eventStatus: map["eventStatus"] ?? "",
-      eventAddress: map["eventAddress"] ?? "",
-
-      eventStartDate: map["eventStart_date"] is Timestamp ? map["eventStart_date"] : defaultTimestamp,
+      eventAddress: map["eventAddress"] ?? "",    eventStartDate: map["eventStart_date"] is Timestamp ? map["eventStart_date"] : defaultTimestamp,
     eventEndDate: map["eventEnd_date"] is Timestamp ? map["eventEnd_date"] : defaultTimestamp,
 
       UNGoals: List<int>.from(map["UNGoals"] ?? []),

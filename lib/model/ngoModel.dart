@@ -1,7 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class Ngo {
-
   String? ngoId;
   String? ngoName;
   String ngoMail;
