@@ -219,24 +219,24 @@ class _ProfilePageState extends State<ProfilePage> {
               },
             ),
 
-                    cardCounts[currentCategory]! > 0
-                        ? GridView.builder(
-                            shrinkWrap: true,
-                            physics: NeverScrollableScrollPhysics(),
-                            padding: EdgeInsets.symmetric(
-                                horizontal: 10, vertical: 10),
-                            gridDelegate:
-                                SliverGridDelegateWithFixedCrossAxisCount(
-                              crossAxisCount: 2, // Number of columns
-                              mainAxisSpacing: 10, // Spacing between rows
-                              crossAxisSpacing: 10, // Spacing between columns
-                              childAspectRatio:
-                                  1.75, // Aspect ratio for the cards
-                            ),
-                            itemCount: cardCounts[currentCategory]!,
-                            itemBuilder: (context, index) => _buildCard(),
-                          )
-                        : SizedBox.shrink(), // If no items, show nothing
+                    // cardCounts[currentCategory]! > 0
+                    //     ? GridView.builder(
+                    //         shrinkWrap: true,
+                    //         physics: NeverScrollableScrollPhysics(),
+                    //         padding: EdgeInsets.symmetric(
+                    //             horizontal: 10, vertical: 10),
+                    //         gridDelegate:
+                    //             SliverGridDelegateWithFixedCrossAxisCount(
+                    //           crossAxisCount: 2, // Number of columns
+                    //           mainAxisSpacing: 10, // Spacing between rows
+                    //           crossAxisSpacing: 10, // Spacing between columns
+                    //           childAspectRatio:
+                    //               1.75, // Aspect ratio for the cards
+                    //         ),
+                    //         itemCount: cardCounts[currentCategory]!,
+                    //         itemBuilder: (context, index) => _buildCard(),
+                    //       )
+                    //     : SizedBox.shrink(), // If no items, show nothing
 
                     SizedBox(height: 20),
 
