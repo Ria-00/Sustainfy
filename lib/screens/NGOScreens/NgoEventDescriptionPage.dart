@@ -1,9 +1,13 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 import 'package:sustainfy/model/eventModel.dart';
+import 'package:sustainfy/providers/userProvider.dart';
 import 'package:sustainfy/screens/NGOScreens/ViewParticipantsPage.dart';
 import 'package:sustainfy/screens/participantQRPage.dart';
 import 'package:sustainfy/screens/profilePage.dart';
+import 'package:sustainfy/services/userOperations.dart';
 import 'package:sustainfy/utils/colors.dart';
 import 'package:sustainfy/utils/font.dart';
 import 'package:sustainfy/widgets/customCurvedEdges.dart';
@@ -17,6 +21,36 @@ class NgoEventDescriptionPage extends StatefulWidget {
 }
 
 class _NgoEventDescriptionPage extends State<NgoEventDescriptionPage> {
+
+  UserClassOperations operations =UserClassOperations();
+  bool _showButton = false;
+  
+  String ngo="";
+
+  @override
+  void initState(){
+    super.initState();
+    _getNgoName();
+    _checkNgo();
+  }
+
+  void _getNgoName() async {
+    String ngoName = await operations.getNgoName(widget.event.ngoRef!);
+    setState(() {
+      ngo = ngoName;
+    });
+  }
+
+  void _checkNgo() async{
+    String? mail = Provider.of<userProvider>(context, listen: false).email;
+    DocumentReference? ngoRef =await operations.getDocumentRef(collection: "ngo", field: "ngoMail", value: mail);
+    if(ngoRef == widget.event.ngoRef){
+      setState(() {
+        _showButton = true;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -86,7 +120,7 @@ class _NgoEventDescriptionPage extends State<NgoEventDescriptionPage> {
                           alignment: Alignment.center,
                           child: ClipRRect(
                             borderRadius: BorderRadius.circular(40),
-                            child: Image.asset(widget.event.eventImg,
+                            child: Image.network(widget.event.eventImg,
                                 fit: BoxFit.cover),
                           ),
                         ),
@@ -207,6 +241,23 @@ class _NgoEventDescriptionPage extends State<NgoEventDescriptionPage> {
                         ],
                       ),
                       SizedBox(height: 10),
+
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: Text("NGO",
+                            style: TextStyle(
+                                fontSize: 18, fontWeight: FontWeight.bold)),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 5),
+                        child: Text(
+                          ngo,
+                          style:
+                              TextStyle(fontSize: 14, color: Colors.grey[700]),
+                        ),
+                      ),
+                      SizedBox(height: 15),
                       // Description
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -318,7 +369,7 @@ class _NgoEventDescriptionPage extends State<NgoEventDescriptionPage> {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             // view all participants list
-                            ElevatedButton(
+                            _showButton? ElevatedButton(
                               onPressed: () {
                                 Navigator.push(
                                   context,
@@ -342,7 +393,7 @@ class _NgoEventDescriptionPage extends State<NgoEventDescriptionPage> {
                                     fontWeight: FontWeight.bold,
                                     color: Colors.white),
                               ),
-                            ),
+                            ):SizedBox.shrink(),
                           ],
                         ),
                       ),

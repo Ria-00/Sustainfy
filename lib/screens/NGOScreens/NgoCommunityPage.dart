@@ -1,7 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:sustainfy/model/eventModel.dart';
+import 'package:sustainfy/providers/userProvider.dart';
 import 'package:sustainfy/screens/NGOScreens/NgoEventDescriptionPage.dart';
+import 'package:sustainfy/services/userOperations.dart';
 import 'package:sustainfy/utils/colors.dart';
 import 'package:sustainfy/utils/font.dart';
 import 'package:sustainfy/widgets/customCurvedEdges.dart';
@@ -12,51 +15,35 @@ class NgoCommunityPage extends StatefulWidget {
 }
 
 class _NgoCommunityPageState extends State<NgoCommunityPage> {
-  List<EventModel> dummyEvents = [
-    EventModel.draft(
-      eventId: "1",
-      eventName: "Beach Cleanup",
-      eventDetails: "Join us to clean the beach!",
-      eventImg: 'assets/images/Rectangle16.png',
-      eventStatus: "Upcoming",
-      eventAddress: "Miami Beach, FL",
-      eventStartDate: Timestamp.fromDate(DateTime(2025, 2, 26)), // Example Date
-      eventEndDate: Timestamp.fromDate(DateTime(2025, 2, 28)), // Same-day event
-      UNGoals: [14, 11], // Life Below Water & Sustainable Communities
-      eventLoc: GeoPoint(25.7617, -80.1918),
-      eventParticipants: [],
-      eventPoints: 50,
-    ),
 
-    EventModel.draft(
-      eventId: "2",
-      eventName: "Tree Plantation Drive",
-      eventDetails: "Let's plant trees together!",
-      eventImg: 'assets/images/Rectangle17.png',
-      eventStatus: "Live",
-      eventAddress: "Central Park, NY",
-      eventStartDate: Timestamp.fromDate(DateTime(2025, 2, 25)),
-      eventEndDate: Timestamp.fromDate(DateTime(2025, 3, 5)),
-      UNGoals: [13, 15], // Climate Action & Life on Land
-      eventLoc: GeoPoint(40.7851, -73.9683),
-      eventParticipants: [],
-      eventPoints: 40,
-    ),
-    EventModel.draft(
-      eventId: "3",
-      eventName: "Donation Drive",
-      eventDetails: "Help those in need with your donations!",
-      eventImg: 'assets/images/Rectangle18.png',
-      eventStatus: "Draft",
-      eventAddress: "Central Park, NY",
-      eventStartDate: Timestamp.fromDate(DateTime(2025, 3, 25)),
-      eventEndDate: Timestamp.fromDate(DateTime(2025, 3, 5)),
-      UNGoals: [1, 2, 13], // No Poverty, Zero Hunger, Climate Action
-      eventLoc: GeoPoint(40.7851, -73.9683),
-      eventParticipants: [],
-      eventPoints: 30,
-    ),
-  ];
+  List<EventModel> events = [];
+  Map<String, String> ngoNames = {};
+  UserClassOperations operate = UserClassOperations();
+
+  @override
+  void initState() {
+    super.initState();
+    _getEvents();
+  }
+
+  void _getEvents() async {
+    String? mail = Provider.of<userProvider>(context, listen: false).email;
+    DocumentReference? ngoRef =
+        await operate.getDocumentRef(collection: "ngo", field: "ngoMail", value: mail);
+    List<EventModel> fetchedEvents = await operate.getAllEventsExcludingNgo(ngoRef!);
+
+    Map<String, String> fetchedNgoNames = {};
+    for (var event in fetchedEvents) {
+      DocumentReference? ngoReference = event.ngoRef;
+      DocumentSnapshot ngoSnapshot = await ngoReference!.get();
+      fetchedNgoNames[ngoReference!.id] = ngoSnapshot["ngoName"] ?? "Unknown NGO";
+    }
+
+    setState(() {
+      events = fetchedEvents;
+      ngoNames = fetchedNgoNames;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -65,27 +52,20 @@ class _NgoCommunityPageState extends State<NgoCommunityPage> {
         children: [
           Column(
             children: [
-              const SizedBox(height: 150), // Prevents overlap with the header
+              const SizedBox(height: 150),
               Expanded(
                 child: ListView(
                   padding: EdgeInsets.only(top: 15),
                   children: [
-                    // Live Activities Section
-                    buildSection("Live Activities", "Live"),
-                    SizedBox(
-                      height: 10,
-                    ),
-                    // Upcoming Activities Section
-                    buildSection("Upcoming Activities", "Upcoming"),
-                    SizedBox(
-                      height: 10,
-                    ),
+                    buildSection("Live Activities", "live"),
+                    SizedBox(height: 10),
+                    buildSection("Upcoming Activities", "upcoming"),
+                    SizedBox(height: 10),
                   ],
                 ),
               ),
             ],
           ),
-          // Header Section
           Positioned(
             top: 0,
             left: 0,
@@ -140,11 +120,8 @@ class _NgoCommunityPageState extends State<NgoCommunityPage> {
 
   Widget eventCard(EventModel event) {
     DateTime startDateTime = event.eventStartDate.toDate();
-    String formattedDate =
-        "${startDateTime.day} ${_getMonthName(startDateTime.month)} ${startDateTime.year}";
-    String formattedTime =
-        "${startDateTime.hour % 12 == 0 ? 12 : startDateTime.hour % 12}:${startDateTime.minute.toString().padLeft(2, '0')} ${startDateTime.hour >= 12 ? 'PM' : 'AM'}";
-
+    String formattedDate = "${startDateTime.day} ${_getMonthName(startDateTime.month)} ${startDateTime.year}";
+    String formattedTime = "${startDateTime.hour % 12 == 0 ? 12 : startDateTime.hour % 12}:${startDateTime.minute.toString().padLeft(2, '0')} ${startDateTime.hour >= 12 ? 'PM' : 'AM'}";
     bool isEndingSoon = startDateTime.difference(DateTime.now()).inDays == 1;
 
     return Card(
@@ -158,7 +135,7 @@ class _NgoCommunityPageState extends State<NgoCommunityPage> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  "${event.eventName} \nNgo: Smile Foundation",
+                  "${event.eventName} \nNgo: ${ngoNames[event.ngoRef!.id] ?? 'Loading...'}",
                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
                 ),
                 if (isEndingSoon)
@@ -181,9 +158,7 @@ class _NgoCommunityPageState extends State<NgoCommunityPage> {
               children: [
                 Text("Date: ", style: TextStyle(fontWeight: FontWeight.bold)),
                 Text(formattedDate),
-                SizedBox(
-                  width: 10,
-                ),
+                SizedBox(width: 10),
                 Text("Time: ", style: TextStyle(fontWeight: FontWeight.bold)),
                 Text(formattedTime),
               ],
@@ -191,7 +166,7 @@ class _NgoCommunityPageState extends State<NgoCommunityPage> {
             SizedBox(height: 8),
             ClipRRect(
               borderRadius: BorderRadius.circular(12),
-              child: Image.asset(event.eventImg, fit: BoxFit.cover),
+              child: Image.network(event.eventImg, fit: BoxFit.cover),
             ),
             SizedBox(height: 10),
           ],
@@ -201,71 +176,32 @@ class _NgoCommunityPageState extends State<NgoCommunityPage> {
   }
 
   String _getMonthName(int month) {
-    List<String> months = [
-      "January",
-      "February",
-      "March",
-      "April",
-      "May",
-      "June",
-      "July",
-      "August",
-      "September",
-      "October",
-      "November",
-      "December"
-    ];
+    List<String> months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
     return months[month - 1];
   }
 
-// Function to build each section dynamically
   Widget buildSection(String title, String status) {
-    List<EventModel> filteredEvents =
-        dummyEvents.where((event) => event.eventStatus == status).toList();
-
+    List<EventModel> filteredEvents = events.where((event) => event.eventStatus == status).toList();
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        SizedBox(
-          height: 10,
-        ),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20),
-          child: Text(
-            title,
-            style: TextStyle(
-                color: Color.fromRGBO(50, 50, 55, 1),
-                fontSize: 20,
-                fontWeight: FontWeight.bold),
-          ),
+          child: Text(title, style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
         ),
-        SizedBox(height: 5),
         filteredEvents.isNotEmpty
             ? ListView.builder(
                 shrinkWrap: true,
                 physics: NeverScrollableScrollPhysics(),
                 itemCount: filteredEvents.length,
-                itemBuilder: (context, index) {
-                  final event = filteredEvents[index];
-                  return GestureDetector(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) =>
-                              NgoEventDescriptionPage(event: event),
-                        ),
-                      );
-                    },
-                    child: eventCard(event), // Using the new event card
-                  );
-                },
+                itemBuilder: (context, index) => GestureDetector(
+                  onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => NgoEventDescriptionPage(event: filteredEvents[index]))),
+                  child: eventCard(filteredEvents[index]),
+                ),
               )
             : Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                child: Text("No events available",
-                    style: TextStyle(color: Colors.grey, fontSize: 16)),
+                padding: const EdgeInsets.all(20),
+                child: Text("No events available", style: TextStyle(color: Colors.grey, fontSize: 16)),
               ),
       ],
     );

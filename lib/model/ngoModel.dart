@@ -1,13 +1,15 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class Ngo {
-  final String ngoId;
-  final String ngoName;
-  final String ngoMail;
-  final String ngoPhone;
-  final String ngoAdd;
-  final String ngoPassword;
-  final GeoPoint ngoLoc;
+
+  String? ngoId;
+  String? ngoName;
+  String ngoMail;
+  String? ngoPhone;
+  String? ngoAdd;
+  String? ngoImg;
+  String ngoPassword;
+  GeoPoint? ngoLoc;
 
   Ngo({
     required this.ngoId,
@@ -15,10 +17,16 @@ class Ngo {
     required this.ngoMail,
     required this.ngoPhone,
     required this.ngoAdd,
+    this.ngoImg,
     required this.ngoPassword,
     required this.ngoLoc,
   });
 
+  Ngo.log({
+    required this.ngoMail,
+    required this.ngoPassword,
+  });
+  
   // Factory constructor to create an instance from JSON
   factory Ngo.fromJson(Map<String, dynamic> json) {
     return Ngo(
@@ -27,6 +35,7 @@ class Ngo {
       ngoMail: json['ngoMail'] ?? "",
       ngoPhone: json['ngoPhone'] ?? "",
       ngoAdd: json['ngoAdd'] ?? "",
+      ngoImg: json['ngoImg'] ?? "",
       ngoPassword: json['ngoPassword'] ?? "",
 
       // ✅ Fix: Use `GeoPoint` directly if it's already a `GeoPoint`
@@ -44,6 +53,7 @@ class Ngo {
       'ngoMail': ngoMail,
       'ngoPhone': ngoPhone,
       'ngoAdd': ngoAdd,
+      'ngoImg': ngoImg,
       'ngoPassword': ngoPassword,
 
       // ✅ No need to convert GeoPoint manually, Firestore supports it

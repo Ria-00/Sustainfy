@@ -1,5 +1,5 @@
+import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import 'package:flutter/material.dart';
-import 'package:google_nav_bar/google_nav_bar.dart';
 import 'package:sustainfy/screens/NGOScreens/NgoCommunityPage.dart';
 import 'package:sustainfy/screens/NGOScreens/NgoLandingPage.dart';
 import 'package:sustainfy/screens/NGOScreens/NgoProfilePage.dart';
@@ -36,37 +36,20 @@ class _NgoHomePage extends State<NgoHomePage> {
       // appBar: CustomAppBar(),
       body: _pages[_selectedIndex],
 
-      bottomNavigationBar: GNav(
-        backgroundColor: Colors.white,
-        color: const Color.fromRGBO(50, 50, 55, 1),
-        activeColor: const Color.fromRGBO(50, 50, 55, 1),
-        tabBackgroundColor: const Color.fromRGBO(52, 168, 83, 1),
-        gap: 8,
-        padding: EdgeInsets.all(16),
-        tabs: [
-          GButton(
-            icon: Icons.home,
-            gap: 8,
-            text: "Home",
-          ),
-          GButton(
-            icon: Icons.people,
-            gap: 8,
-            text: "Community",
-          ),
-          GButton(
-            icon: Icons.qr_code_scanner,
-            gap: 8,
-            text: "Qr Scanner",
-          ),
-          GButton(
-            icon: Icons.account_circle_outlined,
-            gap: 8,
-            text: "Profile",
-          ),
+      bottomNavigationBar: CurvedNavigationBar(
+        backgroundColor: const Color.fromARGB(0, 210, 21, 21),
+        color:  const Color.fromRGBO(52, 168, 83, 1),
+        buttonBackgroundColor: const Color.fromRGBO(52, 168, 83, 1),
+        height: 60,
+        items: [
+          Icon(Icons.home,size: 30,color:  Colors.white,),
+          Icon(Icons.people,size: 30,color:  Colors.white,),
+          Icon(Icons.qr_code_scanner_outlined,size: 30,color:  Colors.white,),
+          Icon(Icons.account_circle_outlined,size: 30,color:  Colors.white,),
         ],
-        selectedIndex: _selectedIndex,
-        onTabChange: _onTabSelected,
+        onTap: (index) {
+          _onTabSelected(index);
+        },
       ),
     );
   }
