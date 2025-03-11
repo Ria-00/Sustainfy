@@ -9,6 +9,9 @@ import 'package:sustainfy/widgets/customCurvedEdges.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 
+import '../../api/gemini_service.dart';
+// import '../../services/getLocation.dart';
+
 class CreateEventPage extends StatefulWidget {
   @override
   State<CreateEventPage> createState() => _CreateEventPageState();
@@ -21,6 +24,33 @@ class _CreateEventPageState extends State<CreateEventPage> {
   final TextEditingController _startTimeController = TextEditingController();
   final TextEditingController _endTimeController = TextEditingController();
   File? _selectedImage;
+
+  Future<Map<String, dynamic>> categorizeEvent() async {
+    final geminiService = GeminiService();
+    Map<String, dynamic> result = await geminiService.categorizeEvent(
+        "Vaccination camp", "Free covid vaccination for kids");
+    print("Categorized under SDG: $result");
+
+    return result;
+  }
+
+  Future<int> getPoints() async {
+    final geminiService = GeminiService();
+
+    String title = "Beach Cleanup Drive";
+    String description =
+        "A community-driven event to clean the local beach and promote sustainability.";
+    int numOfSDGs =
+        2; // Example: SDG 13 (Climate Action) & SDG 14 (Life Below Water)
+    DateTime startTime = DateTime(2024, 3, 10, 9, 0); // March 10, 2024, 9:00 AM
+    DateTime endTime = DateTime(2024, 3, 10, 12, 0); // March 10, 2024, 12:00 PM
+
+    int points = await geminiService.getPoints(
+        title, description, numOfSDGs, startTime, endTime);
+
+    print("Event Points: $points");
+    return points;
+  }
 
   Future<void> _selectDate(BuildContext context, String field,
       TextEditingController controller) async {
@@ -44,29 +74,29 @@ class _CreateEventPageState extends State<CreateEventPage> {
   }
 
   Future<void> _selectTime(BuildContext context, String field,
-    TextEditingController controller) async {
-  TimeOfDay? picked = await showTimePicker(
-    context: context,
-    initialTime: TimeOfDay.now(),
-  );
-  if (picked != null) {
-    String formattedTime = picked.format(context);
-    context
-        .read<EventProvider>()
-        .updateEventData(field: field, value: formattedTime);
-    setState(() {
-      controller.text = formattedTime;
-    });
+      TextEditingController controller) async {
+    TimeOfDay? picked = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay.now(),
+    );
+    if (picked != null) {
+      String formattedTime = picked.format(context);
+      context
+          .read<EventProvider>()
+          .updateEventData(field: field, value: formattedTime);
+      setState(() {
+        controller.text = formattedTime;
+      });
 
-    if (field == "startTime") {
-      _startTimeController.text = formattedTime;
-      _formKey.currentState!.validate();
-    } else if (field == "endTime") {
-      _endTimeController.text = formattedTime; 
-      _formKey.currentState!.validate();
+      if (field == "startTime") {
+        _startTimeController.text = formattedTime;
+        _formKey.currentState!.validate();
+      } else if (field == "endTime") {
+        _endTimeController.text = formattedTime;
+        _formKey.currentState!.validate();
+      }
     }
   }
-}
 
   @override
   Widget build(BuildContext context) {
@@ -117,23 +147,27 @@ class _CreateEventPageState extends State<CreateEventPage> {
                     _buildMainImageSection(),
                     SizedBox(height: 16),
                     Padding(
-              padding: const EdgeInsets.symmetric(vertical: 6.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
+                      padding: const EdgeInsets.symmetric(vertical: 6.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
                           Text("NGO Name",
                               style: TextStyle(
                                   color: Color.fromRGBO(50, 50, 55, 1),
                                   fontSize: 19,
                                   fontWeight: FontWeight.bold)),
                           TextField(
-                          controller: TextEditingController(text: Provider.of<EventProvider>(context).ngoName), 
-                          readOnly: true,
-                          decoration: InputDecoration(
-                            hintText: Provider.of<EventProvider>(context).ngoName, 
-                            hintStyle: TextStyle(color: Colors.grey, fontSize: 16),
+                            controller: TextEditingController(
+                                text: Provider.of<EventProvider>(context)
+                                    .ngoName),
+                            readOnly: true,
+                            decoration: InputDecoration(
+                              hintText:
+                                  Provider.of<EventProvider>(context).ngoName,
+                              hintStyle:
+                                  TextStyle(color: Colors.grey, fontSize: 16),
+                            ),
                           ),
-                        ),
                         ],
                       ),
                     ),
@@ -191,34 +225,8 @@ class _CreateEventPageState extends State<CreateEventPage> {
                     SizedBox(height: 20),
                     _buildTextField("Location",
                         "Eg , National media Center , Gurugram", "location"),
-                    SizedBox(height: 20),
-                    Text("UN Goal",
-                        style: TextStyle(
-                            color: Color.fromRGBO(50, 50, 55, 1),
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold)),
-                    SizedBox(height: 10),
-                    Text(
-                        "Respond to the questions below to determine the corresponding UN Goal.",
-                        style: TextStyle(fontSize: 16)),
-                    SizedBox(height: 10),
-                    ElevatedButton(
-                      onPressed: () {
-                        if (_formKey.currentState!.validate()) {
-                          // Validate the form before navigating
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => NextScreen()),
-                          );
-                        }
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.darkGreen,
-                        foregroundColor: Colors.white,
-                      ),
-                      child: const Text("Get Started"),
-                    ),
+                    // buildLocationField(context),
+
                     SizedBox(height: 20),
                     Text("Event Instructions & Guidelines",
                         style: TextStyle(
@@ -232,7 +240,71 @@ class _CreateEventPageState extends State<CreateEventPage> {
                     SizedBox(height: 10),
                     _buildTextField("Guidelines", "Enter your guidelines here",
                         "guidelines"),
-                    SizedBox(height: 40),
+
+                    SizedBox(height: 30),
+
+                    // ElevatedButton(
+                    //   onPressed:  ()async {
+                    //     if (_formKey.currentState!.validate()) {
+                    //       await categorizeEvent();
+                    //       // Validate the form before navigating
+                    //       Navigator.push(
+                    //         context,
+                    //         MaterialPageRoute(
+                    //             builder: (context) => NextScreen()),
+                    //       );
+                    //     }
+                    //   },
+                    //   style: ElevatedButton.styleFrom(
+                    //     backgroundColor: AppColors.darkGreen,
+                    //     foregroundColor: Colors.white,
+                    //   ),
+                    //   child: const Text("Submit"),
+                    // ),
+                    //  SizedBox(height: 20),
+
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12.0), // Adjust margin here
+                      child: SizedBox(
+                        width: double
+                            .infinity, // Makes the button take full width inside padding
+                        child: ElevatedButton(
+                          onPressed: () async {
+                            if (_formKey.currentState!.validate()) {
+                              Map<String, dynamic> categorizedData =
+                                  await categorizeEvent();
+                              int p = await getPoints();
+
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => NextScreen(
+                                      categorizedData: categorizedData,
+                                      points:p),
+                                ),
+                              );
+                            }
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.darkGreen,
+                            foregroundColor: Colors.white,
+                            padding: EdgeInsets.symmetric(
+                                vertical: 12), // Adjust height
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(
+                                  30), // Optional rounded corners
+                            ),
+                          ),
+                          child: const Text(
+                            "Submit",
+                            style: TextStyle(
+                                fontSize: 18, fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
                   ],
                 ),
               ),
@@ -256,11 +328,11 @@ class _CreateEventPageState extends State<CreateEventPage> {
                   fontWeight: FontWeight.bold)),
           TextFormField(
             onChanged: (value) {
-            context
-                .read<EventProvider>()
-                .updateEventData(field: field, value: value); 
-            _formKey.currentState!.validate();
-          },
+              context
+                  .read<EventProvider>()
+                  .updateEventData(field: field, value: value);
+              _formKey.currentState!.validate();
+            },
             decoration: InputDecoration(
                 hintText: hint,
                 hintStyle: TextStyle(color: Colors.grey, fontSize: 16)),
@@ -276,11 +348,8 @@ class _CreateEventPageState extends State<CreateEventPage> {
     );
   }
 
-    Widget _buildDateTimeField(
-      String label,
-      TextEditingController controller,
-      IconData icon,
-      VoidCallback onTap) {
+  Widget _buildDateTimeField(String label, TextEditingController controller,
+      IconData icon, VoidCallback onTap) {
     return TextFormField(
       controller: controller,
       readOnly: true,
@@ -290,57 +359,59 @@ class _CreateEventPageState extends State<CreateEventPage> {
         labelText: label,
         suffixIcon: Icon(icon, color: Color.fromRGBO(52, 168, 83, 1)),
       ),
-    validator: (value) {
-  if (value == null || value.isEmpty) {
-    return 'Please select $label';
-  } else {
-    if (label == "End Date") {
-      // Get the start date and end date values
-      String startDate = _startDateController.text;
-      String endDate = _endDateController.text;
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return 'Please select $label';
+        } else {
+          if (label == "End Date") {
+            // Get the start date and end date values
+            String startDate = _startDateController.text;
+            String endDate = _endDateController.text;
 
-      // If both start date and end date are selected, compare them
-      if (startDate.isNotEmpty && endDate.isNotEmpty) {
-        // Parse the dates
-        DateTime parsedStartDate = DateFormat('dd/MM/yyyy').parse(startDate);
-        DateTime parsedEndDate = DateFormat('dd/MM/yyyy').parse(endDate);
+            // If both start date and end date are selected, compare them
+            if (startDate.isNotEmpty && endDate.isNotEmpty) {
+              // Parse the dates
+              DateTime parsedStartDate =
+                  DateFormat('dd/MM/yyyy').parse(startDate);
+              DateTime parsedEndDate = DateFormat('dd/MM/yyyy').parse(endDate);
 
-        // Compare the dates and show an error if end date is before start date
-        if (parsedEndDate.isBefore(parsedStartDate)) {
-          return 'End Date must be after Start Date';
-        }
-      }
-    } else if (label == "End Time") {
-      // Get the start date and end date values
-      String startDate = _startDateController.text;
-      String endDate = _endDateController.text;
+              // Compare the dates and show an error if end date is before start date
+              if (parsedEndDate.isBefore(parsedStartDate)) {
+                return 'End Date must be after Start Date';
+              }
+            }
+          } else if (label == "End Time") {
+            // Get the start date and end date values
+            String startDate = _startDateController.text;
+            String endDate = _endDateController.text;
 
-      // If both start date and end date are the same, then apply the time validation
-      if (startDate == endDate) {
-        // Get the start time and end time values
-        String startTime = _startTimeController.text;
-        String endTime = _endTimeController.text;
+            // If both start date and end date are the same, then apply the time validation
+            if (startDate == endDate) {
+              // Get the start time and end time values
+              String startTime = _startTimeController.text;
+              String endTime = _endTimeController.text;
 
-        // If both start time and end time are selected, compare them
-        if (startTime.isNotEmpty && endTime.isNotEmpty) {
-          // Parse the times using the correct format
-          TimeOfDay parsedStartTime = TimeOfDay.fromDateTime(
-              DateFormat('h:mm a').parse(startTime)); // Use 'h:mm a' format
-          TimeOfDay parsedEndTime = TimeOfDay.fromDateTime(
-              DateFormat('h:mm a').parse(endTime)); // Use 'h:mm a' format
+              // If both start time and end time are selected, compare them
+              if (startTime.isNotEmpty && endTime.isNotEmpty) {
+                // Parse the times using the correct format
+                TimeOfDay parsedStartTime = TimeOfDay.fromDateTime(
+                    DateFormat('h:mm a')
+                        .parse(startTime)); // Use 'h:mm a' format
+                TimeOfDay parsedEndTime = TimeOfDay.fromDateTime(
+                    DateFormat('h:mm a').parse(endTime)); // Use 'h:mm a' format
 
-          // Compare the times and show an error if end time is before start time
-          if (parsedEndTime.hour < parsedStartTime.hour ||
-              (parsedEndTime.hour == parsedStartTime.hour &&
-                  parsedEndTime.minute <= parsedStartTime.minute)) {
-            return 'End Time must be after Start Time';
+                // Compare the times and show an error if end time is before start time
+                if (parsedEndTime.hour < parsedStartTime.hour ||
+                    (parsedEndTime.hour == parsedStartTime.hour &&
+                        parsedEndTime.minute <= parsedStartTime.minute)) {
+                  return 'End Time must be after Start Time';
+                }
+              }
+            }
           }
         }
-      }
-    }
-  }
-  return null;
-},
+        return null;
+      },
     );
   }
 

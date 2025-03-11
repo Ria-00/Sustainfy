@@ -13,8 +13,11 @@ import 'package:sustainfy/screens/profilePage.dart';
 import 'package:sustainfy/screens/rewardPage.dart';
 import 'package:sustainfy/screens/splashScreen.dart';
 
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+    // await dotenv.load();
+
   await Firebase.initializeApp(
       options: FirebaseOptions(
           apiKey: 'AIzaSyD3D59Md0l0SAWFc-mXGW7OL-PpATwDt3A',
