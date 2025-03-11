@@ -79,98 +79,108 @@ class _ProfilePageState extends State<ProfilePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Header Section
-            ClipPath(
+      body: Stack(
+        children: [
+          // Static Header (ClipPath)
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: ClipPath(
               clipper: CustomCurvedEdges(),
-              child: SizedBox(
-                height: 150,
-                child: Container(
-                  color: const Color.fromRGBO(52, 168, 83, 1),
-                  child: Row(
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.only(left: 17.0),
-                        child: Image.asset(
-                          'assets/images/SustainifyLogo.png',
-                          width: 50,
-                          height: 60,
-                        ),
+              child: Container(
+                height: 150, // Fixed height
+                color: const Color.fromRGBO(52, 168, 83, 1),
+                padding: EdgeInsets.only(
+                    top: MediaQuery.of(context).padding.top, left: 17),
+                child: Row(
+                  children: [
+                    Image.asset(
+                      'assets/images/SustainifyLogo.png',
+                      width: 50,
+                      height: 60,
+                    ),
+                    SizedBox(width: 7),
+                    const Text(
+                      'Sustainify',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontFamily: AppFonts.inter,
+                        fontSize: 25,
+                        fontWeight: AppFonts.interRegularWeight,
                       ),
-                      SizedBox(width: 7),
-                      const Text(
-                        'Sustainify',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontFamily: AppFonts.inter,
-                          fontSize: 25,
-                          fontWeight: AppFonts.interRegularWeight,
-                        ),
-                      ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
             ),
+          ),
 
-            // User Details Section
-            SizedBox(height: 10),
-            Container(
-              padding: EdgeInsets.symmetric(horizontal: 10),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  CircleAvatar(
-                    radius: 40,
-                    backgroundImage: _user?.userImg != null
-                        ? NetworkImage(_user!.userImg!)
-                        : null,
-                    child: _user?.userImg == null
-                        ? Icon(Icons.image_not_supported)
-                        : null,
-                  ),
-                  SizedBox(width: 30),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          _user?.userName ??
-                              Provider.of<userProvider>(context)
-                                  .email!
-                                  .split("@")[0],
-                          style: TextStyle(
-                            color: const Color.fromRGBO(50, 50, 55, 1),
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
+
+          // Scrollable Content
+          Positioned.fill(
+            top: 140, // Adjust to avoid overlap
+            child: Container(
+              color: Colors.white, // Fix white screen issue
+              child: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // User Details Section
+                    SizedBox(height: 10),
+                    Container(
+                      padding: EdgeInsets.symmetric(horizontal: 10),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          CircleAvatar(
+                            radius: 40,
+                            backgroundImage: _user?.userImg != null
+                                ? NetworkImage(_user!.userImg!)
+                                : null,
+                            child: _user?.userImg == null
+                                ? Icon(Icons.image_not_supported)
+                                : null,
                           ),
-                        ),
-                        Text(
-                          _user?.userMail ?? "Unknown",
-                          style:
-                              TextStyle(fontSize: 16, color: Colors.grey[600]),
-                        ),
-                        SizedBox(height: 4),
-                        Text(
-                          '${_user?.userPhone != null ? "+91 ${_user?.userPhone}" : "N/A"}',
-                          style:
-                              TextStyle(fontSize: 16, color: Colors.grey[600]),
-                        ),
-                      ],
+                          SizedBox(width: 30),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  _user?.userName ??
+                                      Provider.of<userProvider>(context)
+                                          .email!
+                                          .split("@")[0],
+                                  style: TextStyle(
+                                    color: const Color.fromRGBO(50, 50, 55, 1),
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                Text(
+                                  _user?.userMail ?? "Unknown",
+                                  style: TextStyle(
+                                      fontSize: 16, color: Colors.grey[600]),
+                                ),
+                                SizedBox(height: 4),
+                                Text(
+                                  '${_user?.userPhone != null ? "+91 ${_user?.userPhone}" : "N/A"}',
+                                  style: TextStyle(
+                                      fontSize: 16, color: Colors.grey[600]),
+                                ),
+                              ],
+                            ),
+                          ),
+                          IconButton(
+                            icon: Icon(Icons.edit),
+                            onPressed: () {
+                              showEditProfileModal(context);
+                            },
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                  IconButton(
-                    icon: Icon(Icons.edit),
-                    onPressed: () {
-                      showEditProfileModal(context);
-                    },
-                  ),
-                ],
-              ),
-            ),
 
             // Category Buttons Section
             SizedBox(height: 20),
@@ -209,59 +219,86 @@ class _ProfilePageState extends State<ProfilePage> {
               },
             ),
 
-            SizedBox(height: 20),
+                    cardCounts[currentCategory]! > 0
+                        ? GridView.builder(
+                            shrinkWrap: true,
+                            physics: NeverScrollableScrollPhysics(),
+                            padding: EdgeInsets.symmetric(
+                                horizontal: 10, vertical: 10),
+                            gridDelegate:
+                                SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: 2, // Number of columns
+                              mainAxisSpacing: 10, // Spacing between rows
+                              crossAxisSpacing: 10, // Spacing between columns
+                              childAspectRatio:
+                                  1.75, // Aspect ratio for the cards
+                            ),
+                            itemCount: cardCounts[currentCategory]!,
+                            itemBuilder: (context, index) => _buildCard(),
+                          )
+                        : SizedBox.shrink(), // If no items, show nothing
 
-            // Settings Section
+                    SizedBox(height: 20),
 
-            Container(
-              padding: EdgeInsets.symmetric(horizontal: 25),
-              child: Column(
-                children: [
-                  ListTile(
-                    contentPadding: EdgeInsets.zero,
-                    title: Text(
-                      'Settings',
-                      style: TextStyle(
-                          color: const Color.fromRGBO(50, 50, 55, 1),
-                          fontSize: 20),
+                    // Settings Section
+                    Container(
+                      padding: EdgeInsets.symmetric(horizontal: 25),
+                      child: Column(
+                        children: [
+                          ListTile(
+                            contentPadding: EdgeInsets.zero,
+                            title: Text(
+                              'Settings',
+                              style: TextStyle(
+                                  color: const Color.fromRGBO(50, 50, 55, 1),
+                                  fontSize: 20),
+                            ),
+                            trailing: Icon(Icons.arrow_forward_ios),
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => SettingsPage()),
+                              );
+                            },
+                          ),
+                          Divider(),
+                          ListTile(
+                            contentPadding: EdgeInsets.zero,
+                            title: Text('Log out',
+                                style: TextStyle(
+                                    color: const Color.fromRGBO(50, 50, 55, 1),
+                                    fontSize: 20)),
+                            trailing: Icon(Icons.arrow_forward_ios),
+                            onTap: () {
+                              showLogoutModal(context);
+                            },
+                          ),
+                          Divider(),
+                          ListTile(
+                            contentPadding: EdgeInsets.zero,
+                            title: Text(
+                              'Delete Account',
+                              style: TextStyle(color: Colors.red, fontSize: 20),
+                            ),
+                            trailing: Icon(Icons.arrow_forward_ios,
+                                color: Colors.red),
+                            onTap: () {
+                              showDeleteAccModal(context);
+                            },
+                          ),
+                          SizedBox(
+                            height: 10,
+                          )
+                        ],
+                      ),
                     ),
-                    trailing: Icon(Icons.arrow_forward_ios),
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => SettingsPage()),
-                      );
-                    },
-                  ),
-                  Divider(),
-                  ListTile(
-                    contentPadding: EdgeInsets.zero,
-                    title: Text('Log out',
-                        style: TextStyle(
-                            color: const Color.fromRGBO(50, 50, 55, 1),
-                            fontSize: 20)),
-                    trailing: Icon(Icons.arrow_forward_ios),
-                    onTap: () {
-                      showLogoutModal(context);
-                    },
-                  ),
-                  Divider(),
-                  ListTile(
-                    contentPadding: EdgeInsets.zero,
-                    title: Text(
-                      'Delete Account',
-                      style: TextStyle(color: Colors.red, fontSize: 20),
-                    ),
-                    trailing: Icon(Icons.arrow_forward_ios, color: Colors.red),
-                    onTap: () {
-                      showDeleteAccModal(context);
-                    },
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

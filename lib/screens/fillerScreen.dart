@@ -10,7 +10,8 @@ class Fillerscreen extends StatefulWidget {
   _FillerscreenState createState() => _FillerscreenState();
 }
 
-class _FillerscreenState extends State<Fillerscreen> with TickerProviderStateMixin {
+class _FillerscreenState extends State<Fillerscreen>
+    with TickerProviderStateMixin {
   final GlobalKey<ScaffoldState> _globalKey = GlobalKey<ScaffoldState>();
 
   @override
@@ -23,10 +24,12 @@ class _FillerscreenState extends State<Fillerscreen> with TickerProviderStateMix
         showBullets: true,
         inactiveBulletColor: const Color.fromARGB(255, 56, 57, 56),
         skipCallback: () {
-          // Show a Snackbar when "Skip" is clicked
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-            content: Text("Skip clicked"),
-          ));
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) =>
+                    HomePage()), // Replace LoginPage() with your actual login page widget
+          );
         },
         finishCallback: () {
           Navigator.pushReplacement(
@@ -42,13 +45,13 @@ class _FillerscreenState extends State<Fillerscreen> with TickerProviderStateMix
 
   final pages = [
     PageModel(
-        color: Color.fromARGB(255, 231, 196, 121), 
-        imageAssetPath: 'assets/images/fillers/5.png', 
-        title: 'Contribute with Impact',
-        body:
-            'Donate, volunteer,\nor take eco-friendly actions,\n& earn redeemable points for your contributions!',
-        doAnimateImage: true,
-        ),
+      color: Color.fromARGB(255, 231, 196, 121),
+      imageAssetPath: 'assets/images/fillers/5.png',
+      title: 'Contribute with Impact',
+      body:
+          'Donate, volunteer,\nor take eco-friendly actions,\n& earn redeemable points for your contributions!',
+      doAnimateImage: true,
+    ),
     PageModel(
         color: Color.fromARGB(255, 155, 223, 113),
         imageAssetPath: 'assets/images/fillers/3.png',

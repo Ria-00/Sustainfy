@@ -2,11 +2,15 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:provider/provider.dart';
+import 'package:sustainfy/model/ngoModel.dart';
 import 'package:sustainfy/providers/userProvider.dart';
 import 'package:sustainfy/screens/NGOScreens/NgoLoginPage.dart';
 import 'package:sustainfy/screens/NGOScreens/NgoSettingsPage.dart';
+import 'package:sustainfy/services/userOperations.dart';
 import 'package:sustainfy/utils/font.dart';
 import 'package:sustainfy/widgets/customCurvedEdges.dart';
+import 'package:sustainfy/widgets/floatingSuccess.dart';
+import 'package:sustainfy/widgets/floatingWarning.dart';
 
 class NgoProfilePage extends StatefulWidget {
   @override
@@ -14,6 +18,88 @@ class NgoProfilePage extends StatefulWidget {
 }
 
 class _NgoProfilePageState extends State<NgoProfilePage> {
+  Ngo? _user;
+  UserClassOperations operations = UserClassOperations();
+  TextEditingController _nameController = TextEditingController();
+  TextEditingController _emailController = TextEditingController();
+  TextEditingController _mobileController = TextEditingController();
+  final FocusNode nameFocusNode = FocusNode();
+  final FocusNode emailFocusNode = FocusNode();
+  final FocusNode mobileFocusNode = FocusNode();
+
+  bool isTapped = false;
+
+  void _addFocusListener(
+      FocusNode focusNode, TextEditingController controller) {
+    focusNode.addListener(() {
+      if (focusNode.hasFocus) {
+        setState(() {
+          isTapped = true;
+          controller.selection = TextSelection(
+              baseOffset: 0, extentOffset: controller.text.length);
+        });
+      }
+    });
+  }
+
+  void initState() {
+    super.initState();
+    _getuserInformation();
+    _addFocusListener(mobileFocusNode, _mobileController);
+    _addFocusListener(emailFocusNode, _emailController);
+    _addFocusListener(nameFocusNode, _nameController);
+  }
+
+  void _getuserInformation() async {
+    String userEmail =
+        Provider.of<userProvider>(context, listen: false).email ?? '';
+
+    Ngo? fetchedUser = await operations.getNgo(userEmail);
+    print(userEmail);
+
+    if (fetchedUser != null) {
+      setState(() {
+        _user = fetchedUser;
+      });
+      _nameController.text = _user?.ngoName ?? '';
+      _emailController.text = _user?.ngoMail ?? '';
+      _mobileController.text = _user?.ngoPhone ?? '';
+    } else {
+      print("User not found!");
+    }
+  }
+
+    void showFloatingWarning(BuildContext context, String message) {
+      OverlayEntry overlayEntry = OverlayEntry(
+        builder: (context) => FloatingWarning(message: message),
+      );
+
+      // Insert the overlay
+      Overlay.of(context).insert(overlayEntry);
+
+      // Remove the overlay after 2 seconds
+      Future.delayed(const Duration(seconds: 2), () {
+        overlayEntry.remove();
+      });
+  }
+
+  void showFloatingSuccess(BuildContext context, String message) {
+  OverlayEntry overlayEntry = OverlayEntry(
+    builder: (context) => FloatingSuccess(message: message),
+  );
+
+  // Insert the overlay
+  Overlay.of(context).insert(overlayEntry);
+
+  // Remove the overlay after 2 seconds
+  Future.delayed(const Duration(seconds: 2), () {
+    overlayEntry.remove();
+  });
+}
+
+  
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -59,9 +145,12 @@ class _NgoProfilePageState extends State<NgoProfilePage> {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               CircleAvatar(
-                radius: 50,
+                radius: 40,
                 backgroundImage:
-                    AssetImage('assets/images/profileImages/pfp2.png'),
+                    _user?.ngoImg != null ? NetworkImage(_user!.ngoImg!) : null,
+                child: _user?.ngoImg == null
+                    ? Icon(Icons.image_not_supported)
+                    : null,
               ),
               SizedBox(width: 15),
               Expanded(
@@ -69,8 +158,7 @@ class _NgoProfilePageState extends State<NgoProfilePage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      // _user?.userName ?? "Unknown",
-                      "Smile Foundation", //Ngo Name
+                      _user?.ngoName ?? "Unknown",
                       style: TextStyle(
                         color: const Color.fromRGBO(50, 50, 55, 1),
                         fontSize: 20,
@@ -78,14 +166,12 @@ class _NgoProfilePageState extends State<NgoProfilePage> {
                       ),
                     ),
                     Text(
-                      // _user?.userMail ?? "Unknown",
-                      "smile.foundation@gmail.com", //Ngo email
+                      _user?.ngoMail ?? "Unknown",
                       style: TextStyle(fontSize: 16, color: Colors.grey[600]),
                     ),
                     SizedBox(height: 4),
                     Text(
-                      '+91 9354694470',
-                      //  + (_user?.userPhone?.toString() ?? "Unknown"),
+                      '${_user?.ngoPhone != null ? "+91 ${_user?.ngoPhone}" : "N/A"}',
                       style: TextStyle(fontSize: 16, color: Colors.grey[600]),
                     ),
                   ],
@@ -155,20 +241,9 @@ class _NgoProfilePageState extends State<NgoProfilePage> {
     ));
   }
 
+  
+
   void showEditProfileModal(BuildContext context) {
-    final FocusNode nameFocusNode = FocusNode();
-    final FocusNode emailFocusNode = FocusNode();
-    final FocusNode mobileFocusNode = FocusNode();
-
-    void onFocusChange(StateSetter setState) {
-      setState(() {});
-    }
-
-    // Add listeners to the focus nodes
-    nameFocusNode.addListener(() => onFocusChange);
-    emailFocusNode.addListener(() => onFocusChange);
-    mobileFocusNode.addListener(() => onFocusChange);
-
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -176,10 +251,6 @@ class _NgoProfilePageState extends State<NgoProfilePage> {
       builder: (BuildContext context) {
         return StatefulBuilder(
           builder: (BuildContext context, StateSetter setState) {
-            // Check if any input field is focused
-            // bool isKeyboardOpen = nameFocusNode.hasFocus ||
-            //     emailFocusNode.hasFocus ||
-            //     mobileFocusNode.hasFocus;
             double keyboardHeight = MediaQuery.of(context).viewInsets.bottom;
 
             return GestureDetector(
@@ -212,7 +283,7 @@ class _NgoProfilePageState extends State<NgoProfilePage> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
-                              SizedBox(height: 20),
+                              SizedBox(height: 70),
                               CircleAvatar(
                                 radius: 50,
                                 backgroundImage: AssetImage(
@@ -237,11 +308,17 @@ class _NgoProfilePageState extends State<NgoProfilePage> {
                               ),
                               SizedBox(height: 20),
                               TextField(
+                                controller: _nameController,
                                 focusNode: nameFocusNode,
                                 onTap: () {
                                   setState(() {}); // Rebuild when focused
                                 },
+                                onChanged: (value) {
+                                  setState(() {}); // Update UI when user types
+                                },
                                 decoration: InputDecoration(
+                                  floatingLabelBehavior:
+                                      FloatingLabelBehavior.never,
                                   labelStyle: TextStyle(
                                       color: Color.fromRGBO(128, 137, 129, 1)),
                                   filled: true,
@@ -258,42 +335,25 @@ class _NgoProfilePageState extends State<NgoProfilePage> {
                                 ),
                               ),
                               SizedBox(height: 10),
+                              
                               TextField(
-                                focusNode: emailFocusNode,
-                                onTap: () {
-                                  setState(() {});
-                                },
-                                decoration: InputDecoration(
-                                  labelStyle: TextStyle(
-                                      color: Color.fromRGBO(128, 137, 129, 1)),
-                                  filled: true,
-                                  fillColor: Color.fromRGBO(220, 237, 222, 1),
-                                  hintText: "Email",
-                                  labelText: "Enter Email",
-                                  hintStyle: TextStyle(
-                                    color: Color.fromRGBO(128, 137, 129, 0.354),
-                                  ),
-                                  border: OutlineInputBorder(
-                                    borderSide: BorderSide.none,
-                                    borderRadius: BorderRadius.circular(20),
-                                  ),
-                                ),
-                              ),
-                              SizedBox(height: 10),
-                              TextField(
+                                controller: _mobileController,
                                 focusNode: mobileFocusNode,
-                                onTap: () {
-                                  setState(() {});
+                                onChanged: (value) {
+                                  setState(() {}); // Update UI when user types
                                 },
                                 decoration: InputDecoration(
+                                  floatingLabelBehavior:
+                                      FloatingLabelBehavior.never,
                                   labelStyle: TextStyle(
-                                      color: Color.fromRGBO(128, 137, 129, 1)),
+                                    color: Color.fromRGBO(128, 137, 129, 1),
+                                  ),
                                   filled: true,
                                   fillColor: Color.fromRGBO(220, 237, 222, 1),
-                                  hintText: "Mobile No.",
-                                  labelText: "Enter Mobile No.",
+                                  hintText: isTapped ? "" : "Mobile No.",
                                   hintStyle: TextStyle(
-                                    color: Color.fromRGBO(128, 137, 129, 0.354),
+                                    color: Color.fromRGBO(
+                                        128, 137, 129, 0.5), // Grayish text
                                   ),
                                   border: OutlineInputBorder(
                                     borderSide: BorderSide.none,
@@ -301,7 +361,7 @@ class _NgoProfilePageState extends State<NgoProfilePage> {
                                   ),
                                 ),
                               ),
-                              SizedBox(height: 60),
+                              SizedBox(height: 40),
                               ElevatedButton(
                                 style: ElevatedButton.styleFrom(
                                   padding: EdgeInsets.only(
@@ -314,10 +374,23 @@ class _NgoProfilePageState extends State<NgoProfilePage> {
                                     borderRadius: BorderRadius.circular(20),
                                   ),
                                 ),
-                                onPressed: () {
+                                onPressed: () async{
                                   // Submit logic
                                   FocusScope.of(context).unfocus();
-                                  setState(() {}); // Rebuild to reset size
+                                  String ngon= _nameController.text;
+                                  String ngoPhone= _mobileController.text;
+                                  String userEmail =Provider.of<userProvider>(context, listen: false).email ?? '';
+                                  int a=await operations.updateNgoDetails(userEmail, ngon, ngoPhone);
+                                  Navigator.of(context).pop();
+                                  _getuserInformation();
+                                  if(a==1){
+                                    print("Updated");
+                                    showFloatingSuccess(context, "Profile Updated Successfully");
+                                  }
+                                  else{
+                                    print("Not Updated");
+                                    showFloatingWarning(context, "Error Updating Profile");
+                                  }
                                 },
                                 child: Text(
                                   "Submit",
@@ -336,7 +409,12 @@ class _NgoProfilePageState extends State<NgoProfilePage> {
           },
         );
       },
-    );
+    ).whenComplete(() {
+      // Reset controllers if dismissed without submission
+      _nameController.text = _user?.ngoName ?? '';
+      _emailController.text = _user?.ngoMail ?? '';
+      _mobileController.text = _user?.ngoPhone ?? '';
+    });
   }
 
   void showLogoutModal(BuildContext context) {
@@ -378,30 +456,34 @@ class _NgoProfilePageState extends State<NgoProfilePage> {
                             ),
                           ),
                           onPressed: () async {
-                              try {
-                                Navigator.of(context).pop(); // Close modal
 
-                                // Ensure provider is cleared before navigating
-                                Provider.of<userProvider>(context, listen: false).removeValue();
+                            try {
+                              Navigator.of(context).pop(); // Close modal
 
-                                // Sign out from Firebase
-                                await FirebaseAuth.instance.signOut();
+                              // Ensure provider is cleared before navigating
+                              Provider.of<userProvider>(context, listen: false)
+                                  .removeValue();
 
-                                // Sign out from Google as well (if using Google SSO)
-                                GoogleSignIn googleSignIn = GoogleSignIn();
-                                if (await googleSignIn.isSignedIn()) {
-                                  await googleSignIn.signOut();
-                                }
+                              // Sign out from Firebase
+                              await FirebaseAuth.instance.signOut();
 
-                                // Navigate to login, removing all previous routes
-                                Navigator.of(context).pushAndRemoveUntil(
-                                  MaterialPageRoute(builder: (context) => NgoLoginPage()),
-                                  (Route<dynamic> route) => false, // Clears all previous screens
-                                );
-                              } catch (e) {
-                                print("Error during logout: $e");
+                              // Sign out from Google as well (if using Google SSO)
+                              GoogleSignIn googleSignIn = GoogleSignIn();
+                              if (await googleSignIn.isSignedIn()) {
+                                await googleSignIn.signOut();
                               }
-                            },
+
+                              // Navigate to login, removing all previous routes
+                              Navigator.of(context).pushAndRemoveUntil(
+                                MaterialPageRoute(
+                                    builder: (context) => NgoLoginPage()),
+                                (Route<dynamic> route) =>
+                                    false, // Clears all previous screens
+                              );
+                            } catch (e) {
+                              print("Error during logout: $e");
+                            }
+                          },
                           child: Text(
                             "Yes",
                             style: TextStyle(color: Colors.green),
@@ -510,5 +592,5 @@ class _NgoProfilePageState extends State<NgoProfilePage> {
             ),
           );
         });
-  }
+  } 
 }

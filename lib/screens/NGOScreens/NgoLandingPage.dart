@@ -1,9 +1,12 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:sustainfy/model/eventModel.dart';
+import 'package:sustainfy/providers/userProvider.dart';
 import 'package:sustainfy/screens/NGOScreens/CreateEventPage.dart';
 import 'package:sustainfy/screens/NGOScreens/NgoEventDescriptionPage.dart';
 import 'package:sustainfy/screens/eventDescriptionPage.dart';
+import 'package:sustainfy/services/userOperations.dart';
 import 'package:sustainfy/utils/colors.dart';
 import 'package:sustainfy/utils/font.dart';
 import 'package:sustainfy/widgets/customCurvedEdges.dart';
@@ -17,50 +20,33 @@ class NgoLandingPage extends StatefulWidget {
 }
 
 class _NgoLandingPageState extends State<NgoLandingPage> {
-  List<EventModel> dummyEvents = [
-    EventModel.draft(
-      eventId: "1",
-      eventName: "Beach Cleanup",
-      eventDetails: "Join us to clean the beach!",
-      eventImg: 'assets/images/Rectangle16.png',
-      eventStatus: "Upcoming",
-      eventAddress: "Miami Beach, FL",
-      eventStartDate: Timestamp.fromDate(DateTime(2025, 2, 26)), // Example Date
-      eventEndDate: Timestamp.fromDate(DateTime(2025, 2, 28)), // Same-day event
-      UNGoals: [14, 11], // Life Below Water & Sustainable Communities
-      eventLoc: GeoPoint(25.7617, -80.1918),
-      eventParticipants: [],
-      eventPoints: 50,
-    ),
-    EventModel.draft(
-      eventId: "2",
-      eventName: "Tree Plantation Drive",
-      eventDetails: "Let's plant trees together!",
-      eventImg: 'assets/images/Rectangle17.png',
-      eventStatus: "Live",
-      eventAddress: "Central Park, NY",
-      eventStartDate: Timestamp.fromDate(DateTime(2025, 2, 25)),
-      eventEndDate: Timestamp.fromDate(DateTime(2025, 3, 5)),
-      UNGoals: [13, 15], // Climate Action & Life on Land
-      eventLoc: GeoPoint(40.7851, -73.9683),
-      eventParticipants: [],
-      eventPoints: 40,
-    ),
-    EventModel.draft(
-      eventId: "3",
-      eventName: "Donation Drive",
-      eventDetails: "Help those in need with your donations!",
-      eventImg: 'assets/images/Rectangle18.png',
-      eventStatus: "Draft",
-      eventAddress: "Central Park, NY",
-      eventStartDate: Timestamp.fromDate(DateTime(2025, 3, 25)),
-      eventEndDate: Timestamp.fromDate(DateTime(2025, 3, 5)),
-      UNGoals: [1, 2, 13], // No Poverty, Zero Hunger, Climate Action
-      eventLoc: GeoPoint(40.7851, -73.9683),
-      eventParticipants: [],
-      eventPoints: 30,
-    ),
-  ];
+
+
+  UserClassOperations operate = UserClassOperations();
+
+
+   @override
+  void initState() {
+    super.initState();
+    _getEvents();
+  }
+
+  List<EventModel> Events = [];
+  List<EventModel> draftEvents = [];
+
+  String? ngoname;
+
+  void _getEvents() async{
+    String? mail=Provider.of<userProvider>(context, listen: false).email;
+    DocumentReference? _ngoref= await operate.getDocumentRef(collection: "ngo", field: "ngoMail", value: mail);
+    List<EventModel> dummyEvents=await operate.getNgoEvents(_ngoref!);
+    String? _name=await operate.getNgoName(_ngoref);
+    setState(() {
+      Events=dummyEvents;
+      ngoname=_name;
+      draftEvents = dummyEvents.where((event) => event.eventStatus == "draft").toList();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -75,16 +61,17 @@ class _NgoLandingPageState extends State<NgoLandingPage> {
                   padding: EdgeInsets.only(top: 15),
                   children: [
                     // Live Activities Section
-                    buildSection("Live Activities", "Live"),
+                    buildSection("Live Activities", "live"),
                     SizedBox(
                       height: 10,
                     ),
                     // Upcoming Activities Section
-                    buildSection("Upcoming Activities", "Upcoming"),
+                    buildSection("Upcoming Activities", "upcoming"),
                     SizedBox(
                       height: 10,
                     ),
                     // Drafts Section (Modified to Include Edit Icon)
+                    
                     buildDraftsSection(),
                     SizedBox(
                       height: 10,
@@ -171,66 +158,101 @@ class _NgoLandingPageState extends State<NgoLandingPage> {
   }
 
   Widget eventCard(EventModel event) {
-    DateTime startDateTime = event.eventStartDate.toDate();
-    String formattedDate =
-        "${startDateTime.day} ${_getMonthName(startDateTime.month)} ${startDateTime.year}";
-    String formattedTime =
-        "${startDateTime.hour % 12 == 0 ? 12 : startDateTime.hour % 12}:${startDateTime.minute.toString().padLeft(2, '0')} ${startDateTime.hour >= 12 ? 'PM' : 'AM'}";
+  DateTime startDateTime = event.eventStartDate!.toDate();
+  DateTime defaultDate = DateTime(2000, 1, 1); // Same as the default timestamp
 
-    bool isEndingSoon = startDateTime.difference(DateTime.now()).inDays == 1;
+  bool isDefaultDate = startDateTime.year == 2000 && startDateTime.month == 1 && startDateTime.day == 1;
 
-    return Card(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-      child: Padding(
-        padding: const EdgeInsets.all(12.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  "${event.eventName} \nNgo: Smile Foundation",
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+  String formattedDate = !isDefaultDate
+      ? "${startDateTime.day} ${_getMonthName(startDateTime.month)} ${startDateTime.year}"
+      : "_/_/_";
+
+  String formattedTime = !isDefaultDate
+      ? "${startDateTime.hour % 12 == 0 ? 12 : startDateTime.hour % 12}:${startDateTime.minute.toString().padLeft(2, '0')} ${startDateTime.hour >= 12 ? 'PM' : 'AM'}"
+      : "_:_";
+
+  bool isEndingSoon = !isDefaultDate && startDateTime.difference(DateTime.now()).inDays == 1;
+
+  return Card(
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+    child: Padding(
+      padding: const EdgeInsets.all(12.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                event.eventName?.isNotEmpty == true ? event.eventName! : "Event Name",
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  fontStyle: event.eventName?.isNotEmpty == true ? FontStyle.normal : FontStyle.italic,
+                  color: event.eventName?.isNotEmpty == true ? Colors.black : Colors.grey,
                 ),
-                if (isEndingSoon)
-                  Container(
-                    padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: Colors.red[100],
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Text(
-                      "Ending Soon",
-                      style: TextStyle(
-                          color: Colors.red, fontWeight: FontWeight.bold),
-                    ),
+              ),
+
+              if (isEndingSoon)
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: Colors.red[100],
+                    borderRadius: BorderRadius.circular(8),
                   ),
-              ],
-            ),
-            SizedBox(height: 8),
-            Row(
-              children: [
-                Text("Date: ", style: TextStyle(fontWeight: FontWeight.bold)),
-                Text(formattedDate),
-                SizedBox(
-                  width: 10,
+                  child: Text(
+                    "Ending Soon",
+                    style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+                  ),
                 ),
-                Text("Time: ", style: TextStyle(fontWeight: FontWeight.bold)),
-                Text(formattedTime),
-              ],
-            ),
-            SizedBox(height: 8),
-            ClipRRect(
-              borderRadius: BorderRadius.circular(12),
-              child: Image.asset(event.eventImg, fit: BoxFit.cover),
-            ),
-            SizedBox(height: 10),
-          ],
-        ),
+            ],
+          ),
+          SizedBox(height: 8),
+          Row(
+            children: [
+              Text("Date: ", style: TextStyle(fontWeight: FontWeight.bold)),
+              Text(
+                formattedDate != "_/_/_" ? formattedDate : "_/_/_",
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                  color: formattedDate != "_/_/_" ? Colors.black : Colors.grey,
+                  fontStyle: formattedDate != "_/_/_" ? FontStyle.normal : FontStyle.italic,
+                ),
+              ),
+
+              SizedBox(width: 10),
+              Text("Time: ", style: TextStyle(fontWeight: FontWeight.bold)),
+              Text(
+                formattedTime != "_:_" ? formattedTime : "_:_",
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                  color: formattedTime != "_:_" ? Colors.black : Colors.grey,
+                  fontStyle: formattedTime != "_:_" ? FontStyle.normal : FontStyle.italic,
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 8),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: event.eventImg.isNotEmpty
+                ? Image.network(
+                    event.eventImg,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) {
+                      return SizedBox(); // Returns an empty widget if the image fails
+                    },
+                  )
+                : SizedBox(), // Returns an empty widget if URL is empty
+          ),
+          SizedBox(height: 10),
+        ],
       ),
-    );
-  }
+    ),
+  );
+}
 
   String _getMonthName(int month) {
     List<String> months = [
@@ -253,7 +275,7 @@ class _NgoLandingPageState extends State<NgoLandingPage> {
 // Function to build each section dynamically
   Widget buildSection(String title, String status) {
     List<EventModel> filteredEvents =
-        dummyEvents.where((event) => event.eventStatus == status).toList();
+        Events.where((event) => event.eventStatus == status).toList();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -305,9 +327,7 @@ class _NgoLandingPageState extends State<NgoLandingPage> {
 
   // Function for Draft Events (Modified to Include Edit Icon)
   Widget buildDraftsSection() {
-    List<EventModel> draftEvents =
-        dummyEvents.where((event) => event.eventStatus == "Draft").toList();
-
+    
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
