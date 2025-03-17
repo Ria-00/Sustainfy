@@ -24,4 +24,14 @@ class EventProvider extends ChangeNotifier {
 
     notifyListeners();
   }
+
+   // Getters for each field to access values in the UI
+  String get getEventName => eventName;
+  String get getDescription => description;
+  String get getStartDate => startDate;
+  String get getEndDate => endDate;
+  String get getStartTime => startTime;
+  String get getEndTime => endTime;
+  String get getLocation => location;
+  String get getGuidelines => guidelines;
 }

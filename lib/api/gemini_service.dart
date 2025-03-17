@@ -49,7 +49,7 @@ class GeminiService {
   }
 
   Future<int> getPoints(String title, String description, int numOfSDGs,
-      DateTime startTime, DateTime endTime) async {
+      String startTime, String endTime) async {
     final url = Uri.parse(
         'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=$apiKey');
 
