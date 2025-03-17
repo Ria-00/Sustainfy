@@ -25,26 +25,21 @@ class _CreateEventPageState extends State<CreateEventPage> {
   final TextEditingController _endTimeController = TextEditingController();
   File? _selectedImage;
 
-  Future<Map<String, dynamic>> categorizeEvent() async {
+  Future<Map<String, dynamic>> categorizeEvent(
+      String eventType, String eventDescription) async {
     final geminiService = GeminiService();
-    Map<String, dynamic> result = await geminiService.categorizeEvent(
-        "Vaccination camp", "Free covid vaccination for kids");
+    Map<String, dynamic> result =
+        await geminiService.categorizeEvent(eventType, eventDescription);
     print("Categorized under SDG: $result");
 
     return result;
   }
 
-  Future<int> getPoints() async {
+  Future<int> getPoints(String title, String description, int numOfSDGs,
+      String startTime, String endTime) async {
     final geminiService = GeminiService();
 
-    String title = "Beach Cleanup Drive";
-    String description =
-        "A community-driven event to clean the local beach and promote sustainability.";
-    int numOfSDGs =
-        2; // Example: SDG 13 (Climate Action) & SDG 14 (Life Below Water)
-    DateTime startTime = DateTime(2024, 3, 10, 9, 0); // March 10, 2024, 9:00 AM
-    DateTime endTime = DateTime(2024, 3, 10, 12, 0); // March 10, 2024, 12:00 PM
-
+    // Call the geminiService with dynamic parameters
     int points = await geminiService.getPoints(
         title, description, numOfSDGs, startTime, endTime);
 
@@ -243,26 +238,6 @@ class _CreateEventPageState extends State<CreateEventPage> {
 
                     SizedBox(height: 30),
 
-                    // ElevatedButton(
-                    //   onPressed:  ()async {
-                    //     if (_formKey.currentState!.validate()) {
-                    //       await categorizeEvent();
-                    //       // Validate the form before navigating
-                    //       Navigator.push(
-                    //         context,
-                    //         MaterialPageRoute(
-                    //             builder: (context) => NextScreen()),
-                    //       );
-                    //     }
-                    //   },
-                    //   style: ElevatedButton.styleFrom(
-                    //     backgroundColor: AppColors.darkGreen,
-                    //     foregroundColor: Colors.white,
-                    //   ),
-                    //   child: const Text("Submit"),
-                    // ),
-                    //  SizedBox(height: 20),
-
                     Padding(
                       padding: const EdgeInsets.symmetric(
                           horizontal: 12.0), // Adjust margin here
@@ -272,16 +247,30 @@ class _CreateEventPageState extends State<CreateEventPage> {
                         child: ElevatedButton(
                           onPressed: () async {
                             if (_formKey.currentState!.validate()) {
+                              // Retrieve the value of 'eventName' from the EventProvider using the getter
+                              String eventName =
+                                  context.read<EventProvider>().getEventName;
+                              String eventDesc =
+                                  context.read<EventProvider>().getDescription;
+                              String startTime = 
+                                  context.read<EventProvider>().getStartTime;
+                              String endTime = 
+                                  context.read<EventProvider>().getEndTime;
+                              // Do something with the eventName
+                              print('Submitted event name: $eventName');
+              
                               Map<String, dynamic> categorizedData =
-                                  await categorizeEvent();
-                              int p = await getPoints();
+                                  await categorizeEvent(eventName, eventDesc);
+                                  int numOfSDGs = categorizedData.length;
+                              int p = await getPoints(
+                                  eventName, eventDesc, numOfSDGs, startTime, endTime);
 
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
                                   builder: (context) => NextScreen(
                                       categorizedData: categorizedData,
-                                      points:p),
+                                      points: p),
                                 ),
                               );
                             }

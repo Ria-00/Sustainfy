@@ -23,6 +23,17 @@ class _NextScreenState extends State<NextScreen> {
   Widget build(BuildContext context) {
     final eventProvider = Provider.of<EventProvider>(context);
 
+    Map<String, dynamic> data = widget.categorizedData;
+
+    // Initialize an empty list to store image paths
+    List<String> imageList = [];
+
+    // Loop through each key in categorizedData map
+    data.forEach((key, value) {
+      // Directly add the image path based on the key
+      imageList.add("assets/images/unGoals/E_SDG_Icons-$key.jpg");
+    });
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: Stack(
@@ -137,15 +148,30 @@ class _NextScreenState extends State<NextScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          "Categorized under SDG:",
+                          "SDG Goals:",
                           style: TextStyle(
                               fontSize: 18, fontWeight: FontWeight.bold),
                         ),
                         SizedBox(height: 10),
-                        Text(
-                          widget.categorizedData.values
-                              .join("\n"), // Extract and display only values
-                          style: TextStyle(fontSize: 16),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: imageList.map((imagePath) {
+                            return Container(
+                              margin: EdgeInsets.symmetric(
+                                  horizontal: 8), // Spacing between images
+                              width: 80, // Set width for the square shape
+                              height: 80, // Set height to make it a square
+                              decoration: BoxDecoration(
+                                image: DecorationImage(
+                                  image: AssetImage(imagePath),
+                                  fit: BoxFit
+                                      .cover, // Ensure the image fills the square
+                                ),
+                                borderRadius: BorderRadius.circular(
+                                    8), // Optional: rounded corners
+                              ),
+                            );
+                          }).toList(),
                         ),
                       ],
                     ),
@@ -171,45 +197,54 @@ class _NextScreenState extends State<NextScreen> {
                     ),
                   ),
 
-                  // Buttons Section
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      ElevatedButton(
-                        onPressed: () {
-                          // Navigate to NGO Landing Page
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => NgoLandingPage()),
-                          );
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.darkGreen,
-                          foregroundColor: AppColors.white,
-                          padding: EdgeInsets.symmetric(
-                              horizontal: 40, vertical: 15),
-                        ),
-                        child: Text('Save', style: TextStyle(fontSize: 18)),
-                      ),
-                      ElevatedButton(
-                        onPressed: () {
-                          // Show Snackbar for Edit button press
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('Edit mode enabled!')),
-                          );
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.lightGreen,
-                          foregroundColor: AppColors.black,
-                          padding: EdgeInsets.symmetric(
-                              horizontal: 40, vertical: 15),
-                        ),
-                        child: Text('Edit', style: TextStyle(fontSize: 18)),
-                      ),
-                    ],
+                  SizedBox(height: 90),
+                ],
+              ),
+            ),
+          ),
+          // Buttons Section
+          Positioned(
+            bottom: 16.0, // Adjust the padding from the bottom as needed
+            left: 0,
+            right: 0,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                  horizontal: 16.0, vertical: 10), // Side padding
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  ElevatedButton(
+                    onPressed: () {
+                      // Navigate to NGO Landing Page
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => NgoLandingPage()),
+                      );
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.darkGreen,
+                      foregroundColor: AppColors.white,
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 40, vertical: 15),
+                    ),
+                    child: Text('Save', style: TextStyle(fontSize: 18)),
                   ),
-                  SizedBox(height: 30),
+                  ElevatedButton(
+                    onPressed: () {
+                      // Show Snackbar for Edit button press
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Edit mode enabled!')),
+                      );
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.lightGreen,
+                      foregroundColor: AppColors.black,
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 40, vertical: 15),
+                    ),
+                    child: Text('Edit', style: TextStyle(fontSize: 18)),
+                  ),
                 ],
               ),
             ),
