@@ -46,17 +46,21 @@ class _LandingPageState extends State<LandingPage> {
     String query = searchController.text.toLowerCase();
 
     setState(() {
-      filteredEvents = dummyEvents.where((event) {
-        bool matchesSearch = event.eventName.toLowerCase().contains(query);
-        bool matchesNgo =
-            selectedNgo == null || ngoNames[event.ngoRef!.id] == selectedNgo;
-        bool matchesGoals = selectedUNGoals.isEmpty ||
-            event.UNGoals.any((goal) => selectedUNGoals.contains(goal));
+      if (query.isEmpty && selectedNgo == null && selectedUNGoals.isEmpty) {
+        // ✅ Reset to all events when no filters/search applied
+        filteredEvents = List.from(dummyEvents);
+      } else {
+        filteredEvents = dummyEvents.where((event) {
+          bool matchesSearch = event.eventName.toLowerCase().contains(query);
+          bool matchesNgo =
+              selectedNgo == null || ngoNames[event.ngoRef!.id] == selectedNgo;
+          bool matchesGoals = selectedUNGoals.isEmpty ||
+              event.UNGoals.any((goal) => selectedUNGoals.contains(goal));
 
-        return matchesSearch && matchesNgo && matchesGoals;
-      }).toList();
+          return matchesSearch && matchesNgo && matchesGoals;
+        }).toList();
+      }
 
-      // Set noEventsFound flag
       noEventsFound = filteredEvents.isEmpty;
     });
   }
@@ -71,8 +75,7 @@ class _LandingPageState extends State<LandingPage> {
       value: mail,
     );
 
-    List<EventModel> fetchedEvents =
-        await operations.getAllEvents(); // Fetch all events
+    List<EventModel> fetchedEvents = await operations.getAllEvents();
 
     Map<String, String> fetchedNgoNames = {};
     Set<String> uniqueNgoNames = {}; // To store unique NGO names
@@ -83,13 +86,15 @@ class _LandingPageState extends State<LandingPage> {
       String ngoName = ngoSnapshot["ngoName"] ?? "Unknown NGO";
 
       fetchedNgoNames[ngoReference.id] = ngoName;
-      uniqueNgoNames.add(ngoName); // Add unique NGO names
+      uniqueNgoNames.add(ngoName);
     }
 
     setState(() {
       dummyEvents = fetchedEvents;
+      filteredEvents = List.from(dummyEvents); // ✅ Show all events initially
       ngoNames = fetchedNgoNames;
-      ngos = uniqueNgoNames.toList(); // Convert set to list
+      ngos = uniqueNgoNames.toList();
+      noEventsFound = filteredEvents.isEmpty;
     });
   }
 
