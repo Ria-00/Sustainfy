@@ -19,6 +19,7 @@ class NextScreen extends StatefulWidget {
 }
 
 class _NextScreenState extends State<NextScreen> {
+  bool isEditable = false; // Variable to control the read-only state
   @override
   Widget build(BuildContext context) {
     final eventProvider = Provider.of<EventProvider>(context);
@@ -183,15 +184,9 @@ class _NextScreenState extends State<NextScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          "Points assigned:",
+                          "Points assigned:  " + widget.points.toString(),
                           style: TextStyle(
                               fontSize: 18, fontWeight: FontWeight.bold),
-                        ),
-                        SizedBox(height: 10),
-                        Text(
-                          widget.points
-                              .toString(), // Extract and display only values
-                          style: TextStyle(fontSize: 16),
                         ),
                       ],
                     ),
@@ -232,9 +227,15 @@ class _NextScreenState extends State<NextScreen> {
                   ),
                   ElevatedButton(
                     onPressed: () {
+                      setState(() {
+                        isEditable = !isEditable; // Toggle the edit mode
+                      });
                       // Show Snackbar for Edit button press
                       ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('Edit mode enabled!')),
+                        SnackBar(
+                            content: Text(isEditable
+                                ? 'Edit mode enabled!'
+                                : 'Edit mode disabled!')),
                       );
                     },
                     style: ElevatedButton.styleFrom(
@@ -243,7 +244,8 @@ class _NextScreenState extends State<NextScreen> {
                       padding:
                           EdgeInsets.symmetric(horizontal: 40, vertical: 15),
                     ),
-                    child: Text('Edit', style: TextStyle(fontSize: 18)),
+                    child: Text(isEditable ? 'Cancel' : 'Edit',
+                        style: TextStyle(fontSize: 18)),
                   ),
                 ],
               ),
@@ -265,12 +267,16 @@ class _NextScreenState extends State<NextScreen> {
                   color: Color.fromRGBO(50, 50, 55, 1),
                   fontSize: 19,
                   fontWeight: FontWeight.bold)), // Use label here
-          TextField(
-            controller: TextEditingController(text: value),
-            readOnly: true,
-            decoration: InputDecoration(
-              hintText: value.isEmpty ? 'No data' : null,
-              hintStyle: TextStyle(color: Colors.grey, fontSize: 16),
+          SingleChildScrollView(
+            child: TextField(
+              maxLines: null, // Allow unlimited lines
+              keyboardType: TextInputType.multiline, // Multiline input
+              controller: TextEditingController(text: value),
+              readOnly: !isEditable,
+              decoration: InputDecoration(
+                hintText: value.isEmpty ? 'No data' : null,
+                hintStyle: TextStyle(color: Colors.grey, fontSize: 16),
+              ),
             ),
           ),
         ],
@@ -281,7 +287,7 @@ class _NextScreenState extends State<NextScreen> {
   Widget _buildDateTimeField(String label, String value) {
     return TextField(
       controller: TextEditingController(text: value),
-      readOnly: true,
+      readOnly: !isEditable,
       decoration: InputDecoration(
         labelText: label,
       ),
