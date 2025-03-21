@@ -1,5 +1,11 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
+import 'package:sustainfy/model/couponModel.dart';
+import 'package:sustainfy/providers/userProvider.dart';
+import 'package:sustainfy/services/userOperations.dart';
 import 'package:sustainfy/utils/colors.dart';
 import 'package:sustainfy/widgets/customCurvedEdges.dart';
 
@@ -13,67 +19,11 @@ class DiscountDetailsPage extends StatefulWidget {
 }
 
 class _DiscountDetailsPageState extends State<DiscountDetailsPage> {
-  Map<String, dynamic>? couponData;
+  CouponModel? couponData;
+  String? comp;
+  bool isLoading = true;
+  UserClassOperations operations = UserClassOperations();
 
-  //  Dummy Coupons List
-  final List<Map<String, dynamic>> dummyCoupons = [
-    {
-      "couponId": "JMAo4cubhnu2N0oFbXaM",
-      "couponDesc": "15% Discount on Sony Bravia TVs",
-      "couponPoint": 850,
-      "totalClaims": 25,
-      "compRef": "Sony",
-      "couponStart": DateTime(2025, 4, 1),
-      "couponExp": DateTime(2025, 4, 30),
-      "shortDesc": "Get an exclusive 15% discount* on Sony Bravia TVs when you shop at sony.com.",
-      "terms": [
-        "This coupon is valid from April 1, 2025, to April 30, 2025. After this period, the coupon will expire and cannot be used.",
-        "Discount applies only to Sony Bravia TVs and PlayStation accessories purchased from official Sony outlets or online.",
-        "A minimum order value of ₹2050 is required to use this coupon.",
-        "Coupons cannot be combined with other promotions or offers.",
-        "This coupon cannot be used on sale items, clearance items, or gift cards.",
-        "If the order is canceled or refunded, the coupon will not be reissued or replaced."
-      ]
-    },
-    {
-      "couponId": "Pd4nBbpydpjld82hnNJI",
-      "couponDesc": "20% Discount on Ericsson 5G Equipment",
-      "couponPoint": 500,
-      "totalClaims": 60,
-      "compRef": "Ericsson",
-      "couponStart": DateTime(2025, 2, 1),
-      "couponExp": DateTime(2025, 2, 28),
-      "shortDesc": "Enjoy an extra 20% off* on Ericsson's latest 5G Equipment at ericsson.com.",
-      "terms": [
-        "Valid from February 1, 2025, to February 28, 2025.",
-        "This coupon is only valid on orders over ₹2050.",
-        "Offer not valid for resellers or bulk distributors.",
-        "Coupons cannot be combined with other promotions or offers.",
-        "This coupon cannot be used on sale items, clearance items, or gift cards.",
-        "Coupons cannot be used for subscription-based services or software renewals.",
-        "This coupon cannot be used on discounted items, clearance sales, or gift cards.",
-        "Ericsson reserves the right to modify or terminate this offer at any time without notice."
-      ]
-    },
-    {
-      "couponId": "salLjKyxquJsprTvudAE",
-      "couponDesc": "Flat ₹1000 Off on Zara Clothing",
-      "couponPoint": 300,
-      "totalClaims": 50,
-      "compRef": "Zara",
-      "couponStart": DateTime(2025, 5, 1),
-      "couponExp": DateTime(2025, 5, 31),
-      "shortDesc": "Shop the latest Zara collection and get ₹1000 off* on orders above ₹5000!",
-      "terms": [
-        "Valid on Zara online store and physical outlets.",
-        "Applicable only on minimum purchases of ₹5000.",
-        "Not valid on sale items, accessories, or gift cards.",
-        "Only one coupon per user is allowed.",
-        "Cannot be clubbed with other ongoing sale or clearance discounts.",
-        "Zara reserves the right to cancel or modify the coupon if fraudulent activity is detected."
-      ]
-    }
-  ];
 
   @override
   void initState() {
@@ -81,19 +31,51 @@ class _DiscountDetailsPageState extends State<DiscountDetailsPage> {
     _fetchCouponDetails();
   }
 
-  void _fetchCouponDetails() {
-    print(" Received couponId: ${widget.couponId}");
+  void _fetchCouponDetails() async {
+    print("Received couponId: ${widget.couponId}");
 
-    couponData = dummyCoupons.firstWhere(
-      (coupon) => coupon["couponId"] == widget.couponId,
-      orElse: () {
-        print(" No matching coupon found in dummy data!");
-        return {};
-      },
-    );
+    CouponModel? coupon = await operations.getCouponById(widget.couponId);
 
-    setState(() {});
+    if (coupon != null) {
+      String company = await operations.getCompanyName(coupon.compRef);
+      
+      setState(() {
+        couponData = coupon;
+        comp = company;
+        isLoading = false; // Fetch complete
+      });
+    } else {
+      print("Error: Coupon not found!");
+      setState(() {
+        isLoading = false; // Avoid infinite loading
+      });
+    }
   }
+
+  void _claimCoupon() async {
+  try {
+    String userEmail =
+        Provider.of<userProvider>(context, listen: false).email ?? '';
+
+    String result = await operations.claimCoupon(userEmail, widget.couponId);
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(result)), // Display the returned message
+    );
+    // Update the user's coupon list & points
+    List<CouponModel> updatedCoupons = await operations.getUnclaimedCoupons(userEmail);
+    Provider.of<userProvider>(context, listen: false).setCoupon(updatedCoupons);
+    int points = await operations.getUserPoints(userEmail);
+    Provider.of<userProvider>(context, listen: false).setPoints(points);
+    
+  } catch (e) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('❌ An error occurred. Please try again.')),
+    );
+  }
+}
+
+
 
 
 List<TextSpan> _getStyledText(String text) {
@@ -127,9 +109,11 @@ List<TextSpan> _getStyledText(String text) {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      body: couponData != null && couponData!.isNotEmpty
-          ? _buildCouponDetails()
-          : _buildCouponNotFound(),
+      body: isLoading
+          ? Center(child: CircularProgressIndicator()) // Show loading indicator
+          : couponData != null
+              ? _buildCouponDetails()
+              : _buildCouponNotFound(),
     );
   }
 
@@ -146,51 +130,51 @@ List<TextSpan> _getStyledText(String text) {
               children: [
                 SizedBox(width: 10),
                 IconButton(
-                  icon: Icon(Icons.arrow_back_ios, color: Colors.white),
-                  onPressed: () => Navigator.pop(context),
-                ),
+  icon: Icon(Icons.arrow_back_ios, color: Colors.white),
+  onPressed: () async {
+    setState(() {}); // Rebuild the screen to reflect the latest data
+    Navigator.pop(context);
+  },
+),
+
                 SizedBox(width: 5),
                 Text(
-                  couponData!["compRef"], // Company Name
+                  comp!, // Company Name
                   style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
                 ),
               ],
             ),
           ),
         ),
-
+          
         Expanded(
           child: SingleChildScrollView(
              padding: EdgeInsets.symmetric(horizontal: 40, vertical: 15),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Text('Limited Time Offer!', style: TextStyle(color: Colors.red,fontSize: 18, fontWeight: FontWeight.bold)),
-                SizedBox(height: 5),
-
+                
                 // Validity Period
-                Text(
-                  'Valid from ${_formatDate(couponData!["couponStart"])} to ${_formatDate(couponData!["couponExp"])}',
-                  style: TextStyle(color: Colors.grey, fontSize: 15),
-                ),
-                SizedBox(height: 25),
+                
+                SizedBox(height: 6),
 
                 // Discount Title
                 RichText(
                 textAlign: TextAlign.center,
                 text: TextSpan(
                   style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
-                  children: _getStyledText(couponData!["couponDesc"]),
+                  children: _getStyledText(couponData!.couponDesc),
                 ),
               ),
 
                 SizedBox(height: 23),
 
-                //Coupon Short Description
-                Text(couponData!["shortDesc"], textAlign: TextAlign.center, 
-                style: TextStyle(color: Colors.grey.shade700, fontSize: 13),),
-                SizedBox(height: 19),
+              Text(
+                  'Valid from "${DateFormat('d/MM/yyyy').format(couponData!.couponStart.toDate())}" to "${DateFormat('d/MM/yyyy').format(couponData!.couponExp.toDate())}"',
+                  style: TextStyle(color: Colors.grey, fontSize: 15),
+                ),
 
+                SizedBox(height: 20),
                 // Coupon Code Box
                 Container(
                   padding: EdgeInsets.symmetric(vertical: 12, horizontal: 15), 
@@ -202,8 +186,7 @@ List<TextSpan> _getStyledText(String text) {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        // "AB5YZ09MY1V4H",
-                          couponData!["couponId"],
+                          couponData!.couponCode,
                           style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.normal, 
@@ -212,8 +195,8 @@ List<TextSpan> _getStyledText(String text) {
                         ),                  
                         ElevatedButton(
                         onPressed: () {
-                          Clipboard.setData(ClipboardData(text: couponData!["couponId"]));
-                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Coupon code copied!')));
+                          _claimCoupon();
+                          Clipboard.setData(ClipboardData(text: couponData!.couponId));
                         },
                         style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.green, 
@@ -231,6 +214,8 @@ List<TextSpan> _getStyledText(String text) {
                 ),
                 SizedBox(height: 24),
 
+                
+
                 // Terms and Conditions
                 Text('Terms and Conditions*', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                 SizedBox(height: 22),
@@ -238,9 +223,9 @@ List<TextSpan> _getStyledText(String text) {
                 Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: List.generate(
-                  (couponData!["terms"] as List<dynamic>).length,
+                  (couponData!.terms as List<dynamic>).length,
                   (index) => Text(
-                    '${index + 1}. ${couponData!["terms"][index]}',
+                    '${index + 1}. ${couponData!.terms[index]}',
                     style: TextStyle(fontSize: 14, color: Colors.grey.shade700),
                   ),
                 ),
@@ -291,5 +276,4 @@ Widget _buildCouponNotFound() {
     ),
   );
 }
-  String _formatDate(DateTime date) => "${date.day}/${date.month}/${date.year}";
 }
