@@ -56,24 +56,24 @@ class UserClassOperations {
   //login
   Future<int> login(UserClass user) async {
     try {
-      UserCredential userCredential=await _auth.signInWithEmailAndPassword(
+      UserCredential userCredential = await _auth.signInWithEmailAndPassword(
           email: user.userMail!, password: user.userPassword!);
 
-        User? user1 = userCredential.user;
-    if (user1 == null) {
-      return 0;
-    }
+      User? user1 = userCredential.user;
+      if (user1 == null) {
+        return 0;
+      }
 
-    // Step 2: Check if the user exists in the NGO collection
-    QuerySnapshot ngoSnapshot = await FirebaseFirestore.instance
-        .collection('users')
-        .where("userMail", isEqualTo: user.userMail)
-        .get();
+      // Step 2: Check if the user exists in the NGO collection
+      QuerySnapshot ngoSnapshot = await FirebaseFirestore.instance
+          .collection('users')
+          .where("userMail", isEqualTo: user.userMail)
+          .get();
 
-    if (ngoSnapshot.docs.isEmpty) {
-      await FirebaseAuth.instance.signOut(); // Sign out if not an NGO
-      return 0;
-    }
+      if (ngoSnapshot.docs.isEmpty) {
+        await FirebaseAuth.instance.signOut(); // Sign out if not an NGO
+        return 0;
+      }
       print("Login successful");
       return 1;
     } catch (e) {
@@ -83,37 +83,38 @@ class UserClassOperations {
   }
 
   Future<String?> signInAsNgo(Ngo ngo) async {
-  try {
-    // Step 1: Sign in with Firebase Authentication
-    UserCredential userCredential = await FirebaseAuth.instance
-        .signInWithEmailAndPassword(email: ngo.ngoMail, password: ngo.ngoPassword);
+    try {
+      // Step 1: Sign in with Firebase Authentication
+      UserCredential userCredential = await FirebaseAuth.instance
+          .signInWithEmailAndPassword(
+              email: ngo.ngoMail, password: ngo.ngoPassword);
 
-    print("8465864383468486${userCredential.user}");
+      print("8465864383468486${userCredential.user}");
 
-    User? user = userCredential.user;
-    if (user == null) {
-      return "Authentication failed.";
+      User? user = userCredential.user;
+      if (user == null) {
+        return "Authentication failed.";
+      }
+
+      // Step 2: Check if the user exists in the NGO collection
+      QuerySnapshot ngoSnapshot = await FirebaseFirestore.instance
+          .collection('ngo')
+          .where("ngoMail", isEqualTo: ngo.ngoMail)
+          .get();
+
+      if (ngoSnapshot.docs.isEmpty) {
+        await FirebaseAuth.instance.signOut(); // Sign out if not an NGO
+        return "Access denied. Only NGOs can log in.";
+      }
+
+      // Step 3: Return success message (null means success)
+      return null;
+    } on FirebaseAuthException catch (e) {
+      return "45478358468653746${e.message}"; // Return Firebase authentication errors
+    } catch (e) {
+      return "An error occurred: $e";
     }
-
-    // Step 2: Check if the user exists in the NGO collection
-    QuerySnapshot ngoSnapshot = await FirebaseFirestore.instance
-        .collection('ngo')
-        .where("ngoMail", isEqualTo: ngo.ngoMail)
-        .get();
-
-    if (ngoSnapshot.docs.isEmpty) {
-      await FirebaseAuth.instance.signOut(); // Sign out if not an NGO
-      return "Access denied. Only NGOs can log in.";
-    }
-
-    // Step 3: Return success message (null means success)
-    return null; 
-  } on FirebaseAuthException catch (e) {
-    return "45478358468653746${e.message}"; // Return Firebase authentication errors
-  } catch (e) {
-    return "An error occurred: $e";
   }
-}
 
   Future<int> create(UserClass user) async {
     FirebaseFirestore firestore = FirebaseFirestore.instance;
@@ -168,36 +169,37 @@ class UserClassOperations {
     }
   }
 
-  Future<int> updateNgoDetails(String umail, String uname, String uphone) async {
-  try {
-    QuerySnapshot querySnapshot = await FirebaseFirestore.instance
-        .collection('ngo')
-        .where('ngoMail', isEqualTo: umail)
-        .limit(1)
-        .get();
+  Future<int> updateNgoDetails(
+      String umail, String uname, String uphone) async {
+    try {
+      QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+          .collection('ngo')
+          .where('ngoMail', isEqualTo: umail)
+          .limit(1)
+          .get();
 
-    if (querySnapshot.docs.isNotEmpty) {
-      String docId = querySnapshot.docs.first.id;
+      if (querySnapshot.docs.isNotEmpty) {
+        String docId = querySnapshot.docs.first.id;
 
-      await FirebaseFirestore.instance.collection('ngo').doc(docId).update({
-        'ngoName': uname,
-        'ngoPhone': uphone,
-      });
+        await FirebaseFirestore.instance.collection('ngo').doc(docId).update({
+          'ngoName': uname,
+          'ngoPhone': uphone,
+        });
 
-      print('Ngo details updated successfully');
-      return 1;
-    } else {
-      print('No Ngo found with the given email.');
+        print('Ngo details updated successfully');
+        return 1;
+      } else {
+        print('No Ngo found with the given email.');
+        return 0;
+      }
+    } on FirebaseException catch (e) {
+      print('Firebase error: ${e.code} - ${e.message}');
+      return 0;
+    } catch (e) {
+      print('Error updating details: $e');
       return 0;
     }
-  } on FirebaseException catch (e) {
-    print('Firebase error: ${e.code} - ${e.message}');
-    return 0;
-  } catch (e) {
-    print('Error updating details: $e');
-    return 0;
   }
-}
 
   Future<Ngo?> getNgo(String umail) async {
     FirebaseFirestore firestore = FirebaseFirestore.instance;
@@ -212,10 +214,8 @@ class UserClassOperations {
 
       if (snapshot.docs.isNotEmpty) {
         // Convert Firestore document to UserClass
-        print(Ngo.fromJson(
-            snapshot.docs.first.data() as Map<String, dynamic>));
-        return Ngo.fromJson(
-            snapshot.docs.first.data() as Map<String, dynamic>);
+        print(Ngo.fromJson(snapshot.docs.first.data() as Map<String, dynamic>));
+        return Ngo.fromJson(snapshot.docs.first.data() as Map<String, dynamic>);
       } else {
         print("nothing");
         return null;
@@ -241,7 +241,10 @@ class UserClassOperations {
 
   Future<List<EventModel>> getNgoEvents(DocumentReference ngoRef) async {
     try {
-      QuerySnapshot snapshot = await firestore.collection("events").where("ngoRef", isEqualTo: ngoRef).get();
+      QuerySnapshot snapshot = await firestore
+          .collection("events")
+          .where("ngoRef", isEqualTo: ngoRef)
+          .get();
 
       return snapshot.docs.map((doc) {
         return EventModel.fromMap(doc.data() as Map<String, dynamic>);
@@ -252,36 +255,38 @@ class UserClassOperations {
     }
   }
 
-  Future<List<EventModel>> getAllEventsExcludingNgo(DocumentReference ngoRef) async {
-  try {
-    QuerySnapshot snapshot = await FirebaseFirestore.instance.collection("events").get();
+  Future<List<EventModel>> getAllEventsExcludingNgo(
+      DocumentReference ngoRef) async {
+    try {
+      QuerySnapshot snapshot =
+          await FirebaseFirestore.instance.collection("events").get();
 
-    return snapshot.docs
-        .map((doc) => EventModel.fromMap(doc.data() as Map<String, dynamic>))
-        .where((event) => event.ngoRef?.path != ngoRef.path) // Compare using paths
-        .toList();
-  } catch (e) {
-    print("Error fetching events: $e");
-    return [];
+      return snapshot.docs
+          .map((doc) => EventModel.fromMap(doc.data() as Map<String, dynamic>))
+          .where((event) =>
+              event.ngoRef?.path != ngoRef.path) // Compare using paths
+          .toList();
+    } catch (e) {
+      print("Error fetching events: $e");
+      return [];
+    }
   }
-}
-
-
 
   Future<String> getNgoName(DocumentReference ngoRef) async {
-  try {
-    DocumentSnapshot ngoSnapshot = await ngoRef.get();
+    try {
+      DocumentSnapshot ngoSnapshot = await ngoRef.get();
 
-    if (ngoSnapshot.exists) {
-      Map<String, dynamic>? data = ngoSnapshot.data() as Map<String, dynamic>?;
-      return data?['ngoName'] ?? "Unknown NGO";
-    } else {
-      return "NGO not found";
+      if (ngoSnapshot.exists) {
+        Map<String, dynamic>? data =
+            ngoSnapshot.data() as Map<String, dynamic>?;
+        return data?['ngoName'] ?? "Unknown NGO";
+      } else {
+        return "NGO not found";
+      }
+    } catch (e) {
+      return "Error fetching NGO name:${e}";
     }
-  } catch (e) {
-    return "Error fetching NGO name:${e}";
   }
-}
 
   Future<String?> getCompanyImage(DocumentReference compRef) async {
     try {
@@ -308,10 +313,12 @@ class UserClassOperations {
       QuerySnapshot userDoc = await FirebaseFirestore.instance
           .collection('users')
           .where("userMail", isEqualTo: mail)
-          .limit(1).get();
+          .limit(1)
+          .get();
 
       if (userDoc.docs.isNotEmpty) {
-        List<dynamic> claimedCoupons = userDoc.docs.first['claimedCoupons'] ?? [];
+        List<dynamic> claimedCoupons =
+            userDoc.docs.first['claimedCoupons'] ?? [];
 
         // Check if the couponRef exists in claimedCoupons array
         return claimedCoupons.contains(couponRef);
@@ -359,192 +366,178 @@ class UserClassOperations {
   }
 
   Future<int> getUserPoints(String userEmail) async {
-  try {
-    QuerySnapshot userQuery = await FirebaseFirestore.instance
-        .collection("users")
-        .where("userMail", isEqualTo: userEmail) // Querying by email
-        .limit(1) // Limiting to 1 document for efficiency
-        .get();
-
-    if (userQuery.docs.isNotEmpty) {
-      print(userQuery.docs.first["userPoints"]);
-      return (userQuery.docs.first["userPoints"] ?? 0) as int; // Default to 0 if null
-    } else {
-      print("User not found!");
-      return 0;
-    }
-  } catch (e) {
-    print("Error fetching user points: $e");
-    return 0;
-  }
-}
-
-Future<bool> isUserParticipating(String userEmail, String eventId) async {
-  try {
-    // Query Firestore for the user document based on email
-    QuerySnapshot userQuery = await FirebaseFirestore.instance
-        .collection('users')
-        .where('userMail', isEqualTo: userEmail)
-        .limit(1) // Assuming email is unique
-        .get();
-
-    if (userQuery.docs.isNotEmpty) {
-      var userDocRef = userQuery.docs.first.reference; // Get user reference
-
-      // Query Firestore for the event document
-      DocumentSnapshot eventDoc = await FirebaseFirestore.instance
-          .collection('events')
-          .doc(eventId)
+    try {
+      QuerySnapshot userQuery = await FirebaseFirestore.instance
+          .collection("users")
+          .where("userMail", isEqualTo: userEmail) // Querying by email
+          .limit(1) // Limiting to 1 document for efficiency
           .get();
 
-      if (eventDoc.exists) {
-        List<dynamic> participants = eventDoc['eventParticipants'] ?? [];
-
-        // Check if userRef exists in eventParticipants array
-        return participants.any((participant) => 
-          (participant['userRef'] as DocumentReference).id == userDocRef.id
-        );
+      if (userQuery.docs.isNotEmpty) {
+        print(userQuery.docs.first["userPoints"]);
+        return (userQuery.docs.first["userPoints"] ?? 0)
+            as int; // Default to 0 if null
+      } else {
+        print("User not found!");
+        return 0;
       }
-    }
-  } catch (e) {
-    print("Error checking participation: $e");
-  }
-  return false;
-}
-
-
-Future<int> addEventToUser(String userEmail, String eventId) async {
-  try {
-    // Query Firestore for the user document based on email
-    QuerySnapshot userQuery = await FirebaseFirestore.instance
-        .collection('users')
-        .where('userMail', isEqualTo: userEmail)
-        .limit(1) // Assuming email is unique
-        .get();
-
-    if (userQuery.docs.isNotEmpty) {
-      DocumentReference userDocRef = userQuery.docs.first.reference;
-      DocumentReference eventDocRef = FirebaseFirestore.instance.collection('events').doc(eventId);
-
-      // Define the new participant entry
-      Map<String, dynamic> newParticipant = {
-        'userRef': userDocRef,
-        'status': "participated",
-      };
-
-      // Add participant to the event's eventParticipants array
-      await eventDocRef.update({
-        'eventParticipants': FieldValue.arrayUnion([newParticipant])
-      });
-
-      print("Participant added successfully!");
-      return 1;
-    } else {
-      print("User not found.");
+    } catch (e) {
+      print("Error fetching user points: $e");
       return 0;
     }
-  } catch (e) {
-    print("Error adding participant: $e");
-    return 0;
   }
-}
 
-Future<int> removeEventFromUser(String userEmail, String eventId) async {
-  try {
-    QuerySnapshot userQuery = await FirebaseFirestore.instance
-        .collection('users')
-        .where('userMail', isEqualTo: userEmail)
-        .limit(1)
-        .get();
+  Future<bool> isUserParticipating(String userEmail, String eventId) async {
+    try {
+      // Query Firestore for the user document based on email
+      QuerySnapshot userQuery = await FirebaseFirestore.instance
+          .collection('users')
+          .where('userMail', isEqualTo: userEmail)
+          .limit(1) // Assuming email is unique
+          .get();
 
-    if (userQuery.docs.isNotEmpty) {
-      DocumentReference userDocRef = userQuery.docs.first.reference;
-      DocumentReference eventDocRef = FirebaseFirestore.instance.collection('events').doc(eventId);
+      if (userQuery.docs.isNotEmpty) {
+        var userDocRef = userQuery.docs.first.reference; // Get user reference
 
-      // Retrieve event document
-      DocumentSnapshot eventDoc = await eventDocRef.get();
+        // Query Firestore for the event document
+        DocumentSnapshot eventDoc = await FirebaseFirestore.instance
+            .collection('events')
+            .doc(eventId)
+            .get();
 
-      if (eventDoc.exists) {
-        List<dynamic> participants = eventDoc['eventParticipants'] ?? [];
+        if (eventDoc.exists) {
+          List<dynamic> participants = eventDoc['eventParticipants'] ?? [];
 
-        // Find and remove the exact participant entry
-        Map<String, dynamic>? participantToRemove;
-        for (var participant in participants) {
-          if ((participant['userRef'] as DocumentReference).id == userDocRef.id) {
-            participantToRemove = participant;
-            break;
+          // Check if userRef exists in eventParticipants array
+          return participants.any((participant) =>
+              (participant['userRef'] as DocumentReference).id ==
+              userDocRef.id);
+        }
+      }
+    } catch (e) {
+      print("Error checking participation: $e");
+    }
+    return false;
+  }
+
+  Future<int> addEventToUser(String userEmail, String eventId) async {
+    try {
+      // Query Firestore for the user document based on email
+      QuerySnapshot userQuery = await FirebaseFirestore.instance
+          .collection('users')
+          .where('userMail', isEqualTo: userEmail)
+          .limit(1) // Assuming email is unique
+          .get();
+
+      if (userQuery.docs.isNotEmpty) {
+        DocumentReference userDocRef = userQuery.docs.first.reference;
+        DocumentReference eventDocRef =
+            FirebaseFirestore.instance.collection('events').doc(eventId);
+
+        // Define the new participant entry
+        Map<String, dynamic> newParticipant = {
+          'userRef': userDocRef,
+          'status': "participated",
+        };
+
+        // Add participant to the event's eventParticipants array
+        await eventDocRef.update({
+          'eventParticipants': FieldValue.arrayUnion([newParticipant])
+        });
+
+        print("Participant added successfully!");
+        return 1;
+      } else {
+        print("User not found.");
+        return 0;
+      }
+    } catch (e) {
+      print("Error adding participant: $e");
+      return 0;
+    }
+  }
+
+  Future<int> removeEventFromUser(String userEmail, String eventId) async {
+    try {
+      QuerySnapshot userQuery = await FirebaseFirestore.instance
+          .collection('users')
+          .where('userMail', isEqualTo: userEmail)
+          .limit(1)
+          .get();
+
+      if (userQuery.docs.isNotEmpty) {
+        DocumentReference userDocRef = userQuery.docs.first.reference;
+        DocumentReference eventDocRef =
+            FirebaseFirestore.instance.collection('events').doc(eventId);
+
+        // Retrieve event document
+        DocumentSnapshot eventDoc = await eventDocRef.get();
+
+        if (eventDoc.exists) {
+          List<dynamic> participants = eventDoc['eventParticipants'] ?? [];
+
+          // Find and remove the exact participant entry
+          Map<String, dynamic>? participantToRemove;
+          for (var participant in participants) {
+            if ((participant['userRef'] as DocumentReference).id ==
+                userDocRef.id) {
+              participantToRemove = participant;
+              break;
+            }
+          }
+
+          if (participantToRemove != null) {
+            await eventDocRef.update({
+              'eventParticipants': FieldValue.arrayRemove([participantToRemove])
+            });
+
+            print("Participant removed successfully!");
+            return 1;
           }
         }
-
-        if (participantToRemove != null) {
-          await eventDocRef.update({
-            'eventParticipants': FieldValue.arrayRemove([participantToRemove])
-          });
-
-          print("Participant removed successfully!");
-          return 1;
-        }
       }
-    }
-    print("User not found or not a participant.");
-    return 0;
-  } catch (e) {
-    print("Error removing participant: $e");
-    return 0;
-  }
-}
-
-Future<int> markUserAsAttended(
-    DocumentReference eventRef, DocumentReference userRef) async {
-  try {
-    // Get the event document
-    DocumentSnapshot eventSnapshot = await eventRef.get();
-
-    if (!eventSnapshot.exists) {
-      print("Event not found");
+      print("User not found or not a participant.");
+      return 0;
+    } catch (e) {
+      print("Error removing participant: $e");
       return 0;
     }
-
-    // Extract existing participants
-    Map<String, dynamic> eventData =
-        eventSnapshot.data() as Map<String, dynamic>;
-    List<dynamic> eventParticipants = eventData["eventParticipants"] ?? [];
-
-    // Update the participant status
-    List<dynamic> updatedParticipants = eventParticipants.map((participant) {
-      if (participant["userRef"] == userRef) {
-        return {"userRef": userRef, "status": "attended"};
-      }
-      return participant;
-    }).toList();
-
-    // Update Firestore
-    await eventRef.update({"eventParticipants": updatedParticipants});
-
-    print("User marked as attended successfully");
-    return 1;
-  } catch (e) {
-    print("Error updating eventParticipants: $e");
-    return 0;
   }
-}
 
+  Future<int> markUserAsAttended(
+      DocumentReference eventRef, DocumentReference userRef) async {
+    try {
+      // Get the event document
+      DocumentSnapshot eventSnapshot = await eventRef.get();
 
+      if (!eventSnapshot.exists) {
+        print("Event not found");
+        return 0;
+      }
 
+      // Extract existing participants
+      Map<String, dynamic> eventData =
+          eventSnapshot.data() as Map<String, dynamic>;
+      List<dynamic> eventParticipants = eventData["eventParticipants"] ?? [];
 
+      // Update the participant status
+      List<dynamic> updatedParticipants = eventParticipants.map((participant) {
+        if (participant["userRef"] == userRef) {
+          return {"userRef": userRef, "status": "attended"};
+        }
+        return participant;
+      }).toList();
 
+      // Update Firestore
+      await eventRef.update({"eventParticipants": updatedParticipants});
 
-
-
-
-
-
-
-
-
-
-
-
+      print("User marked as attended successfully");
+      return 1;
+    } catch (e) {
+      print("Error updating eventParticipants: $e");
+      return 0;
+    }
+  }
 
   Future<String?> sendOtp(String phoneNumber) async {
     try {
@@ -616,4 +609,21 @@ Future<int> markUserAsAttended(
     }
   }
 
+  // sanidhya ka code
+  // Fetch all users with their total points for the leaderboard
+  Future<List<UserClass>> getAllUsersForLeaderboard() async {
+    try {
+      QuerySnapshot snapshot = await firestore
+          .collection("users")
+          .orderBy("totalPoints", descending: true) // Sort by points
+          .get();
+
+      return snapshot.docs
+          .map((doc) => UserClass.fromMap(doc.data() as Map<String, dynamic>))
+          .toList();
+    } catch (e) {
+      print("Error fetching leaderboard users: $e");
+      return [];
+    }
+  }
 }
