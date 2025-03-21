@@ -66,10 +66,10 @@ class _CommunityPageState extends State<CommunityPage> {
                           child: Text(
                             'Leaderboard',
                             style: TextStyle(
-                              color: AppColors.white,
-                              fontSize: 24,
-                              fontFamily: AppFonts.inter,
-                            ),
+                                color: AppColors.white,
+                                fontSize: 30,
+                                fontWeight: AppFonts.interSemiBoldWeight,
+                                fontFamily: AppFonts.inter),
                           ),
                         ),
                       ),
