@@ -40,7 +40,7 @@ class _CreateEventPageState extends State<CreateEventPage> {
       String formattedDate = DateFormat('dd/MM/yyyy').format(picked);
       context
           .read<EventProvider>()
-          .updateEventData(field: field, value: formattedDate);
+          .updateEventData(field: field, value: picked);
       setState(() {
         controller.text = formattedDate;
         _formKey.currentState!.validate();
@@ -58,7 +58,7 @@ class _CreateEventPageState extends State<CreateEventPage> {
       String formattedTime = picked.format(context);
       context
           .read<EventProvider>()
-          .updateEventData(field: field, value: formattedTime);
+          .updateEventData(field: field, value: picked);
       setState(() {
         controller.text = formattedTime;
       });
@@ -227,7 +227,6 @@ class _CreateEventPageState extends State<CreateEventPage> {
                         child: ElevatedButton(
                           onPressed: () async {
                             if (_formKey.currentState!.validate()) {
-                             
                               Map<String, dynamic> result = await eventService
                                   .handleSubmit(context: context);
 
