@@ -186,12 +186,18 @@ class _LandingPageState extends State<LandingPage> {
                                       // Event Image (Left Side)
                                       ClipRRect(
                                         borderRadius: BorderRadius.circular(12),
-                                        child: Image.network(
-                                          event.eventImg,
-                                          fit: BoxFit.cover,
-                                          height: 70,
-                                          width: 120,
-                                        ),
+                                        child: event.eventImg.isNotEmpty
+                                            ? Image.network(
+                                                event.eventImg,
+                                                fit: BoxFit.cover,
+                                                height: 70,
+                                                width: 120,
+                                                errorBuilder: (context, error,
+                                                    stackTrace) {
+                                                  return SizedBox(); // Returns an empty widget if the image fails
+                                                },
+                                              )
+                                            : SizedBox(), // Returns an empty widget if URL is empty
                                       ),
                                       SizedBox(width: 12),
                                       // Event Details (Right Side)
