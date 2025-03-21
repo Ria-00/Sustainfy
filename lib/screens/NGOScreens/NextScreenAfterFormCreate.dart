@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:sustainfy/providers/EventProvider.dart';
 import 'package:sustainfy/screens/NGOScreens/NgoLandingPage.dart';
@@ -111,23 +112,23 @@ class _NextScreenState extends State<NextScreen> {
                   Row(
                     children: [
                       Expanded(
-                          child: _buildDateTimeField(
+                          child: _buildDateField(
                               "Start Date", eventProvider.startDate)),
                       SizedBox(width: 10),
                       Expanded(
-                          child: _buildDateTimeField(
+                          child: _buildDateField(
                               "End Date", eventProvider.endDate)),
                     ],
                   ),
                   Row(
                     children: [
                       Expanded(
-                          child: _buildDateTimeField(
+                          child: _buildTimeField(
                               "Start Time", eventProvider.startTime)),
                       SizedBox(width: 15),
                       SizedBox(height: 10),
                       Expanded(
-                          child: _buildDateTimeField(
+                          child: _buildTimeField(
                               "End Time", eventProvider.endTime)),
                     ],
                   ),
@@ -284,9 +285,23 @@ class _NextScreenState extends State<NextScreen> {
     );
   }
 
-  Widget _buildDateTimeField(String label, String value) {
+  Widget _buildDateField(String label, DateTime? value) {
     return TextField(
-      controller: TextEditingController(text: value),
+      controller: TextEditingController(
+        text: value != null ? DateFormat('d MMM yyyy').format(value) : '',
+      ),
+      readOnly: !isEditable,
+      decoration: InputDecoration(
+        labelText: label,
+      ),
+    );
+  }
+
+  Widget _buildTimeField(String label, TimeOfDay? value) {
+    return TextField(
+      controller: TextEditingController(
+        text: value != null ? value.format(context) : '',
+      ),
       readOnly: !isEditable,
       decoration: InputDecoration(
         labelText: label,
