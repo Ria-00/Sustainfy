@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:sustainfy/providers/EventProvider.dart';
 import 'package:sustainfy/screens/NGOScreens/NextScreenAfterFormCreate.dart';
+import 'package:sustainfy/services/eventService.dart';
 import 'package:sustainfy/utils/colors.dart';
 import 'package:sustainfy/utils/font.dart';
 import 'package:sustainfy/widgets/customCurvedEdges.dart';
@@ -18,39 +19,13 @@ class CreateEventPage extends StatefulWidget {
 }
 
 class _CreateEventPageState extends State<CreateEventPage> {
+  EventService eventService = EventService();
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _startDateController = TextEditingController();
   final TextEditingController _endDateController = TextEditingController();
   final TextEditingController _startTimeController = TextEditingController();
   final TextEditingController _endTimeController = TextEditingController();
   File? _selectedImage;
-
-  Future<Map<String, dynamic>> categorizeEvent() async {
-    final geminiService = GeminiService();
-    Map<String, dynamic> result = await geminiService.categorizeEvent(
-        "Vaccination camp", "Free covid vaccination for kids");
-    print("Categorized under SDG: $result");
-
-    return result;
-  }
-
-  Future<int> getPoints() async {
-    final geminiService = GeminiService();
-
-    String title = "Beach Cleanup Drive";
-    String description =
-        "A community-driven event to clean the local beach and promote sustainability.";
-    int numOfSDGs =
-        2; // Example: SDG 13 (Climate Action) & SDG 14 (Life Below Water)
-    DateTime startTime = DateTime(2024, 3, 10, 9, 0); // March 10, 2024, 9:00 AM
-    DateTime endTime = DateTime(2024, 3, 10, 12, 0); // March 10, 2024, 12:00 PM
-
-    int points = await geminiService.getPoints(
-        title, description, numOfSDGs, startTime, endTime);
-
-    print("Event Points: $points");
-    return points;
-  }
 
   Future<void> _selectDate(BuildContext context, String field,
       TextEditingController controller) async {
@@ -65,7 +40,7 @@ class _CreateEventPageState extends State<CreateEventPage> {
       String formattedDate = DateFormat('dd/MM/yyyy').format(picked);
       context
           .read<EventProvider>()
-          .updateEventData(field: field, value: formattedDate);
+          .updateEventData(field: field, value: picked);
       setState(() {
         controller.text = formattedDate;
         _formKey.currentState!.validate();
@@ -83,7 +58,7 @@ class _CreateEventPageState extends State<CreateEventPage> {
       String formattedTime = picked.format(context);
       context
           .read<EventProvider>()
-          .updateEventData(field: field, value: formattedTime);
+          .updateEventData(field: field, value: picked);
       setState(() {
         controller.text = formattedTime;
       });
@@ -243,26 +218,6 @@ class _CreateEventPageState extends State<CreateEventPage> {
 
                     SizedBox(height: 30),
 
-                    // ElevatedButton(
-                    //   onPressed:  ()async {
-                    //     if (_formKey.currentState!.validate()) {
-                    //       await categorizeEvent();
-                    //       // Validate the form before navigating
-                    //       Navigator.push(
-                    //         context,
-                    //         MaterialPageRoute(
-                    //             builder: (context) => NextScreen()),
-                    //       );
-                    //     }
-                    //   },
-                    //   style: ElevatedButton.styleFrom(
-                    //     backgroundColor: AppColors.darkGreen,
-                    //     foregroundColor: Colors.white,
-                    //   ),
-                    //   child: const Text("Submit"),
-                    // ),
-                    //  SizedBox(height: 20),
-
                     Padding(
                       padding: const EdgeInsets.symmetric(
                           horizontal: 12.0), // Adjust margin here
@@ -272,16 +227,19 @@ class _CreateEventPageState extends State<CreateEventPage> {
                         child: ElevatedButton(
                           onPressed: () async {
                             if (_formKey.currentState!.validate()) {
+                              Map<String, dynamic> result = await eventService
+                                  .handleSubmit(context: context);
+
                               Map<String, dynamic> categorizedData =
-                                  await categorizeEvent();
-                              int p = await getPoints();
+                                  result['categorizedData'];
+                              int points = result['points'];
 
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
                                   builder: (context) => NextScreen(
                                       categorizedData: categorizedData,
-                                      points:p),
+                                      points: points),
                                 ),
                               );
                             }
@@ -326,22 +284,26 @@ class _CreateEventPageState extends State<CreateEventPage> {
                   color: Color.fromRGBO(50, 50, 55, 1),
                   fontSize: 19,
                   fontWeight: FontWeight.bold)),
-          TextFormField(
-            onChanged: (value) {
-              context
-                  .read<EventProvider>()
-                  .updateEventData(field: field, value: value);
-              _formKey.currentState!.validate();
-            },
-            decoration: InputDecoration(
-                hintText: hint,
-                hintStyle: TextStyle(color: Colors.grey, fontSize: 16)),
-            validator: (value) {
-              if (value == null || value.isEmpty) {
-                return 'Please enter $label';
-              }
-              return null;
-            },
+          SingleChildScrollView(
+            child: TextFormField(
+              maxLines: null, // Allow unlimited lines
+              keyboardType: TextInputType.multiline, // Multiline input
+              onChanged: (value) {
+                context
+                    .read<EventProvider>()
+                    .updateEventData(field: field, value: value);
+                _formKey.currentState!.validate();
+              },
+              decoration: InputDecoration(
+                  hintText: hint,
+                  hintStyle: TextStyle(color: Colors.grey, fontSize: 16)),
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Please enter $label';
+                }
+                return null;
+              },
+            ),
           ),
         ],
       ),

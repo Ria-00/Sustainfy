@@ -10,7 +10,7 @@ class EventModel {
   final Timestamp eventStartDate;
   final Timestamp eventEndDate;
   final List<int> UNGoals;
-  final GeoPoint eventLoc;
+  final GeoPoint? eventLoc;
   final List<EventParticipant> eventParticipants;
   final int eventPoints;
   DocumentReference? ngoRef;
@@ -90,8 +90,8 @@ class EventModel {
       "UNGoals": UNGoals,
 
       "eventLoc": {
-        'latitude': eventLoc.latitude,
-        'longitude': eventLoc.longitude,
+        'latitude': eventLoc?.latitude,
+        'longitude': eventLoc?.longitude,
       },
 
       // ✅ Fixed eventParticipants serialization

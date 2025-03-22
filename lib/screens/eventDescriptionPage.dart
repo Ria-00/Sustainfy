@@ -20,22 +20,22 @@ class EventDescriptionPage extends StatefulWidget {
 }
 
 class _EventDescriptionScreenState extends State<EventDescriptionPage> {
+  UserClassOperations operations = UserClassOperations();
 
-  UserClassOperations operations =UserClassOperations();
-  
-  late String mail= Provider.of<userProvider>(context, listen: false).email ?? '';
-  late bool participation=false;
-  String ngo="";
+  late String mail =
+      Provider.of<userProvider>(context, listen: false).email ?? '';
+  late bool participation = false;
+  String ngo = "";
 
   @override
-  void initState(){
+  void initState() {
     super.initState();
     _checkParticipation();
     _getNgoName();
   }
 
   void _checkParticipation() async {
-    bool ans = await operations.isUserParticipating(mail,widget.event.eventId);
+    bool ans = await operations.isUserParticipating(mail, widget.event.eventId);
     setState(() {
       participation = ans;
     });
@@ -47,7 +47,6 @@ class _EventDescriptionScreenState extends State<EventDescriptionPage> {
       ngo = ngoName;
     });
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -92,7 +91,7 @@ class _EventDescriptionScreenState extends State<EventDescriptionPage> {
                           color: Colors.white,
                           fontFamily: AppFonts.inter,
                           fontSize: 25,
-                          fontWeight: AppFonts.interRegularWeight,
+                          fontWeight: AppFonts.interSemiBoldWeight,
                         ),
                       ),
                     ],
@@ -291,9 +290,10 @@ class _EventDescriptionScreenState extends State<EventDescriptionPage> {
                                     color: Colors.green)),
                             SizedBox(width: 10),
                             Text(
-                              widget.event.eventStartDate.toDate().day == widget.event.eventEndDate.toDate().day
-                                ? "${DateFormat('d MMM yyyy').format(widget.event.eventStartDate.toDate())}"
-                                : "${DateFormat('d MMM yyyy').format(widget.event.eventStartDate.toDate())} - ${DateFormat('d MMM yyyy').format(widget.event.eventEndDate.toDate())}",
+                              widget.event.eventStartDate.toDate().day ==
+                                      widget.event.eventEndDate.toDate().day
+                                  ? "${DateFormat('d MMM yyyy').format(widget.event.eventStartDate.toDate())}"
+                                  : "${DateFormat('d MMM yyyy').format(widget.event.eventStartDate.toDate())} - ${DateFormat('d MMM yyyy').format(widget.event.eventEndDate.toDate())}",
                               style: TextStyle(fontSize: 14),
                             ),
                           ],
@@ -311,7 +311,8 @@ class _EventDescriptionScreenState extends State<EventDescriptionPage> {
                                     fontWeight: FontWeight.bold,
                                     color: Colors.green)),
                             SizedBox(width: 10),
-                            Text("${DateFormat('h:mm a').format(widget.event.eventStartDate.toDate())} - ${DateFormat('h:mm a').format(widget.event.eventEndDate.toDate())}",
+                            Text(
+                                "${DateFormat('h:mm a').format(widget.event.eventStartDate.toDate())} - ${DateFormat('h:mm a').format(widget.event.eventEndDate.toDate())}",
                                 style: TextStyle(fontSize: 14)),
                           ],
                         ),
@@ -350,9 +351,10 @@ class _EventDescriptionScreenState extends State<EventDescriptionPage> {
                               child: ClipRRect(
                                 borderRadius: BorderRadius.circular(50),
                                 child: Image.asset(
-                                    "assets/images/unGoals/E_SDG_Icons-$goalImage.jpg",
-                                    width: 60,
-                                    height: 60,),
+                                  "assets/images/unGoals/E_SDG_Icons-$goalImage.jpg",
+                                  width: 60,
+                                  height: 60,
+                                ),
                               ),
                             );
                           }).toList(),
@@ -367,15 +369,19 @@ class _EventDescriptionScreenState extends State<EventDescriptionPage> {
                             ElevatedButton(
                               onPressed: () async {
                                 if (!participation) {
-                                  int i=await operations.addEventToUser(mail, widget.event.eventId);
-                                  if (i==1) {
+                                  int i = await operations.addEventToUser(
+                                      mail, widget.event.eventId);
+                                  if (i == 1) {
                                     setState(() {
                                       participation = true;
                                     });
                                   }
                                 } else {
-                                  int i=await operations.removeEventFromUser(mail, widget.event.eventId); // Function to leave event
-                                  if (i==1) {
+                                  int i = await operations.removeEventFromUser(
+                                      mail,
+                                      widget.event
+                                          .eventId); // Function to leave event
+                                  if (i == 1) {
                                     setState(() {
                                       participation = false;
                                     });
@@ -383,42 +389,52 @@ class _EventDescriptionScreenState extends State<EventDescriptionPage> {
                                 }
                               },
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: participation ? Colors.white : Color.fromRGBO(52, 168, 83, 1),
-                                side: participation ? BorderSide(color: Colors.red, width: 2) : BorderSide.none, // Red border when leaving
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
-                                padding: EdgeInsets.symmetric(horizontal: 40, vertical: 15),
+                                backgroundColor: participation
+                                    ? Colors.white
+                                    : Color.fromRGBO(52, 168, 83, 1),
+                                side: participation
+                                    ? BorderSide(color: Colors.red, width: 2)
+                                    : BorderSide
+                                        .none, // Red border when leaving
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(30)),
+                                padding: EdgeInsets.symmetric(
+                                    horizontal: 40, vertical: 15),
                               ),
                               child: Text(
                                 participation ? "Leave" : "Join Now",
                                 style: TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.bold,
-                                  color: participation ? Colors.red : Colors.white, // Red text when leaving
+                                  color: participation
+                                      ? Colors.red
+                                      : Colors.white, // Red text when leaving
                                 ),
                               ),
                             ),
-
 
                             SizedBox(width: 15), // Space between buttons
 
                             // View QR Code Button (Enabled for "live" or "upcoming")
                             ElevatedButton(
-                              onPressed: (widget.event.eventStatus
-                                              .toLowerCase() ==
-                                          "live" ||
-                                      widget.event.eventStatus.toLowerCase() ==
-                                          "upcoming") && participation
-                                  ? () {
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) =>
-                                              ParticipantQRPage(
-                                                  event: widget.event),
-                                        ),
-                                      );
-                                    }
-                                  : null, // Disabled if event is "closed"
+                              onPressed:
+                                  (widget.event.eventStatus.toLowerCase() ==
+                                                  "live" ||
+                                              widget.event.eventStatus
+                                                      .toLowerCase() ==
+                                                  "upcoming") &&
+                                          participation
+                                      ? () {
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) =>
+                                                  ParticipantQRPage(
+                                                      event: widget.event),
+                                            ),
+                                          );
+                                        }
+                                      : null, // Disabled if event is "closed"
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Color.fromRGBO(52, 168, 83, 1),
                                 shape: RoundedRectangleBorder(

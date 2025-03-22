@@ -5,14 +5,11 @@ import 'package:sustainfy/model/eventModel.dart';
 import 'package:sustainfy/providers/userProvider.dart';
 import 'package:sustainfy/screens/NGOScreens/CreateEventPage.dart';
 import 'package:sustainfy/screens/NGOScreens/NgoEventDescriptionPage.dart';
-import 'package:sustainfy/screens/eventDescriptionPage.dart';
 import 'package:sustainfy/services/userOperations.dart';
 import 'package:sustainfy/utils/colors.dart';
 import 'package:sustainfy/utils/font.dart';
-import 'package:sustainfy/widgets/customCurvedEdges.dart';
+import 'package:sustainfy/widgets/customCurvedEdges.dart'; // Assuming you have this
 import 'package:intl/intl.dart';
-
-
 
 class NgoLandingPage extends StatefulWidget {
   @override
@@ -20,31 +17,30 @@ class NgoLandingPage extends StatefulWidget {
 }
 
 class _NgoLandingPageState extends State<NgoLandingPage> {
-
-
   UserClassOperations operate = UserClassOperations();
 
-
-   @override
+  @override
   void initState() {
     super.initState();
     _getEvents();
   }
 
-  List<EventModel> Events = [];
+  List<EventModel> events = [];
   List<EventModel> draftEvents = [];
 
-  String? ngoname;
+  String? ngoName;
 
-  void _getEvents() async{
-    String? mail=Provider.of<userProvider>(context, listen: false).email;
-    DocumentReference? _ngoref= await operate.getDocumentRef(collection: "ngo", field: "ngoMail", value: mail);
-    List<EventModel> dummyEvents=await operate.getNgoEvents(_ngoref!);
-    String? _name=await operate.getNgoName(_ngoref);
+  void _getEvents() async {
+    String? mail = Provider.of<userProvider>(context, listen: false).email;
+    DocumentReference? ngoRef = await operate.getDocumentRef(
+        collection: "ngo", field: "ngoMail", value: mail);
+    List<EventModel> dummyEvents = await operate.getNgoEvents(ngoRef!);
+    String? name = await operate.getNgoName(ngoRef);
     setState(() {
-      Events=dummyEvents;
-      ngoname=_name;
-      draftEvents = dummyEvents.where((event) => event.eventStatus == "draft").toList();
+      events = dummyEvents;
+      ngoName = name;
+      draftEvents =
+          dummyEvents.where((event) => event.eventStatus == "draft").toList();
     });
   }
 
@@ -55,24 +51,22 @@ class _NgoLandingPageState extends State<NgoLandingPage> {
         children: [
           Column(
             children: [
-              const SizedBox(height: 150), // Prevents overlap with the header
+              const SizedBox(height: 150),
               Expanded(
                 child: ListView(
                   padding: EdgeInsets.only(top: 15),
                   children: [
-                    // Live Activities Section
-                    buildSection("Live Activities", "live"),
+                    buildLiveActivitiesSection("Live Activities",
+                        "assets/images/live.png", Colors.red, "live"),
                     SizedBox(
                       height: 10,
                     ),
-                    // Upcoming Activities Section
-                    buildSection("Upcoming Activities", "upcoming"),
+                    buildPublishedSection(
+                        "Published", "assets/images/published.png", "upcoming"),
                     SizedBox(
                       height: 10,
                     ),
-                    // Drafts Section (Modified to Include Edit Icon)
-                    
-                    buildDraftsSection(),
+                    buildDraftsSection("assets/images/drafts.png"),
                     SizedBox(
                       height: 10,
                     ),
@@ -130,26 +124,24 @@ class _NgoLandingPageState extends State<NgoLandingPage> {
             ),
           ),
           Positioned(
-            bottom: 10, // Adjust this value based on navigation bar height
-            right: MediaQuery.of(context).size.width / 2 -
-                28, // Centering the button
+            bottom: 10,
+            right: MediaQuery.of(context).size.width / 2 - 28,
             child: SizedBox(
-              width: 80, // Set desired width
+              width: 80,
               height: 80,
               child: FloatingActionButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) =>
-                              CreateEventPage()), // Navigate to Create Event
-                    );
-                  },
-                  backgroundColor: Colors.green, // Adjust color
-                  child: Icon(Icons.add, size: 40, color: Colors.white),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(40),
-                  )),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => CreateEventPage()),
+                  );
+                },
+                backgroundColor: Colors.green,
+                child: Icon(Icons.add, size: 40, color: Colors.white),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(40),
+                ),
+              ),
             ),
           ),
         ],
@@ -157,98 +149,167 @@ class _NgoLandingPageState extends State<NgoLandingPage> {
     );
   }
 
-  Widget eventCard(EventModel event) {
-  DateTime startDateTime = event.eventStartDate!.toDate();
-  DateTime defaultDate = DateTime(2000, 1, 1); // Same as the default timestamp
+Widget buildEvent(EventModel event) {
+  DateTime? startDateTime = event.eventStartDate?.toDate();
+  DateTime defaultDate = DateTime(2000, 1, 1);
+  bool isDefaultDate = startDateTime == null ||
+      (startDateTime.year == 2000 &&
+          startDateTime.month == 1 &&
+          startDateTime.day == 1);
+  String formattedDate = isDefaultDate
+      ? "_/_/_"
+      : "${startDateTime!.day} ${_getMonthName(startDateTime.month)} ${startDateTime.year}";
+  String formattedTime = isDefaultDate
+      ? "_:_"
+      : "${startDateTime!.hour % 12 == 0 ? 12 : startDateTime.hour % 12}:${startDateTime.minute.toString().padLeft(2, '0')} ${startDateTime.hour >= 12 ? 'PM' : 'AM'}";
+  bool isEndingSoon = startDateTime != null &&
+      !isDefaultDate &&
+      startDateTime.difference(DateTime.now()).inDays == 1;
 
-  bool isDefaultDate = startDateTime.year == 2000 && startDateTime.month == 1 && startDateTime.day == 1;
+  return Padding(
+    padding: const EdgeInsets.symmetric(horizontal: 11.0),
+    child: GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => NgoEventDescriptionPage(event: event),
+          ),
+        );
+      },
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: AppColors.darkGreen, width: 2), 
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 4,
+              offset: Offset(2, 2),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(15),
+                bottomLeft: Radius.circular(16),
+                bottomRight: Radius.circular(10),
+                topRight: Radius.circular(10)
+              ),
+              child: event.eventImg.isNotEmpty
+                  ? Image.network(
+                      event.eventImg,
+                      width: 190, 
+                      height: 140, 
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return SizedBox(width: 160, height: 140);
+                      },
+                    )
+                  : SizedBox(width: 190, height: 140),
+            ),
 
-  String formattedDate = !isDefaultDate
-      ? "${startDateTime.day} ${_getMonthName(startDateTime.month)} ${startDateTime.year}"
-      : "_/_/_";
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.all(16), 
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      event.eventName?.isNotEmpty == true ? event.eventName! : "Event Name",
+                      style: TextStyle(
+                        fontSize: 17,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    SizedBox(height: 16),
+                    if (event.eventStatus != "draft")
+                      Row(
+                        children: [
+                          Icon(Icons.people, size: 18, color: AppColors.darkGreen),
+                          SizedBox(width: 4),
+                          Text('54 Users Joined', style: TextStyle(fontSize: 13)),
+                        ],
+                      ),
+                    if (event.eventStatus != "draft") SizedBox(height: 6),
 
-  String formattedTime = !isDefaultDate
-      ? "${startDateTime.hour % 12 == 0 ? 12 : startDateTime.hour % 12}:${startDateTime.minute.toString().padLeft(2, '0')} ${startDateTime.hour >= 12 ? 'PM' : 'AM'}"
-      : "_:_";
+                    //  Live: Show only the Date (No Time)
+                    if (event.eventStatus == "live")
+                      Row(
+                        children: [
+                          Icon(Icons.calendar_today, size: 18, color: AppColors.darkGreen),
+                          SizedBox(width: 6),
+                          Text(
+                            formattedDate,
+                            style: TextStyle(fontSize: 13),
+                          ),
+                        ],
+                      ),
 
-  bool isEndingSoon = !isDefaultDate && startDateTime.difference(DateTime.now()).inDays == 1;
+                    // Drafts: Show Date & Time on Separate Rows
+                    if (event.eventStatus == "draft") ...[
+                      Row(
+                        children: [
+                          Icon(Icons.calendar_today, size: 18, color: AppColors.darkGreen),
+                          SizedBox(width: 6),
+                          Text(
+                            formattedDate,
+                            style: TextStyle(fontSize: 13),
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: 4),
+                      Row(
+                        children: [
+                          Icon(Icons.access_time, size: 18, color: AppColors.darkGreen),
+                          SizedBox(width: 6),
+                          Text(
+                            formattedTime,
+                            style: TextStyle(fontSize: 13),
+                          ),
+                        ],
+                      ),
+                    ],
 
-  return Card(
-    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-    child: Padding(
-      padding: const EdgeInsets.all(12.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                event.eventName?.isNotEmpty == true ? event.eventName! : "Event Name",
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  fontStyle: event.eventName?.isNotEmpty == true ? FontStyle.normal : FontStyle.italic,
-                  color: event.eventName?.isNotEmpty == true ? Colors.black : Colors.grey,
+                    //  Published: Show Time on the Right & date on left over image
+                    if (event.eventStatus.trim().toLowerCase() == "upcoming")
+                      Row(
+                        children: [
+                          Icon(Icons.access_time, size: 18, color: AppColors.darkGreen),
+                          SizedBox(width: 6),
+                          Text(
+                            formattedTime,
+                            style: TextStyle(fontSize: 13),
+                          ),
+                        ],
+                      ),
+
+                    if (isEndingSoon)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 6.0),
+                        child: Container(
+                          padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: Colors.red[100],
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(
+                            "Ending Soon",
+                            style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                      ),
+                  ],
                 ),
               ),
-
-              if (isEndingSoon)
-                Container(
-                  padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: Colors.red[100],
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Text(
-                    "Ending Soon",
-                    style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
-                  ),
-                ),
-            ],
-          ),
-          SizedBox(height: 8),
-          Row(
-            children: [
-              Text("Date: ", style: TextStyle(fontWeight: FontWeight.bold)),
-              Text(
-                formattedDate != "_/_/_" ? formattedDate : "_/_/_",
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w500,
-                  color: formattedDate != "_/_/_" ? Colors.black : Colors.grey,
-                  fontStyle: formattedDate != "_/_/_" ? FontStyle.normal : FontStyle.italic,
-                ),
-              ),
-
-              SizedBox(width: 10),
-              Text("Time: ", style: TextStyle(fontWeight: FontWeight.bold)),
-              Text(
-                formattedTime != "_:_" ? formattedTime : "_:_",
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w500,
-                  color: formattedTime != "_:_" ? Colors.black : Colors.grey,
-                  fontStyle: formattedTime != "_:_" ? FontStyle.normal : FontStyle.italic,
-                ),
-              ),
-            ],
-          ),
-          SizedBox(height: 8),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(12),
-            child: event.eventImg.isNotEmpty
-                ? Image.network(
-                    event.eventImg,
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) {
-                      return SizedBox(); // Returns an empty widget if the image fails
-                    },
-                  )
-                : SizedBox(), // Returns an empty widget if URL is empty
-          ),
-          SizedBox(height: 10),
-        ],
+            ),
+          ],
+        ),
       ),
     ),
   );
@@ -272,124 +333,195 @@ class _NgoLandingPageState extends State<NgoLandingPage> {
     return months[month - 1];
   }
 
-// Function to build each section dynamically
-  Widget buildSection(String title, String status) {
+  Widget buildLiveActivitiesSection(
+      String title, String imagePath, Color color, String status) {
     List<EventModel> filteredEvents =
-        Events.where((event) => event.eventStatus == status).toList();
+        events.where((event) => event.eventStatus == status).toList();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        SizedBox(
-          height: 10,
-        ),
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20),
-          child: Text(
-            title,
-            style: TextStyle(
-                color: Color.fromRGBO(50, 50, 55, 1),
-                fontSize: 20,
-                fontWeight: FontWeight.bold),
-          ),
-        ),
-        SizedBox(height: 5),
-        filteredEvents.isNotEmpty
-            ? ListView.builder(
-                shrinkWrap: true,
-                physics: NeverScrollableScrollPhysics(),
-                itemCount: filteredEvents.length,
-                itemBuilder: (context, index) {
-                  final event = filteredEvents[index];
-                  return GestureDetector(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) =>
-                              NgoEventDescriptionPage(event: event),
-                        ),
-                      );
-                    },
-                    child: eventCard(event), // Using the new event card
-                  );
-                },
-              )
-            : Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                child: Text("No events available",
-                    style: TextStyle(color: Colors.grey, fontSize: 16)),
+          padding: const EdgeInsets.symmetric(
+              horizontal: 20, vertical: 20), 
+          child: Row(
+            children: [
+              Container(
+                decoration: BoxDecoration(
+                  color: color.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(50),
+                ),
+                padding: EdgeInsets.all(3),
+                child: Image.asset(
+                  imagePath,
+                  width: 25,
+                  height: 25,
+                  color: color,
+                ),
               ),
+              SizedBox(width: 6), 
+              Text(
+                title,
+                style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold), 
+              ),
+            ],
+          ),
+        ), 
+        Padding(
+          padding: const EdgeInsets.only(
+              left: 10, right: 10, bottom: 5 ,), 
+          child: filteredEvents.isNotEmpty
+              ? Column(
+                  children: List.generate(
+                    filteredEvents.length,
+                    (index) => buildEvent(filteredEvents[index]),
+                  ),
+                )
+              : Center(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 5), 
+                    child: Text("No events available",
+                        style: TextStyle(
+                            color: Colors.grey,
+                            fontSize: 14)),
+                  ),
+                ),
+        ),
       ],
     );
   }
 
-  // Function for Draft Events (Modified to Include Edit Icon)
-  Widget buildDraftsSection() {
-    
+  Widget buildPublishedSection(String title, String imagePath, String status) {
+    List<EventModel> filteredEvents =
+        events.where((event) => event.eventStatus == status).toList();
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20),
-          child: Text(
-            "Drafts",
-            style: TextStyle(
-                color: Color.fromRGBO(50, 50, 55, 1),
-                fontSize: 20,
-                fontWeight: FontWeight.bold),
+          padding: const EdgeInsets.symmetric(
+              horizontal: 10, vertical: 4), 
+          child: Row(
+            children: [
+              Image.asset(
+                imagePath,
+                width: 50,
+                height: 50,
+              ),
+              SizedBox(width: 6), 
+              Text(
+                title,
+                style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold), 
+              ),
+            ],
           ),
         ),
-        SizedBox(height: 5),
-        draftEvents.isNotEmpty
-            ? ListView.builder(
-                shrinkWrap: true,
-                physics: NeverScrollableScrollPhysics(),
-                itemCount: draftEvents.length,
-                itemBuilder: (context, index) {
-                  final event = draftEvents[index];
+        Padding(
+          padding: const EdgeInsets.only(
+              left: 10, right: 10, bottom: 5), 
+          child: filteredEvents.isNotEmpty
+              ? Column(
+                  children: List.generate(
+                    filteredEvents.length,
+                    (index) => buildEvent(filteredEvents[index]),
+                  ),
+                )
+              : Center(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 5), 
+                    child: Text("No events available",
+                        style: TextStyle(
+                            color: Colors.grey,
+                            fontSize: 14)),
+                  ),
+                ),
+        ),
+      ],
+    );
+  }
 
-                  return Stack(
-                    children: [
-                      GestureDetector(
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) =>
-                                  NgoEventDescriptionPage(event: event),
-                            ),
-                          );
-                        },
-                        child: eventCard(event), // Using eventCard
-                      ),
-                      Positioned(
-                        top: 10,
-                        right: 10,
-                        child: IconButton(
-                          icon: Icon(Icons.edit, color: Colors.blue),
-                          onPressed: () {
+  Widget buildDraftsSection(String draftImagePath) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(
+              horizontal: 16, vertical: 4), 
+          child: Row(
+            children: [
+              Image.asset(
+                draftImagePath,
+                width: 50, 
+                height: 50,
+              ),
+              SizedBox(width: 6), 
+              Text(
+                "Drafts",
+                style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold), 
+              ),
+            ],
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.only(
+              left: 10, right: 10, bottom: 5), 
+          child: draftEvents.isNotEmpty
+              ? Column(
+                  children: List.generate(
+                    draftEvents.length,
+                    (index) => Stack(
+                      children: [
+                        GestureDetector(
+                          onTap: () {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) =>
-                                    NgoEventDescriptionPage(event: event),
+                                builder: (context) => NgoEventDescriptionPage(
+                                    event: draftEvents[index]),
                               ),
                             );
                           },
+                          child: buildEvent(draftEvents[index]),
                         ),
-                      ),
-                    ],
-                  );
-                },
-              )
-            : Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                child: Text("No drafts available",
-                    style: TextStyle(color: Colors.grey, fontSize: 16)),
-              ),
+                        Positioned(
+                          top: 10,
+                          right: 20,
+                          child: IconButton(
+                            icon: Icon(Icons.edit, color: Colors.blue),
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => NgoEventDescriptionPage(
+                                      event: draftEvents[index]),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                )
+              : Center(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 5), 
+                    child: Text("No drafts available",
+                        style: TextStyle(
+                            color: Colors.grey,
+                            fontSize: 14)),
+                  ),
+                ),
+        ),
       ],
     );
   }

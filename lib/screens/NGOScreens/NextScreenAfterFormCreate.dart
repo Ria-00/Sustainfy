@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:sustainfy/providers/EventProvider.dart';
 import 'package:sustainfy/screens/NGOScreens/NgoLandingPage.dart';
@@ -19,9 +20,21 @@ class NextScreen extends StatefulWidget {
 }
 
 class _NextScreenState extends State<NextScreen> {
+  bool isEditable = false; // Variable to control the read-only state
   @override
   Widget build(BuildContext context) {
     final eventProvider = Provider.of<EventProvider>(context);
+
+    Map<String, dynamic> data = widget.categorizedData;
+
+    // Initialize an empty list to store image paths
+    List<String> imageList = [];
+
+    // Loop through each key in categorizedData map
+    data.forEach((key, value) {
+      // Directly add the image path based on the key
+      imageList.add("assets/images/unGoals/E_SDG_Icons-$key.jpg");
+    });
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -99,23 +112,23 @@ class _NextScreenState extends State<NextScreen> {
                   Row(
                     children: [
                       Expanded(
-                          child: _buildDateTimeField(
+                          child: _buildDateField(
                               "Start Date", eventProvider.startDate)),
                       SizedBox(width: 10),
                       Expanded(
-                          child: _buildDateTimeField(
+                          child: _buildDateField(
                               "End Date", eventProvider.endDate)),
                     ],
                   ),
                   Row(
                     children: [
                       Expanded(
-                          child: _buildDateTimeField(
+                          child: _buildTimeField(
                               "Start Time", eventProvider.startTime)),
                       SizedBox(width: 15),
                       SizedBox(height: 10),
                       Expanded(
-                          child: _buildDateTimeField(
+                          child: _buildTimeField(
                               "End Time", eventProvider.endTime)),
                     ],
                   ),
@@ -137,15 +150,30 @@ class _NextScreenState extends State<NextScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          "Categorized under SDG:",
+                          "SDG Goals:",
                           style: TextStyle(
                               fontSize: 18, fontWeight: FontWeight.bold),
                         ),
                         SizedBox(height: 10),
-                        Text(
-                          widget.categorizedData.values
-                              .join("\n"), // Extract and display only values
-                          style: TextStyle(fontSize: 16),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: imageList.map((imagePath) {
+                            return Container(
+                              margin: EdgeInsets.symmetric(
+                                  horizontal: 8), // Spacing between images
+                              width: 80, // Set width for the square shape
+                              height: 80, // Set height to make it a square
+                              decoration: BoxDecoration(
+                                image: DecorationImage(
+                                  image: AssetImage(imagePath),
+                                  fit: BoxFit
+                                      .cover, // Ensure the image fills the square
+                                ),
+                                borderRadius: BorderRadius.circular(
+                                    8), // Optional: rounded corners
+                              ),
+                            );
+                          }).toList(),
                         ),
                       ],
                     ),
@@ -157,59 +185,69 @@ class _NextScreenState extends State<NextScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          "Points assigned:",
+                          "Points assigned:  " + widget.points.toString(),
                           style: TextStyle(
                               fontSize: 18, fontWeight: FontWeight.bold),
-                        ),
-                        SizedBox(height: 10),
-                        Text(
-                          widget.points
-                              .toString(), // Extract and display only values
-                          style: TextStyle(fontSize: 16),
                         ),
                       ],
                     ),
                   ),
 
-                  // Buttons Section
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      ElevatedButton(
-                        onPressed: () {
-                          // Navigate to NGO Landing Page
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => NgoLandingPage()),
-                          );
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.darkGreen,
-                          foregroundColor: AppColors.white,
-                          padding: EdgeInsets.symmetric(
-                              horizontal: 40, vertical: 15),
-                        ),
-                        child: Text('Save', style: TextStyle(fontSize: 18)),
-                      ),
-                      ElevatedButton(
-                        onPressed: () {
-                          // Show Snackbar for Edit button press
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('Edit mode enabled!')),
-                          );
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.lightGreen,
-                          foregroundColor: AppColors.black,
-                          padding: EdgeInsets.symmetric(
-                              horizontal: 40, vertical: 15),
-                        ),
-                        child: Text('Edit', style: TextStyle(fontSize: 18)),
-                      ),
-                    ],
+                  SizedBox(height: 90),
+                ],
+              ),
+            ),
+          ),
+          // Buttons Section
+          Positioned(
+            bottom: 16.0, // Adjust the padding from the bottom as needed
+            left: 0,
+            right: 0,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                  horizontal: 16.0, vertical: 10), // Side padding
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  ElevatedButton(
+                    onPressed: () {
+                      // Navigate to NGO Landing Page
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => NgoLandingPage()),
+                      );
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.darkGreen,
+                      foregroundColor: AppColors.white,
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 40, vertical: 15),
+                    ),
+                    child: Text('Save', style: TextStyle(fontSize: 18)),
                   ),
-                  SizedBox(height: 30),
+                  ElevatedButton(
+                    onPressed: () {
+                      setState(() {
+                        isEditable = !isEditable; // Toggle the edit mode
+                      });
+                      // Show Snackbar for Edit button press
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                            content: Text(isEditable
+                                ? 'Edit mode enabled!'
+                                : 'Edit mode disabled!')),
+                      );
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.lightGreen,
+                      foregroundColor: AppColors.black,
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 40, vertical: 15),
+                    ),
+                    child: Text(isEditable ? 'Cancel' : 'Edit',
+                        style: TextStyle(fontSize: 18)),
+                  ),
                 ],
               ),
             ),
@@ -230,12 +268,16 @@ class _NextScreenState extends State<NextScreen> {
                   color: Color.fromRGBO(50, 50, 55, 1),
                   fontSize: 19,
                   fontWeight: FontWeight.bold)), // Use label here
-          TextField(
-            controller: TextEditingController(text: value),
-            readOnly: true,
-            decoration: InputDecoration(
-              hintText: value.isEmpty ? 'No data' : null,
-              hintStyle: TextStyle(color: Colors.grey, fontSize: 16),
+          SingleChildScrollView(
+            child: TextField(
+              maxLines: null, // Allow unlimited lines
+              keyboardType: TextInputType.multiline, // Multiline input
+              controller: TextEditingController(text: value),
+              readOnly: !isEditable,
+              decoration: InputDecoration(
+                hintText: value.isEmpty ? 'No data' : null,
+                hintStyle: TextStyle(color: Colors.grey, fontSize: 16),
+              ),
             ),
           ),
         ],
@@ -243,10 +285,24 @@ class _NextScreenState extends State<NextScreen> {
     );
   }
 
-  Widget _buildDateTimeField(String label, String value) {
+  Widget _buildDateField(String label, DateTime? value) {
     return TextField(
-      controller: TextEditingController(text: value),
-      readOnly: true,
+      controller: TextEditingController(
+        text: value != null ? DateFormat('d MMM yyyy').format(value) : '',
+      ),
+      readOnly: !isEditable,
+      decoration: InputDecoration(
+        labelText: label,
+      ),
+    );
+  }
+
+  Widget _buildTimeField(String label, TimeOfDay? value) {
+    return TextField(
+      controller: TextEditingController(
+        text: value != null ? value.format(context) : '',
+      ),
+      readOnly: !isEditable,
       decoration: InputDecoration(
         labelText: label,
       ),
