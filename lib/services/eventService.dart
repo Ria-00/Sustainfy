@@ -66,7 +66,7 @@ class EventService {
         eventId: "",
         eventName: context.read<EventProvider>().getEventName,
         eventDetails: context.read<EventProvider>().getDescription,
-        eventImg: '', // Optionally set image URL or path
+        eventImg: 'assets/images/Rectangle1.png', // Optionally set image URL or path
         //live,upcoming, draft
         eventStatus: 'draft',
         eventAddress: context.read<EventProvider>().getLocation,

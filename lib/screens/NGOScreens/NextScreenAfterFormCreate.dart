@@ -82,7 +82,7 @@ class _NextScreenState extends State<NextScreen> {
                     height: 150,
                     width: double.infinity,
                     child: Image.asset(
-                      'assets/images/Rectangle17.png',
+                      'assets/images/Rectangle1.png',
                       fit: BoxFit.cover,
                     ),
                   ),

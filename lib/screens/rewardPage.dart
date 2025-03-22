@@ -19,7 +19,7 @@ class CouponPage extends StatefulWidget {
 
 class _CouponModelPageState extends State<CouponPage> {
   UserClassOperations operations = UserClassOperations();
-
+  bool isLoading = true;
 
 
   // **Updated Redeem Coupon Logic**
@@ -58,6 +58,9 @@ class _CouponModelPageState extends State<CouponPage> {
     List<CouponModel> updatedCoupons = await operations.getUnclaimedCoupons(userEmail);
 
     Provider.of<userProvider>(context, listen: false).setCoupon(updatedCoupons);
+    setState(() {
+      isLoading = false;
+    });
 
   }
 
@@ -161,7 +164,8 @@ class _CouponModelPageState extends State<CouponPage> {
           ),
           SizedBox(height: 10),
           // List of coupon cards
-          Consumer<userProvider>(
+          isLoading
+          ? Center(child: CircularProgressIndicator()):Consumer<userProvider>(
             builder: (BuildContext context, provider, child) {
             return Expanded(
               child: GridView.builder(
