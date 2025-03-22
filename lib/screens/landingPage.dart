@@ -27,6 +27,7 @@ class _LandingPageState extends State<LandingPage> {
   String? selectedNgo;
   bool noEventsFound = false;
   bool isSearchVisible = false; // Add this to your state
+  bool isLoading = true;
 
   final List<String> unGoalImages = List.generate(
       17, (index) => "assets/images/unGoals/E_SDG_Icons-${index + 1}.jpg");
@@ -46,20 +47,18 @@ class _LandingPageState extends State<LandingPage> {
     String query = searchController.text.toLowerCase();
 
     setState(() {
-      if (query.isEmpty && selectedNgo == null && selectedUNGoals.isEmpty) {
-        // ✅ Reset to all events when no filters/search applied
-        filteredEvents = List.from(dummyEvents);
-      } else {
-        filteredEvents = dummyEvents.where((event) {
-          bool matchesSearch = event.eventName.toLowerCase().contains(query);
-          bool matchesNgo =
-              selectedNgo == null || ngoNames[event.ngoRef!.id] == selectedNgo;
-          bool matchesGoals = selectedUNGoals.isEmpty ||
-              event.UNGoals.any((goal) => selectedUNGoals.contains(goal));
+      filteredEvents = dummyEvents.where((event) {
+        bool isValidStatus =
+            event.eventStatus == "live" || event.eventStatus == "upcoming";
 
-          return matchesSearch && matchesNgo && matchesGoals;
-        }).toList();
-      }
+        bool matchesSearch = event.eventName.toLowerCase().contains(query);
+        bool matchesNgo =
+            selectedNgo == null || ngoNames[event.ngoRef!.id] == selectedNgo;
+        bool matchesGoals = selectedUNGoals.isEmpty ||
+            event.UNGoals.any((goal) => selectedUNGoals.contains(goal));
+
+        return isValidStatus && matchesSearch && matchesNgo && matchesGoals;
+      }).toList();
 
       noEventsFound = filteredEvents.isEmpty;
     });
@@ -79,22 +78,30 @@ class _LandingPageState extends State<LandingPage> {
 
     Map<String, String> fetchedNgoNames = {};
     Set<String> uniqueNgoNames = {}; // To store unique NGO names
+    List<EventModel> validEvents =
+        []; // Only store valid (live/upcoming) events
 
     for (var event in fetchedEvents) {
-      DocumentReference ngoReference = event.ngoRef!;
-      DocumentSnapshot ngoSnapshot = await ngoReference.get();
-      String ngoName = ngoSnapshot["ngoName"] ?? "Unknown NGO";
+      if (event.eventStatus == "live" || event.eventStatus == "upcoming") {
+        validEvents.add(event);
 
-      fetchedNgoNames[ngoReference.id] = ngoName;
-      uniqueNgoNames.add(ngoName);
+        DocumentReference ngoReference = event.ngoRef!;
+        DocumentSnapshot ngoSnapshot = await ngoReference.get();
+        String ngoName = ngoSnapshot["ngoName"] ?? "Unknown NGO";
+
+        fetchedNgoNames[ngoReference.id] = ngoName;
+        uniqueNgoNames.add(ngoName);
+      }
     }
 
     setState(() {
-      dummyEvents = fetchedEvents;
-      filteredEvents = List.from(dummyEvents); // ✅ Show all events initially
+      dummyEvents = validEvents;
+      filteredEvents =
+          List.from(dummyEvents); // ✅ Initially show only valid events
       ngoNames = fetchedNgoNames;
       ngos = uniqueNgoNames.toList();
       noEventsFound = filteredEvents.isEmpty;
+      isLoading = false;
     });
   }
 
@@ -148,121 +155,129 @@ class _LandingPageState extends State<LandingPage> {
                         ),
                       )
                     else
-                      ListView.builder(
-                        shrinkWrap: true,
-                        physics: NeverScrollableScrollPhysics(),
-                        itemCount: filteredEvents.length,
-                        itemBuilder: (context, index) {
-                          final event = filteredEvents[index];
-                          DateTime startDateTime =
-                              event.eventStartDate.toDate();
-                          String formattedDate =
-                              "${startDateTime.day} ${_getMonthName(startDateTime.month)} ${startDateTime.year}";
-                          String formattedTime =
-                              "${startDateTime.hour % 12 == 0 ? 12 : startDateTime.hour % 12}:${startDateTime.minute.toString().padLeft(2, '0')} ${startDateTime.hour >= 12 ? 'PM' : 'AM'}";
+                      isLoading
+                          ? Center(child: CircularProgressIndicator())
+                          : ListView.builder(
+                              shrinkWrap: true,
+                              physics: NeverScrollableScrollPhysics(),
+                              itemCount: filteredEvents.length,
+                              itemBuilder: (context, index) {
+                                final event = filteredEvents[index];
+                                DateTime startDateTime =
+                                    event.eventStartDate.toDate();
+                                String formattedDate =
+                                    "${startDateTime.day} ${_getMonthName(startDateTime.month)} ${startDateTime.year}";
+                                String formattedTime =
+                                    "${startDateTime.hour % 12 == 0 ? 12 : startDateTime.hour % 12}:${startDateTime.minute.toString().padLeft(2, '0')} ${startDateTime.hour >= 12 ? 'PM' : 'AM'}";
 
-                          return GestureDetector(
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) =>
-                                      EventDescriptionPage(event: event),
-                                ),
-                              );
-                            },
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 15.0, vertical: 8),
-                              child: Card(
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(15),
-                                ),
-                                elevation: 2,
-                                child: Padding(
-                                  padding: const EdgeInsets.all(10.0),
-                                  child: Row(
-                                    children: [
-                                      // Event Image (Left Side)
-                                      ClipRRect(
-                                        borderRadius: BorderRadius.circular(12),
-                                        child: event.eventImg.isNotEmpty
-                                            ? Image.network(
-                                                event.eventImg,
-                                                fit: BoxFit.cover,
-                                                height: 70,
-                                                width: 120,
-                                                errorBuilder: (context, error,
-                                                    stackTrace) {
-                                                  return SizedBox(); // Returns an empty widget if the image fails
-                                                },
-                                              )
-                                            : SizedBox(), // Returns an empty widget if URL is empty
+                                return GestureDetector(
+                                  onTap: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) =>
+                                            EventDescriptionPage(event: event),
                                       ),
-                                      SizedBox(width: 12),
-                                      // Event Details (Right Side)
-                                      Expanded(
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
+                                    );
+                                  },
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 15.0, vertical: 8),
+                                    child: Card(
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(15),
+                                      ),
+                                      elevation: 2,
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(10.0),
+                                        child: Row(
                                           children: [
-                                            Text(
-                                              event.eventName,
-                                              style: TextStyle(
-                                                fontSize: 16,
-                                                fontWeight: FontWeight.bold,
-                                                color: Colors.green,
+                                            // Event Image (Left Side)
+                                            ClipRRect(
+                                              borderRadius:
+                                                  BorderRadius.circular(12),
+                                              child: event.eventImg.isNotEmpty
+                                                  ? Image.network(
+                                                      event.eventImg,
+                                                      fit: BoxFit.cover,
+                                                      height: 70,
+                                                      width: 120,
+                                                      errorBuilder: (context,
+                                                          error, stackTrace) {
+                                                        return SizedBox(); // Returns an empty widget if the image fails
+                                                      },
+                                                    )
+                                                  : SizedBox(), // Returns an empty widget if URL is empty
+                                            ),
+                                            SizedBox(width: 12),
+                                            // Event Details (Right Side)
+                                            Expanded(
+                                              child: Column(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                children: [
+                                                  Text(
+                                                    event.eventName,
+                                                    style: TextStyle(
+                                                      fontSize: 16,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      color: Colors.green,
+                                                    ),
+                                                    overflow:
+                                                        TextOverflow.ellipsis,
+                                                  ),
+                                                  Text(
+                                                    "by ${ngoNames[event.ngoRef?.id] ?? 'Unknown NGO'}",
+                                                    style: TextStyle(
+                                                      fontSize: 14,
+                                                      fontWeight:
+                                                          FontWeight.w500,
+                                                      color: Colors.grey[700],
+                                                    ),
+                                                  ),
+                                                  SizedBox(height: 4),
+                                                  Row(
+                                                    children: [
+                                                      Icon(Icons.calendar_month,
+                                                          size: 16,
+                                                          color: Colors.green),
+                                                      SizedBox(width: 4),
+                                                      Text(
+                                                        formattedDate,
+                                                        style: TextStyle(
+                                                            fontSize: 13,
+                                                            color: Colors
+                                                                .grey[700]),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                  Row(
+                                                    children: [
+                                                      Icon(Icons.access_time,
+                                                          size: 16,
+                                                          color: Colors.green),
+                                                      SizedBox(width: 4),
+                                                      Text(
+                                                        formattedTime,
+                                                        style: TextStyle(
+                                                            fontSize: 13,
+                                                            color: Colors
+                                                                .grey[700]),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ],
                                               ),
-                                              overflow: TextOverflow.ellipsis,
-                                            ),
-                                            Text(
-                                              "by ${ngoNames[event.ngoRef?.id] ?? 'Unknown NGO'}",
-                                              style: TextStyle(
-                                                fontSize: 14,
-                                                fontWeight: FontWeight.w500,
-                                                color: Colors.grey[700],
-                                              ),
-                                            ),
-                                            SizedBox(height: 4),
-                                            Row(
-                                              children: [
-                                                Icon(Icons.calendar_month,
-                                                    size: 16,
-                                                    color: Colors.green),
-                                                SizedBox(width: 4),
-                                                Text(
-                                                  formattedDate,
-                                                  style: TextStyle(
-                                                      fontSize: 13,
-                                                      color: Colors.grey[700]),
-                                                ),
-                                              ],
-                                            ),
-                                            Row(
-                                              children: [
-                                                Icon(Icons.access_time,
-                                                    size: 16,
-                                                    color: Colors.green),
-                                                SizedBox(width: 4),
-                                                Text(
-                                                  formattedTime,
-                                                  style: TextStyle(
-                                                      fontSize: 13,
-                                                      color: Colors.grey[700]),
-                                                ),
-                                              ],
                                             ),
                                           ],
                                         ),
                                       ),
-                                    ],
+                                    ),
                                   ),
-                                ),
-                              ),
+                                );
+                              },
                             ),
-                          );
-                        },
-                      ),
                   ],
                 ),
               ),
