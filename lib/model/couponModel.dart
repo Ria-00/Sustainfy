@@ -8,6 +8,8 @@ class CouponModel {
   DocumentReference compRef;
   Timestamp couponStart;
   Timestamp couponExp;
+  List<String> terms;
+  String couponCode;
 
   CouponModel({
     required this.couponId,
@@ -17,6 +19,8 @@ class CouponModel {
     required this.compRef,
     required this.couponStart,
     required this.couponExp,
+    required this.terms,
+    required this.couponCode,
   });
 
   // Convert Firestore document to CouponModel
@@ -30,6 +34,8 @@ class CouponModel {
       compRef: data["compRef"],
       couponStart: data["couponStart"],
       couponExp: data["couponExp"],
+      terms: List<String>.from(data["terms"] ?? []),
+      couponCode: data["couponCode"] ?? "",
     );
   }
 
@@ -43,6 +49,8 @@ class CouponModel {
       "compRef": compRef,
       "couponStart": couponStart,
       "couponExp": couponExp,
+      "terms": terms,
+      "couponCode": couponCode,
     };
   }
 }

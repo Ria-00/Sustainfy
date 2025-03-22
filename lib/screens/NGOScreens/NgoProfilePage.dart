@@ -125,7 +125,7 @@ class _NgoProfilePageState extends State<NgoProfilePage> {
                   ),
                   SizedBox(width: 7),
                   const Text(
-                    'Sustainify',
+                    'Sustainfy',
                     style: TextStyle(
                       color: Colors.white,
                       fontFamily: AppFonts.inter,

@@ -13,6 +13,8 @@ import 'package:sustainfy/services/userOperations.dart';
 import 'package:sustainfy/utils/colors.dart';
 import 'package:sustainfy/utils/font.dart';
 import 'package:sustainfy/widgets/customCurvedEdges.dart';
+import '../widgets/floatingSuccess.dart';
+import '../widgets/floatingWarning.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -24,40 +26,53 @@ class ProfilePage extends StatefulWidget {
 class _ProfilePageState extends State<ProfilePage> {
   UserClass? _user;
   UserClassOperations operations = UserClassOperations();
+  TextEditingController _nameController = TextEditingController();
+  TextEditingController _emailController = TextEditingController();
+  TextEditingController _mobileController = TextEditingController();
+  final FocusNode nameFocusNode = FocusNode();
+  final FocusNode emailFocusNode = FocusNode();
+  final FocusNode mobileFocusNode = FocusNode();
+  bool isTapped = false;
   String currentCategory = "Used"; // Default category
-  // final Map<String, int> cardCounts = {
-  //   "Used": 3,
-  //   "Wishlist": 3,
-  // };
-
 // Dummy Coupons List
-  final List<Map<String, dynamic>> _usedCoupons = [
-    {
-      "couponId": "JMAo4cubhnu2N0oFbXaM",
-      "couponDesc": "15% Discount on Sony Bravia TVs",
-      "couponPoint": 850,
-      "compRef": "Sony",
-    },
-  ];
+  List<CouponModel> _usedCoupons = [];
 
-  final List<Map<String, dynamic>> _wishlistCoupons = [
-    {
-      "couponId": "Pd4nBbpydpjld82hnNJI",
-      "couponDesc": "20% Discount on Ericsson 5G Equipment",
-      "couponPoint": 500,
-      "compRef": "Ecricsson",
-    },
-    {
-      "couponId": "salLjKyxquJsprTvudAE",
-      "couponDesc": "Flat ₹1000 Off on Zara Clothing",
-      "couponPoint": 300,
-      "compRef": "Zara",
-    },
-  ];
+  List<CouponModel> _wishlistCoupons = [];
+
+  void _addFocusListener(
+      FocusNode focusNode, TextEditingController controller) {
+    focusNode.addListener(() {
+      if (focusNode.hasFocus) {
+        setState(() {
+          isTapped = true;
+          controller.selection = TextSelection(
+              baseOffset: 0, extentOffset: controller.text.length);
+        });
+      }
+    });
+  }
+
+  void _getcoupons() async {
+    String userEmail =
+        Provider.of<userProvider>(context, listen: false).email ?? '';
+    List<CouponModel>? fetchedCoupons =
+        await operations.fetchClaimedCoupons(userEmail);
+    List<CouponModel>? fetchedCoupons2 =
+        await operations.fetchWishlistedCoupons(userEmail);
+
+    setState(() {
+      _usedCoupons = fetchedCoupons;
+      _wishlistCoupons = fetchedCoupons2;
+    });
+  }
 
   void initState() {
     super.initState();
     _getuserInformation();
+    _getcoupons();
+    _addFocusListener(mobileFocusNode, _mobileController);
+    _addFocusListener(emailFocusNode, _emailController);
+    _addFocusListener(nameFocusNode, _nameController);
   }
 
   void _getuserInformation() async {
@@ -71,9 +86,40 @@ class _ProfilePageState extends State<ProfilePage> {
       setState(() {
         _user = fetchedUser;
       });
+      _nameController.text = _user?.userName ?? '';
+      _emailController.text = _user?.userMail ?? '';
+      _mobileController.text = _user?.userPhone ?? '';
     } else {
       print("User not found!");
     }
+  }
+
+  void showFloatingWarning(BuildContext context, String message) {
+    OverlayEntry overlayEntry = OverlayEntry(
+      builder: (context) => FloatingWarning(message: message),
+    );
+
+    // Insert the overlay
+    Overlay.of(context).insert(overlayEntry);
+
+    // Remove the overlay after 2 seconds
+    Future.delayed(const Duration(seconds: 2), () {
+      overlayEntry.remove();
+    });
+  }
+
+  void showFloatingSuccess(BuildContext context, String message) {
+    OverlayEntry overlayEntry = OverlayEntry(
+      builder: (context) => FloatingSuccess(message: message),
+    );
+
+    // Insert the overlay
+    Overlay.of(context).insert(overlayEntry);
+
+    // Remove the overlay after 2 seconds
+    Future.delayed(const Duration(seconds: 2), () {
+      overlayEntry.remove();
+    });
   }
 
   @override
@@ -102,7 +148,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     ),
                     SizedBox(width: 7),
                     const Text(
-                      'Sustainify',
+                      'Sustainfy',
                       style: TextStyle(
                         color: Colors.white,
                         fontFamily: AppFonts.inter,
@@ -115,7 +161,6 @@ class _ProfilePageState extends State<ProfilePage> {
               ),
             ),
           ),
-
 
           // Scrollable Content
           Positioned.fill(
@@ -182,62 +227,42 @@ class _ProfilePageState extends State<ProfilePage> {
                       ),
                     ),
 
-            // Category Buttons Section
-            SizedBox(height: 20),
-            Container(
-              padding: EdgeInsets.symmetric(horizontal: 25),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  _buildCategoryButton("Used"),
-                  _buildCategoryButton("Wishlist"),
-                  _buildCategoryButton("Expired"),
-                ],
-              ),
-            ),
-            SizedBox(height: 10),
+                    // Category Buttons Section
+                    SizedBox(height: 20),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        SizedBox(width: 55),
+                        _buildCategoryButton("Used", Icons.history),
+                        SizedBox(width: 85),
+                        _buildCategoryButton("Wishlist", Icons.favorite),
+                      ],
+                    ),
 
-            // Grid Section
-            GridView.builder(
-              shrinkWrap: true,
-              physics: NeverScrollableScrollPhysics(),
-              padding: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                mainAxisSpacing: 10,
-                crossAxisSpacing: 10,
-                childAspectRatio: 1.22,
-              ),
-              itemCount: currentCategory == "Used"
-                  ? _usedCoupons.length
-                  : _wishlistCoupons.length,
-              itemBuilder: (context, index) {
-                Map<String, dynamic> coupon = currentCategory == "Used"
-                    ? _usedCoupons[index]
-                    : _wishlistCoupons[index];
-                return _buildCard(coupon);
-              },
-            ),
+                    SizedBox(height: 10),
 
-                    // cardCounts[currentCategory]! > 0
-                    //     ? GridView.builder(
-                    //         shrinkWrap: true,
-                    //         physics: NeverScrollableScrollPhysics(),
-                    //         padding: EdgeInsets.symmetric(
-                    //             horizontal: 10, vertical: 10),
-                    //         gridDelegate:
-                    //             SliverGridDelegateWithFixedCrossAxisCount(
-                    //           crossAxisCount: 2, // Number of columns
-                    //           mainAxisSpacing: 10, // Spacing between rows
-                    //           crossAxisSpacing: 10, // Spacing between columns
-                    //           childAspectRatio:
-                    //               1.75, // Aspect ratio for the cards
-                    //         ),
-                    //         itemCount: cardCounts[currentCategory]!,
-                    //         itemBuilder: (context, index) => _buildCard(),
-                    //       )
-                    //     : SizedBox.shrink(), // If no items, show nothing
-
+                    // Grid Section
+                    GridView.builder(
+                      shrinkWrap: true,
+                      physics: NeverScrollableScrollPhysics(),
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 2,
+                        mainAxisSpacing: 10,
+                        crossAxisSpacing: 10,
+                        childAspectRatio: 1.22,
+                      ),
+                      itemCount: currentCategory == "Used"
+                          ? _usedCoupons.length
+                          : _wishlistCoupons.length,
+                      itemBuilder: (context, index) {
+                        CouponModel coupon = currentCategory == "Used"
+                            ? _usedCoupons[index]
+                            : _wishlistCoupons[index];
+                        return _buildCard(coupon);
+                      },
+                    ),
                     SizedBox(height: 20),
 
                     // Settings Section
@@ -304,19 +329,6 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   void showEditProfileModal(BuildContext context) {
-    final FocusNode nameFocusNode = FocusNode();
-    final FocusNode emailFocusNode = FocusNode();
-    final FocusNode mobileFocusNode = FocusNode();
-
-    void onFocusChange(StateSetter setState) {
-      setState(() {});
-    }
-
-    // Add listeners to the focus nodes
-    nameFocusNode.addListener(() => onFocusChange);
-    emailFocusNode.addListener(() => onFocusChange);
-    mobileFocusNode.addListener(() => onFocusChange);
-
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -324,10 +336,6 @@ class _ProfilePageState extends State<ProfilePage> {
       builder: (BuildContext context) {
         return StatefulBuilder(
           builder: (BuildContext context, StateSetter setState) {
-            // Check if any input field is focused
-            // bool isKeyboardOpen = nameFocusNode.hasFocus ||
-            //     emailFocusNode.hasFocus ||
-            //     mobileFocusNode.hasFocus;
             double keyboardHeight = MediaQuery.of(context).viewInsets.bottom;
 
             return GestureDetector(
@@ -360,7 +368,7 @@ class _ProfilePageState extends State<ProfilePage> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
-                              SizedBox(height: 20),
+                              SizedBox(height: 70),
                               CircleAvatar(
                                 radius: 50,
                                 backgroundImage: AssetImage(
@@ -385,11 +393,17 @@ class _ProfilePageState extends State<ProfilePage> {
                               ),
                               SizedBox(height: 20),
                               TextField(
+                                controller: _nameController,
                                 focusNode: nameFocusNode,
                                 onTap: () {
                                   setState(() {}); // Rebuild when focused
                                 },
+                                onChanged: (value) {
+                                  setState(() {}); // Update UI when user types
+                                },
                                 decoration: InputDecoration(
+                                  floatingLabelBehavior:
+                                      FloatingLabelBehavior.never,
                                   labelStyle: TextStyle(
                                       color: Color.fromRGBO(128, 137, 129, 1)),
                                   filled: true,
@@ -407,41 +421,23 @@ class _ProfilePageState extends State<ProfilePage> {
                               ),
                               SizedBox(height: 10),
                               TextField(
-                                focusNode: emailFocusNode,
-                                onTap: () {
-                                  setState(() {});
-                                },
-                                decoration: InputDecoration(
-                                  labelStyle: TextStyle(
-                                      color: Color.fromRGBO(128, 137, 129, 1)),
-                                  filled: true,
-                                  fillColor: Color.fromRGBO(220, 237, 222, 1),
-                                  hintText: "Email",
-                                  labelText: "Enter Email",
-                                  hintStyle: TextStyle(
-                                    color: Color.fromRGBO(128, 137, 129, 0.354),
-                                  ),
-                                  border: OutlineInputBorder(
-                                    borderSide: BorderSide.none,
-                                    borderRadius: BorderRadius.circular(20),
-                                  ),
-                                ),
-                              ),
-                              SizedBox(height: 10),
-                              TextField(
+                                controller: _mobileController,
                                 focusNode: mobileFocusNode,
-                                onTap: () {
-                                  setState(() {});
+                                onChanged: (value) {
+                                  setState(() {}); // Update UI when user types
                                 },
                                 decoration: InputDecoration(
+                                  floatingLabelBehavior:
+                                      FloatingLabelBehavior.never,
                                   labelStyle: TextStyle(
-                                      color: Color.fromRGBO(128, 137, 129, 1)),
+                                    color: Color.fromRGBO(128, 137, 129, 1),
+                                  ),
                                   filled: true,
                                   fillColor: Color.fromRGBO(220, 237, 222, 1),
-                                  hintText: "Mobile No.",
-                                  labelText: "Enter Mobile No.",
+                                  hintText: isTapped ? "" : "Mobile No.",
                                   hintStyle: TextStyle(
-                                    color: Color.fromRGBO(128, 137, 129, 0.354),
+                                    color: Color.fromRGBO(
+                                        128, 137, 129, 0.5), // Grayish text
                                   ),
                                   border: OutlineInputBorder(
                                     borderSide: BorderSide.none,
@@ -449,7 +445,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                   ),
                                 ),
                               ),
-                              SizedBox(height: 60),
+                              SizedBox(height: 40),
                               ElevatedButton(
                                 style: ElevatedButton.styleFrom(
                                   padding: EdgeInsets.only(
@@ -462,10 +458,29 @@ class _ProfilePageState extends State<ProfilePage> {
                                     borderRadius: BorderRadius.circular(20),
                                   ),
                                 ),
-                                onPressed: () {
+                                onPressed: () async {
                                   // Submit logic
                                   FocusScope.of(context).unfocus();
-                                  setState(() {}); // Rebuild to reset size
+                                  String userN = _nameController.text;
+                                  String userPhn = _mobileController.text;
+                                  String userEmail = Provider.of<userProvider>(
+                                              context,
+                                              listen: false)
+                                          .email ??
+                                      '';
+                                  int a = await operations.updateUserDetails(
+                                      userEmail, userN, userPhn);
+                                  Navigator.of(context).pop();
+                                  _getuserInformation();
+                                  if (a == 1) {
+                                    print("Updated");
+                                    showFloatingSuccess(context,
+                                        "Profile Updated Successfully");
+                                  } else {
+                                    print("Not Updated");
+                                    showFloatingWarning(
+                                        context, "Error Updating Profile");
+                                  }
                                 },
                                 child: Text(
                                   "Submit",
@@ -484,7 +499,12 @@ class _ProfilePageState extends State<ProfilePage> {
           },
         );
       },
-    );
+    ).whenComplete(() {
+      // Reset controllers if dismissed without submission
+      _nameController.text = _user?.userName ?? '';
+      _emailController.text = _user?.userMail ?? '';
+      _mobileController.text = _user?.userPhone ?? '';
+    });
   }
 
   void showLogoutModal(BuildContext context) {
@@ -663,150 +683,145 @@ class _ProfilePageState extends State<ProfilePage> {
         });
   }
 
-  Widget _buildCategoryButton(String category) {
+  Widget _buildCategoryButton(String category, IconData icon) {
     bool isSelected = currentCategory == category;
 
-    return OutlinedButton(
+    return ElevatedButton.icon(
       onPressed: () {
         setState(() {
           currentCategory = category;
         });
       },
-      style: OutlinedButton.styleFrom(
-        backgroundColor: isSelected ? Colors.green[100] : Colors.white,
-        side: BorderSide(
-          color: isSelected ? Colors.green : Colors.grey,
+      icon: Icon(icon, color: isSelected ? Colors.white : Colors.green),
+      label: Text(
+        category,
+        style: TextStyle(
+          fontSize: 16,
+          fontWeight: FontWeight.bold,
+          color: isSelected ? Colors.white : Colors.green[800],
         ),
-        foregroundColor: isSelected ? Colors.green : Colors.black,
       ),
-      child: Text(category),
+      style: ElevatedButton.styleFrom(
+        padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        backgroundColor: isSelected ? Colors.green : Colors.white,
+        side: BorderSide(color: Colors.green, width: 2),
+        elevation: isSelected ? 5 : 0,
+      ),
     );
   }
 
-  Widget _buildCard(Map<String, dynamic> coupon) {
-    return GestureDetector( 
-    onTap: currentCategory == "Wishlist" ? () { // Only enable onTap for wishlist
-      // Redirect to discount page for detailed info for wishlist part
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => DiscountDetailsPage(
-            couponId: coupon['couponId'],
-          ),
+  Widget _buildCard(CouponModel coupon) {
+    return GestureDetector(
+      onTap: currentCategory == "Wishlist"
+          ? () {
+              // Only enable onTap for wishlist
+              // Redirect to discount page for detailed info for wishlist part
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => DiscountDetailsPage(
+                    couponId: coupon.couponId,
+                  ),
+                ),
+              );
+            }
+          : null, // No onTap for other categories
+      child: Card(
+        elevation: 3,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10),
         ),
-      );
-    } : null, // No onTap for other categories
-    child:  Card(
-      elevation: 3,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 17, vertical: 10),
-        child: IntrinsicHeight(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Center(
-                child: FutureBuilder<String?>(
-                  future: operations.getCompanyImage(
-                    FirebaseFirestore.instance
-                        .collection('companies')
-                        .doc(coupon['compRef']), // Convert to DocumentReference
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 17, vertical: 10),
+          child: IntrinsicHeight(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Center(
+                  child: FutureBuilder<String?>(
+                    future: operations.getCompanyImage(
+                      FirebaseFirestore.instance.collection('companies').doc(
+                          coupon.compRef.id), // Convert to DocumentReference
+                    ),
+                    builder: (context, snapshot) {
+                      if (snapshot.hasError) {
+                        print(
+                            "Error: ${snapshot.error}"); // Print the error for debugging
+                        return Icon(Icons.error); // Show an error icon
+                      }
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return CircularProgressIndicator(); // Show a loading indicator
+                      }
+                      if (!snapshot.hasData || snapshot.data == null) {
+                        return Icon(Icons
+                            .image_not_supported); // Show a placeholder icon
+                      }
+                      return Image.network(
+                        snapshot.data!,
+                        width: double.infinity,
+                        height: 50,
+                        fit: BoxFit.contain,
+                      );
+                    },
                   ),
-                  builder: (context, snapshot) {
-                    if (snapshot.hasError) {
-                      print(
-                          "Error: ${snapshot.error}"); // Print the error for debugging
-                      return Icon(Icons.error); // Show an error icon
-                    }
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return CircularProgressIndicator(); // Show a loading indicator
-                    }
-                    if (!snapshot.hasData || snapshot.data == null) {
-                      return Icon(
-                          Icons.image_not_supported); // Show a placeholder icon
-                    }
-                    return Image.network(
-                      snapshot.data!,
-                      width: double.infinity,
-                      height: 50,
-                      fit: BoxFit.contain,
-                    );
-                  },
+                ),
+                SizedBox(height: 10),
+                Flexible(
+                child: Text(
+                  coupon.couponDesc,
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontFamily: AppFonts.inter,
+                    fontWeight: AppFonts.interSemiBoldWeight,
+                  ),
+                  maxLines: 1, // Ensures 2-line limit
+                  overflow: TextOverflow.ellipsis, // Adds "..." when text is too long
+                  softWrap: true,
                 ),
               ),
-
-//*ONCE CONNECTED TO DB , USE THE BELOW CODE FOR IMAGE ... FOR THE TIME BEING , USING DUMMY DATA , IT WILL WORK WITH ABOVE CODE*
-
-              //  Center(
-              //   child: FutureBuilder<String?>(
-              //     future: operations.getCompanyImage(widget.coupon.compRef),
-              //     builder: (context, snapshot) {
-              //       if (snapshot.hasError || !snapshot.hasData) {
-              //         return Icon(Icons.image_not_supported);
-              //       }
-              //       return Image.network(
-              //         snapshot.data!,
-              //         width: double.infinity,
-              //         height: 50,
-              //         fit: BoxFit.contain,
-              //       );
-              //     },
-              //   ),
-              // ),
-
-              SizedBox(height: 10),
-              Text(
-                coupon['couponDesc'],
-                style: TextStyle(
-                  fontSize: 15,
-                  fontFamily: AppFonts.inter,
-                  fontWeight: AppFonts.interSemiBoldWeight,
-                ),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
-              SizedBox(height: 15),
-              if (currentCategory == "Wishlist")
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      "Redeem for",
-                      style: TextStyle(fontSize: 15, color: Colors.black),
-                    ),
-                    Container(
-                      padding: EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: AppColors.pointsContainerReward,
-                        borderRadius: BorderRadius.circular(8),
+                SizedBox(height: 15),
+                if (currentCategory == "Wishlist")
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        "Redeem for",
+                        style: TextStyle(fontSize: 15, color: Colors.black),
                       ),
-                      child: Text(
-                        "${coupon['couponPoint']} pts",
-                        style: TextStyle(fontSize: 15, color: Colors.white),
+                      Container(
+                        padding:
+                            EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: AppColors.pointsContainerReward,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(
+                          "${coupon.couponPoint} pts",
+                          style: TextStyle(fontSize: 15, color: Colors.white),
+                        ),
                       ),
+                    ],
+                  )
+                else
+                  Container(
+                    padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: AppColors.pointsContainerReward,
+                      borderRadius: BorderRadius.circular(8),
                     ),
-                  ],
-                )
-              else
-                Container(
-                  padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: AppColors.pointsContainerReward,
-                    borderRadius: BorderRadius.circular(8),
+                    child: Text(
+                      currentCategory == "Used"
+                          ? "Redeemed for ${coupon.couponPoint} pts"
+                          : "${coupon.couponPoint} pts",
+                      style: TextStyle(fontSize: 13, color: Colors.white),
+                    ),
                   ),
-                  child: Text(
-                    currentCategory == "Used"
-                        ? "Redeemed for ${coupon['couponPoint']} pts"
-                        : "${coupon['couponPoint']} pts",
-                    style: TextStyle(fontSize: 13, color: Colors.white),
-                  ),
-                ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
-    ),
-  );
-}}
+    );
+  }
+}

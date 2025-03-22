@@ -119,10 +119,17 @@ class _NgoEventDescriptionPage extends State<NgoEventDescriptionPage> {
                         child: Align(
                           alignment: Alignment.center,
                           child: ClipRRect(
-                            borderRadius: BorderRadius.circular(40),
-                            child: Image.network(widget.event.eventImg,
-                                fit: BoxFit.cover),
-                          ),
+            borderRadius: BorderRadius.circular(12),
+            child: widget.event.eventImg.isNotEmpty
+                ? Image.network(
+                    widget.event.eventImg,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) {
+                      return SizedBox(); // Returns an empty widget if the image fails
+                    },
+                  )
+                : SizedBox(), // Returns an empty widget if URL is empty
+          ),
                         ),
                       ),
                       SizedBox(height: 10),

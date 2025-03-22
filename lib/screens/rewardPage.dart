@@ -20,30 +20,22 @@ class CouponPage extends StatefulWidget {
 class _CouponModelPageState extends State<CouponPage> {
   UserClassOperations operations = UserClassOperations();
 
-  // List of coupons
-  final List<CouponModel> coupons = [];
 
-  int? _currentPoints; // Store the current points
 
   // **Updated Redeem Coupon Logic**
   void _redeemCouponModel(CouponModel coupon) {
-    if (_currentPoints! >= coupon.couponPoint) {
-      setState(() {
-        _currentPoints = (_currentPoints ?? 0) - coupon.couponPoint;
-      });
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => DiscountDetailsPage(couponId: coupon.couponId),
-        ),
-      );
-     
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Not enough points to redeem this coupon')),
-      );
-    }
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => DiscountDetailsPage(couponId: coupon.couponId),
+      ),
+    ).then((value) {
+  if (value == true) {
+    _getcoupons();  // Refresh the coupons list
   }
+});
+  }
+
 
   void initState() {
     super.initState();
@@ -51,66 +43,22 @@ class _CouponModelPageState extends State<CouponPage> {
     _getcoupons();
   }
 
-  void _getUserPoints() {
+  void _getUserPoints() async {
     String userEmail =
         Provider.of<userProvider>(context, listen: false).email ?? '';
-    operations.getUserPoints(userEmail).then((value) {
-      setState(() {
-        _currentPoints = value;
-      });
-    });
+    int updatedPoints = await operations.getUserPoints(userEmail);
+
+    // Update Provider with new points
+    Provider.of<userProvider>(context, listen: false).setPoints(updatedPoints);
   }
 
   void _getcoupons() async {
-    List<CouponModel>? fetchedCoupons = await operations.getAllCoupons();
     String userEmail =
         Provider.of<userProvider>(context, listen: false).email ?? '';
-    print(userEmail);
+    List<CouponModel> updatedCoupons = await operations.getUnclaimedCoupons(userEmail);
 
-    if (fetchedCoupons != null && mounted) {
-      List<Future<bool>> claimCheckFutures = [];
+    Provider.of<userProvider>(context, listen: false).setCoupon(updatedCoupons);
 
-      // Create a list of coupon references
-      List<Future<DocumentReference?>> refFutures =
-          fetchedCoupons.map((coupon) {
-        return operations.getDocumentRef(
-            collection: "coupons", field: "couponId", value: coupon.couponId);
-      }).toList();
-
-      // Wait for all document references to be fetched
-      List<DocumentReference?> couponRefs = await Future.wait(refFutures);
-
-      // Check if user has claimed each coupon in parallel
-      for (int i = 0; i < fetchedCoupons.length; i++) {
-        if (couponRefs[i] != null) {
-          claimCheckFutures
-              .add(operations.hasUserClaimedCoupon(userEmail, couponRefs[i]!));
-        } else {
-          claimCheckFutures
-              .add(Future.value(false)); // Default to unclaimed if ref is null
-        }
-      }
-
-      // Wait for all claim checks to complete
-      List<bool> claimResults = await Future.wait(claimCheckFutures);
-
-      // Filter unclaimed coupons efficiently
-      List<CouponModel> unclaimedCoupons = [];
-      for (int i = 0; i < fetchedCoupons.length; i++) {
-        if (!claimResults[i]) {
-          print("CouponModel not claimed: ${fetchedCoupons[i].couponDesc}");
-          unclaimedCoupons.add(fetchedCoupons[i]);
-        }
-      }
-
-      if (mounted) {
-        setState(() {
-          coupons.addAll(unclaimedCoupons);
-        });
-      }
-    } else {
-      print("User not found!");
-    }
   }
 
   @override
@@ -165,32 +113,35 @@ class _CouponModelPageState extends State<CouponPage> {
             ),
           ),
           // Points Display
-          Container(
-            padding: EdgeInsets.symmetric(vertical: 12),
-            child: RichText(
-              text: TextSpan(
-                children: [
-                  TextSpan(
-                    text: '${_currentPoints ?? 0}',
-                    style: TextStyle(
-                      color: AppColors.greenappBar,
-                      fontFamily: AppFonts.inter,
-                      fontSize: 70,
-                      fontWeight: AppFonts.interSemiBoldWeight,
+          Consumer<userProvider>(
+            builder: (BuildContext context, provider, child) {  
+            return Container(
+              padding: EdgeInsets.symmetric(vertical: 12),
+              child: RichText(
+                text: TextSpan(
+                  children: [
+                    TextSpan(
+                      text: '${provider.points ?? 0}',
+                      style: TextStyle(
+                        color: AppColors.greenappBar,
+                        fontFamily: AppFonts.inter,
+                        fontSize: 70,
+                        fontWeight: AppFonts.interSemiBoldWeight,
+                      ),
                     ),
-                  ),
-                  TextSpan(
-                    text: ' points',
-                    style: TextStyle(
-                      fontFamily: AppFonts.inter,
-                      fontSize: 42,
-                      fontWeight: AppFonts.interSemiBoldWeight,
-                      color: const Color.fromRGBO(50, 50, 55, 1),
+                    TextSpan(
+                      text: ' points',
+                      style: TextStyle(
+                        fontFamily: AppFonts.inter,
+                        fontSize: 42,
+                        fontWeight: AppFonts.interSemiBoldWeight,
+                        color: const Color.fromRGBO(50, 50, 55, 1),
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
+            );},
           ),
           SizedBox(height: 20),
           // Rewards Title
@@ -210,25 +161,26 @@ class _CouponModelPageState extends State<CouponPage> {
           ),
           SizedBox(height: 10),
           // List of coupon cards
-          Expanded(
-            child: GridView.builder(
-              shrinkWrap: true,
-              physics: NeverScrollableScrollPhysics(),
-              padding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2, // Number of columns
-                mainAxisSpacing: 10, // Spacing between rows
-                crossAxisSpacing: 10, // Spacing between columns
-                childAspectRatio: 1.22, // Aspect ratio for the cards
+          Consumer<userProvider>(
+            builder: (BuildContext context, provider, child) {
+            return Expanded(
+              child: GridView.builder(
+                padding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2, // Number of columns
+                  mainAxisSpacing: 10, // Spacing between rows
+                  crossAxisSpacing: 10, // Spacing between columns
+                  childAspectRatio: 1.22, // Aspect ratio for the cards
+                ),
+                itemCount: provider.coupons!.length,
+                itemBuilder: (context, index) {
+                  return CouponModelCard(
+                    coupon: provider.coupons![index],
+                    redeemCouponModel: _redeemCouponModel,
+                  );
+                },
               ),
-              itemCount: coupons.length, 
-              itemBuilder: (context, index) {
-                return CouponModelCard(
-                  coupon: coupons[index],
-                  redeemCouponModel: _redeemCouponModel,
-                );
-              },
-            ),
+            );},
           )
         ],
       ),
@@ -252,7 +204,36 @@ class CouponModelCard extends StatefulWidget {
 
 class _CouponModelCardState extends State<CouponModelCard> {
   bool _isWishlisted = false;
-   UserClassOperations operations = UserClassOperations(); 
+  UserClassOperations operations = UserClassOperations();
+
+  void toggleWishlist() async {
+    String userEmail =
+        Provider.of<userProvider>(context, listen: false).email ?? '';
+    await operations.toggleWishlist(userEmail, widget.coupon.couponId);
+    await checkWishlistStatus();
+
+    // Show a snackbar
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content:
+          Text(_isWishlisted ? "Added to Wishlist" : "Removed from Wishlist"),
+    ));
+  }
+
+  Future<void> checkWishlistStatus() async {
+    String userEmail =
+        Provider.of<userProvider>(context, listen: false).email ?? '';
+    bool status =
+        await operations.checkIfWishlisted(userEmail, widget.coupon.couponId);
+    setState(() {
+      _isWishlisted = status;
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    checkWishlistStatus();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -265,13 +246,16 @@ class _CouponModelCardState extends State<CouponModelCard> {
         ),
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 17, vertical: 10),
-          child: IntrinsicHeight(
+          child: SizedBox(
+            width: double.infinity, // Ensures width consistency
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize:
+                  MainAxisSize.min, // Prevents unnecessary height issues
               children: [
                 Center(
                   child: FutureBuilder<String?>(
-                    future: operations.getCompanyImage(widget.coupon.compRef), 
+                    future: operations.getCompanyImage(widget.coupon.compRef),
                     builder: (context, snapshot) {
                       if (snapshot.hasError || !snapshot.hasData) {
                         return Icon(Icons.image_not_supported);
@@ -286,23 +270,31 @@ class _CouponModelCardState extends State<CouponModelCard> {
                   ),
                 ),
                 SizedBox(height: 8),
-                Text(
-                  widget.coupon.couponDesc,
-                  style: TextStyle(
-                    fontSize: 15,
-                    fontFamily: AppFonts.inter,
-                    fontWeight: AppFonts.interSemiBoldWeight,
+
+                /// **Flexible Description Handling**
+                Flexible(
+                  child: Text(
+                    widget.coupon.couponDesc,
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontFamily: AppFonts.inter,
+                      fontWeight: AppFonts.interSemiBoldWeight,
+                    ),
+                    maxLines: 1, // Ensures 2-line limit
+                    overflow: TextOverflow
+                        .ellipsis, // Adds "..." when text is too long
+                    softWrap: true,
                   ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
                 ),
+
                 SizedBox(height: 8),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    // Points Container
+                    // **Points Container**
                     Container(
-                      padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                       decoration: BoxDecoration(
                         color: AppColors.pointsContainerReward,
                         borderRadius: BorderRadius.circular(8),
@@ -313,23 +305,14 @@ class _CouponModelCardState extends State<CouponModelCard> {
                       ),
                     ),
 
-                    // Wishlist Icon
+                    // **Wishlist Icon**
                     IconButton(
                       icon: Icon(
                         _isWishlisted ? Icons.favorite : Icons.favorite_border,
                         color: Colors.red,
                       ),
                       onPressed: () {
-                        setState(() {
-                          _isWishlisted = !_isWishlisted;
-                        });
-
-                        // Show a snackbar
-                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                          content: Text(_isWishlisted
-                              ? "Added to Wishlist"
-                              : "Removed from Wishlist"),
-                        ));
+                        toggleWishlist();
                       },
                     ),
                   ],
