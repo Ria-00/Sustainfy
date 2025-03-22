@@ -446,38 +446,36 @@ Widget buildEvent(EventModel event) {
     );
   }
 
-  Widget buildDraftsSection(String draftImagePath) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(
-              horizontal: 16, vertical: 4), 
-          child: Row(
-            children: [
-              Image.asset(
-                draftImagePath,
-                width: 50, 
-                height: 50,
-              ),
-              SizedBox(width: 6), 
-              Text(
-                "Drafts",
-                style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold), 
-              ),
-            ],
-          ),
+ Widget buildDraftsSection(String draftImagePath) {
+  return Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+        child: Row(
+          children: [
+            Image.asset(
+              draftImagePath,
+              width: 50,
+              height: 50,
+            ),
+            SizedBox(width: 6),
+            Text(
+              "Drafts",
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+          ],
         ),
-        Padding(
-          padding: const EdgeInsets.only(
-              left: 10, right: 10, bottom: 5), 
-          child: draftEvents.isNotEmpty
-              ? Column(
-                  children: List.generate(
-                    draftEvents.length,
-                    (index) => Stack(
+      ),
+      Padding(
+        padding: const EdgeInsets.only(left: 10, right: 10, bottom: 5),
+        child: draftEvents.isNotEmpty
+            ? Column(
+                children: List.generate(
+                  draftEvents.length,
+                  (index) => Padding(
+                    padding: const EdgeInsets.only(bottom: 10), // Add spacing between tiles
+                    child: Stack(
                       children: [
                         GestureDetector(
                           onTap: () {
@@ -510,19 +508,17 @@ Widget buildEvent(EventModel event) {
                       ],
                     ),
                   ),
-                )
-              : Center(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                        vertical: 5), 
-                    child: Text("No drafts available",
-                        style: TextStyle(
-                            color: Colors.grey,
-                            fontSize: 14)),
-                  ),
                 ),
-        ),
-      ],
-    );
-  }
+              )
+            : Center(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 5),
+                  child: Text("No drafts available",
+                      style: TextStyle(color: Colors.grey, fontSize: 14)),
+                ),
+              ),
+      ),
+    ],
+  );
+}
 }

@@ -47,34 +47,57 @@ class _CommunityPageState extends State<CommunityPage> {
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: isLoading
-          ? Center(child: CircularProgressIndicator())
-          : hasError
-              ? Center(child: Text("No users found or an error occurred."))
-              : Column(
-                  children: [
-                    // Leaderboard Header
-                    ClipPath(
-                      clipper: CustomCurvedEdges(),
-                      child: Container(
-                        height: 150,
-                        color: Color.fromRGBO(52, 168, 83, 1),
-                        child: Center(
-                          child: Text(
-                            'Leaderboard',
-                            style: TextStyle(
-                                color: AppColors.white,
-                                fontSize: 30,
-                                fontWeight: AppFonts.interSemiBoldWeight,
-                                fontFamily: AppFonts.inter),
+@override
+Widget build(BuildContext context) {
+  return Scaffold(
+   body: Column(
+        children: [
+          // AppBar with Custom Curved Edges
+          ClipPath(
+            clipper: CustomCurvedEdges(),
+            child: Container(
+              height: 150, // Fixed height for AppBar
+              color: const Color.fromRGBO(52, 168, 83, 1),
+              padding: EdgeInsets.only(
+                  top: MediaQuery.of(context).padding.top, left: 17),
+              child: Row(
+                children: [
+                  Image.asset(
+                    'assets/images/SustainifyLogo.png',
+                    width: 50,
+                    height: 60,
+                  ),
+                  SizedBox(width: 7),
+                 
+                ],
+              ),
+            ),
+          ),
+
+          // Body Content
+          Expanded(
+            child: isLoading
+                ? Center(child: CircularProgressIndicator()) // Show loader
+                : hasError
+                    ? Center(child: Text("No users found or an error occurred.")) // Show error message
+                    : Column(
+                        children: [
+                          // "Leaderboard" Heading in Body
+                          Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 10.0),
+                            child: Center(
+                              child: Text(
+                                'Leaderboard',
+                                style: TextStyle(
+                                  fontSize: 30,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black,
+                                ),
+                              ),
+                            ),
                           ),
-                        ),
-                      ),
-                    ),
-                    SizedBox(height: 10),
+
+                          SizedBox(height: 10),
 
                     // Top 3 Users
                     Padding(
@@ -113,7 +136,7 @@ class _CommunityPageState extends State<CommunityPage> {
                     ),
                   ],
                 ),
-    );
+    )],));
   }
 }
 
