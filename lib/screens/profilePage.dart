@@ -125,42 +125,28 @@ class _ProfilePageState extends State<ProfilePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Stack(
-        children: [
-          // Static Header (ClipPath)
-          Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
-            child: ClipPath(
-              clipper: CustomCurvedEdges(),
-              child: Container(
-                height: 150, // Fixed height
-                color: const Color.fromRGBO(52, 168, 83, 1),
-                padding: EdgeInsets.only(
-                    top: MediaQuery.of(context).padding.top, left: 17),
-                child: Row(
-                  children: [
-                    Image.asset(
-                      'assets/images/SustainifyLogo.png',
-                      width: 50,
-                      height: 60,
-                    ),
-                    SizedBox(width: 7),
-                    const Text(
-                      'Sustainfy',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontFamily: AppFonts.inter,
-                        fontSize: 25,
-                        fontWeight: AppFonts.interRegularWeight,
-                      ),
-                    ),
-                  ],
+        body: Column(
+      children: [
+        ClipPath(
+          clipper: CustomCurvedEdges(),
+          child: Container(
+            height: 150, 
+            color: const Color.fromRGBO(52, 168, 83, 1),
+            padding: EdgeInsets.symmetric(horizontal: 15), 
+            child: Row(
+              crossAxisAlignment:
+                  CrossAxisAlignment.center, 
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                Image.asset(
+                  'assets/images/SustainifyLogo.png',
+                  width: 50, 
+                  height: 60, 
                 ),
-              ),
+              ],
             ),
           ),
+        ),
 
           // Scrollable Content
           Positioned.fill(

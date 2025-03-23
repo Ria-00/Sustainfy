@@ -1,5 +1,4 @@
 import 'dart:convert';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
@@ -20,24 +19,20 @@ class _NgoQrScannerPageState extends State<NgoQrScannerPage> {
   Color messageColor = Colors.green;
 
   void _onQRScanned(BarcodeCapture capture) async {
-    if (isProcessing) return; // Prevent multiple detections
+    if (isProcessing) return; 
 
     final List<Barcode> barcodes = capture.barcodes;
 
-    if (barcodes.isNotEmpty) {
+    if (barcodes.isNotEmpty && barcodes.first.rawValue != null) {
       setState(() => isProcessing = true);
 
       try {
-        String? qrData = barcodes.first.rawValue;
-        if (qrData == null) throw Exception("Empty QR code");
-
+        String qrData = barcodes.first.rawValue!;
         Map<String, dynamic> data = jsonDecode(qrData);
-        
+
         if (data.containsKey("eventRef") && data.containsKey("participantRef")) {
-          DocumentReference eventRef =
-              FirebaseFirestore.instance.doc(data["eventRef"]);
-          DocumentReference participantRef =
-              FirebaseFirestore.instance.doc(data["participantRef"]);
+          DocumentReference eventRef = FirebaseFirestore.instance.doc(data["eventRef"]);
+          DocumentReference participantRef = FirebaseFirestore.instance.doc(data["participantRef"]);
 
           int result = await operate.markUserAsAttended(eventRef, participantRef);
 
@@ -57,61 +52,50 @@ class _NgoQrScannerPageState extends State<NgoQrScannerPage> {
     }
 
     Future.delayed(Duration(seconds: 2), () {
-      setState(() {
-        isProcessing = false;
-        message = null; // Hide message after 2 seconds
-      });
+      if (mounted) {
+        setState(() {
+          isProcessing = false;
+          message = null; 
+        });
+      }
     });
   }
 
   void _showMessage(String msg, Color color) {
-    setState(() {
-      message = msg;
-      messageColor = color;
-    });
+    if (mounted) {
+      setState(() {
+        message = msg;
+        messageColor = color;
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Stack(
+      body: Stack( 
         children: [
           Column(
             children: [
-              // Curved Header
               ClipPath(
                 clipper: CustomCurvedEdges(),
-                child: SizedBox(
+                child: Container(
                   height: 150,
-                  child: Container(
-                    color: const Color.fromRGBO(52, 168, 83, 1),
-                    child: Row(
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.only(left: 17.0),
-                          child: Image.asset(
-                            'assets/images/SustainifyLogo.png',
-                            width: 50,
-                            height: 60,
-                          ),
-                        ),
-                        SizedBox(width: 7),
-                        const Text(
-                          'Sustainify',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontFamily: AppFonts.inter,
-                            fontSize: 25,
-                            fontWeight: AppFonts.interRegularWeight,
-                          ),
-                        ),
-                      ],
-                    ),
+                  color: const Color.fromRGBO(52, 168, 83, 1),
+                  padding: EdgeInsets.symmetric(horizontal: 15),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      Image.asset(
+                        'assets/images/SustainifyLogo.png',
+                        width: 50,
+                        height: 60,
+                      ),
+                    ],
                   ),
                 ),
               ),
-
-              // QR Scanner Section
               SizedBox(height: 20),
               Text(
                 "QR Code Scanner",
@@ -148,7 +132,6 @@ class _NgoQrScannerPageState extends State<NgoQrScannerPage> {
             ],
           ),
 
-          // Success/Error Message
           if (message != null)
             Positioned(
               bottom: 60,

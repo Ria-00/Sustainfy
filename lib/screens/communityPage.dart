@@ -47,96 +47,103 @@ class _CommunityPageState extends State<CommunityPage> {
     }
   }
 
-@override
-Widget build(BuildContext context) {
-  return Scaffold(
-   body: Column(
-        children: [
-          // AppBar with Custom Curved Edges
-          ClipPath(
-            clipper: CustomCurvedEdges(),
-            child: Container(
-              height: 150, // Fixed height for AppBar
-              color: const Color.fromRGBO(52, 168, 83, 1),
-              padding: EdgeInsets.only(
-                  top: MediaQuery.of(context).padding.top, left: 17),
-              child: Row(
-                children: [
-                  Image.asset(
-                    'assets/images/SustainifyLogo.png',
-                    width: 50,
-                    height: 60,
-                  ),
-                  SizedBox(width: 7),
-                 
-                ],
-              ),
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+        body: Column(
+      children: [
+        ClipPath(
+          clipper: CustomCurvedEdges(),
+          child: Container(
+            height: 150, 
+            color: const Color.fromRGBO(52, 168, 83, 1),
+            padding: EdgeInsets.symmetric(horizontal: 15),
+            child: Row(
+              crossAxisAlignment:
+                  CrossAxisAlignment.center, 
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                Image.asset(
+                  'assets/images/SustainifyLogo.png',
+                  width: 50,
+                  height: 60, 
+                ),
+              ],
             ),
           ),
+        ),
 
-          // Body Content
-          Expanded(
-            child: isLoading
-                ? Center(child: CircularProgressIndicator()) // Show loader
-                : hasError
-                    ? Center(child: Text("No users found or an error occurred.")) // Show error message
-                    : Column(
-                        children: [
-                          // "Leaderboard" Heading in Body
-                          Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 10.0),
-                            child: Center(
-                              child: Text(
-                                'Leaderboard',
-                                style: TextStyle(
-                                  fontSize: 30,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.black,
-                                ),
+        // Body Content
+        Expanded(
+          child: isLoading
+              ? Center(child: CircularProgressIndicator()) // Show loader
+              : hasError
+                  ? Center(
+                      child: Text(
+                          "No users found or an error occurred.")) // Show error message
+                  : Column(
+                      children: [
+                        // "Leaderboard" Heading in Body
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 10.0),
+                          child: Center(
+                            child: Text(
+                              'Leaderboard',
+                              style: TextStyle(
+                                fontSize: 30,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black,
                               ),
                             ),
                           ),
+                        ),
 
-                          SizedBox(height: 10),
+                        SizedBox(height: 10),
 
-                    // Top 3 Users
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: [
-                          if (users.length > 1)
-                            Expanded(
-                                child: TopUserColumn(user: users[1], rank: 2)),
-                          if (users.isNotEmpty)
-                            Expanded(
-                                child: TopUserColumn(
-                                    user: users[0], rank: 1, isCenter: true)),
-                          if (users.length > 2)
-                            Expanded(
-                                child: TopUserColumn(user: users[2], rank: 3)),
-                        ],
-                      ),
+                        // Top 3 Users
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              if (users.length > 1)
+                                Expanded(
+                                    child:
+                                        TopUserColumn(user: users[1], rank: 2)),
+                              if (users.isNotEmpty)
+                                Expanded(
+                                    child: TopUserColumn(
+                                        user: users[0],
+                                        rank: 1,
+                                        isCenter: true)),
+                              if (users.length > 2)
+                                Expanded(
+                                    child:
+                                        TopUserColumn(user: users[2], rank: 3)),
+                            ],
+                          ),
+                        ),
+                        SizedBox(height: 20),
+
+                        // Remaining Users in List
+                        Expanded(
+                          child: ListView.builder(
+                            padding: EdgeInsets.all(16.0),
+                            itemCount: users.length > 3 ? users.length - 3 : 0,
+                            itemBuilder: (context, index) {
+                              return LeaderboardCard(
+                                user: users[index + 3],
+                                rank: index + 4,
+                              );
+                            },
+                          ),
+                        ),
+                      ],
                     ),
-                    SizedBox(height: 20),
-
-                    // Remaining Users in List
-                    Expanded(
-                      child: ListView.builder(
-                        padding: EdgeInsets.all(16.0),
-                        itemCount: users.length > 3 ? users.length - 3 : 0,
-                        itemBuilder: (context, index) {
-                          return LeaderboardCard(
-                            user: users[index + 3],
-                            rank: index + 4,
-                          );
-                        },
-                      ),
-                    ),
-                  ],
-                ),
-    )],));
+        )
+      ],
+    ));
   }
 }
 
