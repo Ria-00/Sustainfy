@@ -15,8 +15,6 @@ class NgoCommunityPage extends StatefulWidget {
 }
 
 class _NgoCommunityPageState extends State<NgoCommunityPage> {
-
-
   List<EventModel> events = [];
   Map<String, String> ngoNames = {};
   UserClassOperations operate = UserClassOperations();
@@ -37,7 +35,7 @@ class _NgoCommunityPageState extends State<NgoCommunityPage> {
     for (var event in fetchedEvents) {
       DocumentReference? ngoReference = event.ngoRef;
       DocumentSnapshot ngoSnapshot = await ngoReference!.get();
-      fetchedNgoNames[ngoReference!.id] = ngoSnapshot["ngoName"] ?? "Unknown NGO";
+      fetchedNgoNames[ngoReference.id] = ngoSnapshot["ngoName"] ?? "Unknown NGO";
     }
 
     setState(() {
@@ -45,28 +43,25 @@ class _NgoCommunityPageState extends State<NgoCommunityPage> {
       ngoNames = fetchedNgoNames;
     });
   }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Stack(
-        children: [
-          Column(
-            children: [
-              const SizedBox(height: 150),
-              Expanded(
-                child: ListView(
-                  padding: EdgeInsets.only(top: 15),
-                  children: [
-                    buildSection("Live Activities", "live"),
-                    SizedBox(height: 10),
-                    buildSection("Upcoming Activities", "upcoming"),
-                    SizedBox(height: 10),
-                  ],
+    return DefaultTabController(
+      length: 2, // Two tabs: Live & Upcoming
+      child: Scaffold(
+        body: Column(
+          children: [
+            // Green Curved Header
+            Stack(
+              children: [
+                ClipPath(
+                  clipper: CustomCurvedEdges(),
+                  child: Container(
+                    height: 150,
+                    color: Color.fromRGBO(52, 168, 83, 1),
+                  ),
                 ),
-              ),
-            ],
-          ),
-          Positioned(
+                Positioned(
             top: 0,
             left: 0,
             right: 0,
@@ -90,7 +85,7 @@ class _NgoCommunityPageState extends State<NgoCommunityPage> {
                     Expanded(
                       child: TextField(
                         decoration: InputDecoration(
-                          hintText: 'Search for an event...',
+                          hintText: 'Search for your event...',
                           hintStyle: TextStyle(
                             color: AppColors.white,
                             fontFamily: AppFonts.inter,
@@ -113,97 +108,126 @@ class _NgoCommunityPageState extends State<NgoCommunityPage> {
               ),
             ),
           ),
-        ],
-      ),
-    );
-  }
-
-  Widget eventCard(EventModel event) {
-    DateTime startDateTime = event.eventStartDate.toDate();
-    String formattedDate = "${startDateTime.day} ${_getMonthName(startDateTime.month)} ${startDateTime.year}";
-    String formattedTime = "${startDateTime.hour % 12 == 0 ? 12 : startDateTime.hour % 12}:${startDateTime.minute.toString().padLeft(2, '0')} ${startDateTime.hour >= 12 ? 'PM' : 'AM'}";
-    bool isEndingSoon = startDateTime.difference(DateTime.now()).inDays == 1;
-
-    return Card(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-      child: Padding(
-        padding: const EdgeInsets.all(12.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  "${event.eventName} \nNgo: ${ngoNames[event.ngoRef!.id] ?? 'Loading...'}",
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-                ),
-                if (isEndingSoon)
-                  Container(
-                    padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: Colors.red[100],
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Text(
-                      "Ending Soon",
-                      style: TextStyle(
-                          color: Colors.red, fontWeight: FontWeight.bold),
-                    ),
-                  ),
               ],
             ),
-            SizedBox(height: 8),
-            Row(
-              children: [
-                Text("Date: ", style: TextStyle(fontWeight: FontWeight.bold)),
-                Text(formattedDate),
-                SizedBox(width: 10),
-                Text("Time: ", style: TextStyle(fontWeight: FontWeight.bold)),
-                Text(formattedTime),
-              ],
+
+            // Tab Bar (White Section Below the Green Header)
+            Container(
+              color: const Color.fromARGB(255, 255, 255, 255),
+              child: TabBar(
+                indicatorColor: Colors.green[800], // Underline for active tab
+                labelColor: Colors.green[800],
+                unselectedLabelColor: Colors.grey,
+                labelStyle: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                tabs: [
+                  Tab(text: "Live"),
+                  Tab(text: "Upcoming"),
+                ],
+              ),
             ),
-            SizedBox(height: 8),
-            ClipRRect(
-              borderRadius: BorderRadius.circular(12),
-              child: Image.network(event.eventImg, fit: BoxFit.cover),
+
+            // TabBarView with Events
+            Expanded(
+              child: TabBarView(
+                children: [
+                  eventList("live"), // Live Events
+                  eventList("upcoming"), // Upcoming Events
+                ],
+              ),
             ),
-            SizedBox(height: 10),
           ],
         ),
       ),
     );
   }
 
+  Widget eventCard(EventModel event) {
   String _getMonthName(int month) {
     List<String> months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
     return months[month - 1];
   }
+  DateTime startDateTime = event.eventStartDate.toDate();
+  String formattedDate = "${startDateTime.day} ${_getMonthName(startDateTime.month)} ${startDateTime.year}";
+  String formattedTime = "${startDateTime.hour % 12 == 0 ? 12 : startDateTime.hour % 12}:${startDateTime.minute.toString().padLeft(2, '0')} ${startDateTime.hour >= 12 ? 'PM' : 'AM'}";
+  bool isEndingSoon = startDateTime.difference(DateTime.now()).inDays == 1;
 
-  Widget buildSection(String title, String status) {
-    List<EventModel> filteredEvents = events.where((event) => event.eventStatus == status).toList();
-    return Column(
+  return Card(
+    elevation: 3,
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+    margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+    child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20),
-          child: Text(title, style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+        ClipRRect(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
+          child: Image.network(
+            event.eventImg,
+            height: 180,
+            width: double.infinity,
+            fit: BoxFit.cover,
+          ),
         ),
-        filteredEvents.isNotEmpty
-            ? ListView.builder(
-                shrinkWrap: true,
-                physics: NeverScrollableScrollPhysics(),
-                itemCount: filteredEvents.length,
-                itemBuilder: (context, index) => GestureDetector(
-                  onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => NgoEventDescriptionPage(event: filteredEvents[index]))),
-                  child: eventCard(filteredEvents[index]),
-                ),
-              )
-            : Padding(
-                padding: const EdgeInsets.all(20),
-                child: Text("No events available", style: TextStyle(color: Colors.grey, fontSize: 16)),
+        Padding(
+          padding: EdgeInsets.all(12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(event.eventName, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              SizedBox(height: 4),
+              Text("NGO: ${ngoNames[event.ngoRef!.id] ?? 'Loading...'}", style: TextStyle(fontSize: 14, color: Colors.grey[600])),
+              SizedBox(height: 8),
+              Row(
+                children: [
+                  Icon(Icons.event, size: 18, color: Colors.grey[700]),
+                  SizedBox(width: 5),
+                  Text(formattedDate, style: TextStyle(fontSize: 14)),
+                  SizedBox(width: 15),
+                  Icon(Icons.access_time, size: 18, color: Colors.grey[700]),
+                  SizedBox(width: 5),
+                  Text(formattedTime, style: TextStyle(fontSize: 14)),
+                ],
               ),
+              if (isEndingSoon)
+                Container(
+                  margin: EdgeInsets.only(top: 10),
+                  padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: Colors.red[100],
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Text("Ending Soon", style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+                ),
+            ],
+          ),
+        ),
       ],
-    );
+    ),
+  );
+}
+
+
+  Widget eventList(String status) {
+    List<EventModel> filteredEvents = events.where((event) => event.eventStatus == status).toList();
+
+    return filteredEvents.isNotEmpty
+        ? ListView.builder(
+            padding: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+            itemCount: filteredEvents.length,
+            itemBuilder: (context, index) => GestureDetector(
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => NgoEventDescriptionPage(event: filteredEvents[index]),
+                ),
+              ),
+              child: eventCard(filteredEvents[index]),
+            ),
+          )
+        : Center(
+            child: Text(
+              "No events available",
+              style: TextStyle(color: Colors.grey, fontSize: 16),
+            ),
+          );
   }
 }

@@ -1,6 +1,12 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:sustainfy/providers/userProvider.dart';
+import 'package:sustainfy/services/userOperations.dart';
 import 'package:sustainfy/utils/font.dart';
 import 'package:sustainfy/widgets/customCurvedEdges.dart';
+import 'package:sustainfy/widgets/floatingSuccess.dart';
+import 'package:sustainfy/widgets/floatingWarning.dart';
 
 class NgoSettingsPage extends StatefulWidget {
   @override
@@ -8,6 +14,62 @@ class NgoSettingsPage extends StatefulWidget {
 }
 
 class _NgoSettingsPageState extends State<NgoSettingsPage> {
+
+  UserClassOperations operations = UserClassOperations();
+
+ void showFloatingWarning(BuildContext context, String message) {
+    OverlayEntry overlayEntry = OverlayEntry(
+      builder: (context) => FloatingWarning(message: message),
+    );
+
+    // Insert the overlay
+    Overlay.of(context).insert(overlayEntry);
+
+    // Remove the overlay after 2 seconds
+    Future.delayed(const Duration(seconds: 2), () {
+      overlayEntry.remove();
+    });
+  }
+
+  void showFloatingSuccess(BuildContext context, String message) {
+    OverlayEntry overlayEntry = OverlayEntry(
+      builder: (context) => FloatingSuccess(message: message),
+    );
+
+    // Insert the overlay
+    Overlay.of(context).insert(overlayEntry);
+
+    // Remove the overlay after 2 seconds
+    Future.delayed(const Duration(seconds: 2), () {
+      overlayEntry.remove();
+    });
+  }
+
+  Future<void> _resetPassword() async {
+    String email =
+        Provider.of<userProvider>(context, listen: false).email ?? '';
+
+    if (email.isEmpty) {
+      showFloatingWarning(context, "Please enter your email.");
+      return;
+    }
+
+    try {
+      await operations.resetPassword(email);
+      showFloatingSuccess(context, "Password reset email sent!");
+    } on FirebaseAuthException catch (e) {
+      String errorMessage = "Something went wrong. Please try again.";
+
+      if (e.code == 'user-not-found') {
+        errorMessage = "No user found with this email.";
+      } else if (e.code == 'invalid-email') {
+        errorMessage = "Please enter a valid email address.";
+      }
+
+      showFloatingWarning(context, errorMessage);
+    }
+  }
+ 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -112,7 +174,7 @@ class _NgoSettingsPageState extends State<NgoSettingsPage> {
                   ),
                   trailing: Icon(Icons.arrow_forward_ios, color: Colors.green),
                   onTap: () {
-                    showEditPasswordModal(context);
+                    _resetPassword();
                   },
                 ),
               ],
