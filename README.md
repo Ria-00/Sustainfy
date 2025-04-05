@@ -52,6 +52,7 @@ sustainfy/
 ├── README.md
 ```
 
+---
 
 ## 🔐 Security
 
