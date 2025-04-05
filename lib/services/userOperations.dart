@@ -577,6 +577,22 @@ Future<bool> checkIfWishlisted(String userEmail, String couponId) async {
     }
   }
 
+  Future<void> checkAndUpdateEvents() async {
+  final now = Timestamp.now();
+  final events = await FirebaseFirestore.instance
+      .collection('events')
+      .where('eventStatus', isEqualTo: 'live')
+      .where('eventEnd_date', isLessThanOrEqualTo: now)
+      .get();
+
+  for (var doc in events.docs) {
+    await doc.reference.update({
+      'eventStatus': 'closed',
+    });
+  }
+}
+
+
   Future<List<EventModel>> getAllEventsExcludingNgo(DocumentReference ngoRef) async {
   try {
     QuerySnapshot snapshot = await FirebaseFirestore.instance
