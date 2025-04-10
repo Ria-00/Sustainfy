@@ -1,8 +1,11 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import 'package:sustainfy/model/eventModel.dart';
 import 'package:sustainfy/providers/EventProvider.dart';
 import 'package:sustainfy/screens/NGOScreens/NextScreenAfterFormCreate.dart';
+import 'package:sustainfy/screens/NGOScreens/NgoLandingPage.dart';
 import 'package:sustainfy/services/eventService.dart';
 import 'package:sustainfy/utils/colors.dart';
 import 'package:sustainfy/utils/font.dart';
@@ -11,9 +14,21 @@ import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 
 import '../../api/gemini_service.dart';
+import '../../model/ngoModel.dart';
+import '../../providers/userProvider.dart';
+import '../../services/userOperations.dart';
 // import '../../services/getLocation.dart';
 
 class CreateEventPage extends StatefulWidget {
+  final EventModel? existingEvent;
+  final bool showSaveEditButtons;
+
+  const CreateEventPage({
+    Key? key,
+    this.existingEvent,
+    this.showSaveEditButtons = true, // default value
+  }) : super(key: key);
+
   @override
   State<CreateEventPage> createState() => _CreateEventPageState();
 }
@@ -27,6 +42,103 @@ class _CreateEventPageState extends State<CreateEventPage> {
   final TextEditingController _endTimeController = TextEditingController();
   File? _selectedImage;
 
+  DateTime? _startDate;
+  DateTime? _endDate;
+  TimeOfDay? _startTime;
+  TimeOfDay? _endTime;
+
+  Ngo? _user;
+  UserClassOperations operations = UserClassOperations();
+
+  String ngoName = "";
+  bool showSaveEditButtons = false;
+  bool isEditable = true; // Variable to control the read-only state
+  String? imageUrl = "";
+
+  // Initialize an empty list to store image paths
+  List<String> imageList = [];
+
+  // Called once when the widget is initialized
+  @override
+  void initState() {
+    super.initState();
+    _getuserInformation(); // Start fetching user info when widget is first built
+
+    showSaveEditButtons = widget.showSaveEditButtons;
+    print("in init state");
+    imageUrl = widget.existingEvent?.eventImg;
+
+    if (imageUrl == "") {
+      imageUrl =
+          Provider.of<EventProvider>(context, listen: false).event.eventImg;
+    }
+    print("final url");
+    print(imageUrl);
+
+    widget.existingEvent?.UNGoals.forEach((goalNumber) {
+      setState(() {
+        imageList.add("assets/images/unGoals/E_SDG_Icons-$goalNumber.jpg");
+      });
+    });
+  }
+
+  // Function to get user info
+  void _getuserInformation() async {
+    String userEmail =
+        Provider.of<userProvider>(context, listen: false).email ?? '';
+
+    Ngo? fetchedUser = await operations.getNgo(userEmail);
+    print(userEmail);
+
+    if (fetchedUser != null) {
+      setState(() {
+        _user = fetchedUser;
+        ngoName = _user?.ngoName ??
+            ''; // Set ngoName inside setState to trigger rebuild
+        // Optionally, update other controllers like _emailController, _mobileController, etc.
+      });
+    } else {
+      print("User not found!");
+    }
+  }
+
+  dynamic convertTimestampToDateOrTime(
+      Timestamp? timestamp, String returnType) {
+    // Get the DateTime object from the Timestamp
+    DateTime dateTime = timestamp!.toDate();
+
+    if (returnType == 'date') {
+      // Return the DateTime object for the date
+      return DateTime(dateTime.year, dateTime.month, dateTime.day);
+    } else if (returnType == 'time') {
+      // Return the TimeOfDay object for the time
+      return TimeOfDay(hour: dateTime.hour, minute: dateTime.minute);
+    } else {
+      throw ArgumentError("Invalid returnType. Use 'date' or 'time'.");
+    }
+  }
+
+  Timestamp combineDateAndTime(DateTime? pickedDate, TimeOfDay? pickedTime) {
+    // Ensure both pickedDate and pickedTime are not null
+    if (pickedDate == null || pickedTime == null) {
+      throw ArgumentError("Both date and time must be provided.");
+    }
+
+    // Combine the picked date and picked time into a DateTime object
+    DateTime combinedDateTime = DateTime(
+      pickedDate.year,
+      pickedDate.month,
+      pickedDate.day,
+      pickedTime.hour,
+      pickedTime.minute,
+    );
+
+    // Convert the DateTime to Firestore Timestamp
+    Timestamp timestamp = Timestamp.fromDate(combinedDateTime);
+
+    return timestamp; // This is your Firestore Timestamp!
+  }
+
   Future<void> _selectDate(BuildContext context, String field,
       TextEditingController controller) async {
     DateTime? picked = await showDatePicker(
@@ -38,9 +150,18 @@ class _CreateEventPageState extends State<CreateEventPage> {
     );
     if (picked != null) {
       String formattedDate = DateFormat('dd/MM/yyyy').format(picked);
-      context
-          .read<EventProvider>()
-          .updateEventData(field: field, value: picked);
+      // context
+      //     .read<EventProvider>()
+      //     .updateEventData(field: field, value: picked);
+      if (field == "startDate") {
+        setState(() {
+          _startDate = picked; // Store the selected date
+        });
+      } else if (field == "endDate") {
+        setState(() {
+          _endDate = picked; // Store the selected date
+        });
+      }
       setState(() {
         controller.text = formattedDate;
         _formKey.currentState!.validate();
@@ -56,17 +177,23 @@ class _CreateEventPageState extends State<CreateEventPage> {
     );
     if (picked != null) {
       String formattedTime = picked.format(context);
-      context
-          .read<EventProvider>()
-          .updateEventData(field: field, value: picked);
+      // context
+      //     .read<EventProvider>()
+      //     .updateEventData(field: field, value: picked);
       setState(() {
         controller.text = formattedTime;
       });
 
       if (field == "startTime") {
+        setState(() {
+          _startTime = picked; // Store the selected date
+        });
         _startTimeController.text = formattedTime;
         _formKey.currentState!.validate();
       } else if (field == "endTime") {
+        setState(() {
+          _endTime = picked; // Store the selected date
+        });
         _endTimeController.text = formattedTime;
         _formKey.currentState!.validate();
       }
@@ -75,6 +202,12 @@ class _CreateEventPageState extends State<CreateEventPage> {
 
   @override
   Widget build(BuildContext context) {
+    final eventProvider = Provider.of<EventProvider>(context);
+
+    Map<String, dynamic> data;
+
+    // Loop through each key in categorizedData map
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: Stack(
@@ -119,7 +252,10 @@ class _CreateEventPageState extends State<CreateEventPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _buildMainImageSection(),
+                    if (showSaveEditButtons) ...[
+                      _buildMainImageSection(widget.existingEvent?.eventImg ??
+                          eventProvider.event.eventImg)
+                    ],
                     SizedBox(height: 16),
                     Padding(
                       padding: const EdgeInsets.symmetric(vertical: 6.0),
@@ -132,13 +268,10 @@ class _CreateEventPageState extends State<CreateEventPage> {
                                   fontSize: 19,
                                   fontWeight: FontWeight.bold)),
                           TextField(
-                            controller: TextEditingController(
-                                text: Provider.of<EventProvider>(context)
-                                    .ngoName),
+                            controller: TextEditingController(text: ngoName),
                             readOnly: true,
                             decoration: InputDecoration(
-                              hintText:
-                                  Provider.of<EventProvider>(context).ngoName,
+                              hintText: ngoName,
                               hintStyle:
                                   TextStyle(color: Colors.grey, fontSize: 16),
                             ),
@@ -147,11 +280,17 @@ class _CreateEventPageState extends State<CreateEventPage> {
                       ),
                     ),
                     _buildTextField(
-                        "Event Name", "Eg, Care Free Day", "eventName"),
+                        "Event Name",
+                        "Eg, Tree Plantation",
+                        "eventName",
+                        widget.existingEvent?.eventName ??
+                            eventProvider.event.eventName),
                     _buildTextField(
                         "Description",
-                        "Eg, Community cleanup and tree planting ",
-                        "description"),
+                        "Eg, Plant a tree in your neighbourhood.",
+                        "eventDetails",
+                        widget.existingEvent?.eventDetails ??
+                            eventProvider.event.eventDetails),
                     SizedBox(height: 16),
                     Text("Details",
                         style: TextStyle(
@@ -165,8 +304,12 @@ class _CreateEventPageState extends State<CreateEventPage> {
                                 "Start Date",
                                 _startDateController,
                                 Icons.calendar_today,
-                                () => _selectDate(context, "startDate",
-                                    _startDateController))),
+                                () => _selectDate(
+                                      context,
+                                      "startDate",
+                                      _startDateController,
+                                    ),
+                                widget.existingEvent?.eventStartDate)),
                         SizedBox(width: 10),
                         Expanded(
                             child: _buildDateTimeField(
@@ -174,7 +317,11 @@ class _CreateEventPageState extends State<CreateEventPage> {
                                 _endDateController,
                                 Icons.calendar_today,
                                 () => _selectDate(
-                                    context, "endDate", _endDateController))),
+                                      context,
+                                      "endDate",
+                                      _endDateController,
+                                    ),
+                                widget.existingEvent?.eventEndDate)),
                       ],
                     ),
                     Row(
@@ -184,8 +331,12 @@ class _CreateEventPageState extends State<CreateEventPage> {
                                 "Start Time",
                                 _startTimeController,
                                 Icons.access_time,
-                                () => _selectTime(context, "startTime",
-                                    _startTimeController))),
+                                () => _selectTime(
+                                      context,
+                                      "startTime",
+                                      _startTimeController,
+                                    ),
+                                widget.existingEvent?.eventStartDate)),
                         SizedBox(width: 15),
                         SizedBox(height: 10),
                         Expanded(
@@ -194,14 +345,20 @@ class _CreateEventPageState extends State<CreateEventPage> {
                                 _endTimeController,
                                 Icons.access_time,
                                 () => _selectTime(
-                                    context, "endTime", _endTimeController))),
+                                      context,
+                                      "endTime",
+                                      _endTimeController,
+                                    ),
+                                widget.existingEvent?.eventEndDate)),
                       ],
                     ),
                     SizedBox(height: 20),
-                    _buildTextField("Location",
-                        "Eg , National media Center , Gurugram", "location"),
-                    // buildLocationField(context),
-
+                    _buildTextField(
+                        "Location",
+                        "Eg , National media Center , Gurugram",
+                        "eventAddress",
+                        widget.existingEvent?.eventAddress ??
+                            eventProvider.event.eventAddress),
                     SizedBox(height: 20),
                     Text("Event Instructions & Guidelines",
                         style: TextStyle(
@@ -213,67 +370,234 @@ class _CreateEventPageState extends State<CreateEventPage> {
                         "Add any important details or rules participants need to follow, such as registration info, event schedule, or health and safety protocols.",
                         style: TextStyle(fontSize: 16)),
                     SizedBox(height: 10),
-                    _buildTextField("Guidelines", "Enter your guidelines here",
-                        "guidelines"),
-
-                    SizedBox(height: 30),
-
-                    Padding(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 12.0), // Adjust margin here
-                      child: SizedBox(
-                        width: double
-                            .infinity, // Makes the button take full width inside padding
-                        child: ElevatedButton(
-                          onPressed: () async {
-                            if (_formKey.currentState!.validate()) {
-                              Map<String, dynamic> result = await eventService
-                                  .handleSubmit(context: context);
-
-                              Map<String, dynamic> categorizedData =
-                                  result['categorizedData'];
-                              int points = result['points'];
-
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => NextScreen(
-                                      categorizedData: categorizedData,
-                                      points: points),
-                                ),
-                              );
-                            }
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.darkGreen,
-                            foregroundColor: Colors.white,
-                            padding: EdgeInsets.symmetric(
-                                vertical: 12), // Adjust height
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(
-                                  30), // Optional rounded corners
+                    _buildTextField(
+                        "Guidelines",
+                        "Enter your guidelines here",
+                        "eventGuidelines",
+                        widget.existingEvent?.eventGuidelines ??
+                            eventProvider.event.eventGuidelines),
+                    if (showSaveEditButtons) ...[
+                      SizedBox(height: 20),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 16.0, horizontal: 0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              "SDG Goals:",
+                              style: TextStyle(
+                                  fontSize: 18, fontWeight: FontWeight.bold),
                             ),
-                          ),
-                          child: const Text(
-                            "Submit",
-                            style: TextStyle(
-                                fontSize: 18, fontWeight: FontWeight.bold),
-                          ),
+                            SizedBox(height: 10),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              children: imageList.isNotEmpty
+                                  ? imageList.map((imagePath) {
+                                      return Container(
+                                        margin:
+                                            EdgeInsets.symmetric(horizontal: 8),
+                                        width: 80,
+                                        height: 80,
+                                        decoration: BoxDecoration(
+                                          image: DecorationImage(
+                                            image: AssetImage(imagePath),
+                                            fit: BoxFit.cover,
+                                          ),
+                                          borderRadius:
+                                              BorderRadius.circular(8),
+                                        ),
+                                      );
+                                    }).toList()
+                                  : [Text("No SDG goals available.")],
+                            ),
+                          ],
                         ),
                       ),
-                    ),
-                    const SizedBox(height: 20),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 16.0, horizontal: 0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              "Points assigned: ${widget.existingEvent?.eventPoints ?? eventProvider.event.eventPoints}  ",
+                              style: TextStyle(
+                                  fontSize: 18, fontWeight: FontWeight.bold),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                    SizedBox(height: 100),
                   ],
                 ),
               ),
             ),
           ),
+          if (!showSaveEditButtons)
+            Positioned(
+              bottom: 16.0, // Stick to the bottom of the screen
+              left: 0,
+              right: 0,
+              child: Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10.0, vertical: 10),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    ElevatedButton(
+                      onPressed: () async {
+                        if (_formKey.currentState!.validate()) {
+                          Map<String, dynamic> result =
+                              await eventService.handleSubmit(context: context);
+
+                          DocumentReference ref = result['ref'];
+
+                          data = result['categorizedData'];
+
+                          data.forEach((key, value) {
+                            // Directly add the image path based on the key
+                            setState(() {
+                              imageList.add(
+                                  "assets/images/unGoals/E_SDG_Icons-$key.jpg");
+                            });
+                          });
+                          int points = result['points'];
+
+                          String eventId = result['eventId'];
+                          String imgUrl = result['imgUrl'];
+                          Timestamp eventStartDate =
+                              combineDateAndTime(_startDate, _startTime);
+                          Timestamp eventEndDate =
+                              combineDateAndTime(_endDate, _endTime);
+
+                          context.read<EventProvider>().updateEventData(
+                              field: "eventStartDate", value: eventStartDate);
+                          context.read<EventProvider>().updateEventData(
+                              field: "eventEndDate", value: eventEndDate);
+
+                          context.read<EventProvider>().updateEventData(
+                              field: "eventId", value: eventId);
+                          context.read<EventProvider>().updateEventData(
+                              field: "eventPoints", value: points);
+                          List<int> list =
+                              data.keys.map((key) => int.parse(key)).toList();
+                          print(list);
+                          context
+                              .read<EventProvider>()
+                              .updateEventData(field: "UNGoals", value: list);
+
+                          context
+                              .read<EventProvider>()
+                              .updateEventData(field: "ngoRef", value: ref);
+                          context.read<EventProvider>().updateEventData(
+                              field: "eventImg", value: imgUrl);
+
+                          setState(() {
+                            isEditable = false;
+                            showSaveEditButtons = true;
+                          });
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.darkGreen,
+                        foregroundColor: Colors.white,
+                        padding:
+                            EdgeInsets.symmetric(vertical: 12, horizontal: 160),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(30),
+                        ),
+                      ),
+                      child: const Text(
+                        "Submit",
+                        style: TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          if (showSaveEditButtons) ...[
+            Positioned(
+              bottom: 16.0,
+              left: 0,
+              right: 0,
+              child: Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    ElevatedButton(
+                      onPressed: () {
+                        Timestamp startdate =
+                            combineDateAndTime(_startDate, _startTime);
+                        Timestamp enddate =
+                            combineDateAndTime(_endDate, _endTime);
+
+                        context.read<EventProvider>().updateEventData(
+                            field: "eventStartDate", value: startdate);
+                        context.read<EventProvider>().updateEventData(
+                            field: "eventEndDate", value: enddate);
+                         context.read<EventProvider>().updateEventData(
+                            field: "eventStatus", value: 'draft');
+                               
+                        print("ngoref");
+                        print(eventProvider.event.ngoRef);
+                        print("un goals");
+                        print(eventProvider.event.UNGoals);
+                        eventService.updateEvent(eventProvider.event);
+
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => NgoLandingPage()),
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.darkGreen,
+                        foregroundColor: AppColors.white,
+                        padding:
+                            EdgeInsets.symmetric(horizontal: 40, vertical: 15),
+                      ),
+                      child: Text('Save', style: TextStyle(fontSize: 18)),
+                    ),
+                    ElevatedButton(
+                      onPressed: () {
+                        setState(() {
+                          isEditable = !isEditable;
+                        });
+
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                              content: Text(isEditable
+                                  ? 'Edit mode enabled!'
+                                  : 'Edit mode disabled!')),
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.lightGreen,
+                        foregroundColor: AppColors.black,
+                        padding:
+                            EdgeInsets.symmetric(horizontal: 40, vertical: 15),
+                      ),
+                      child: Text(isEditable ? 'Cancel' : 'Edit',
+                          style: TextStyle(fontSize: 18)),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ]
         ],
       ),
     );
   }
 
-  Widget _buildTextField(String label, String hint, String field) {
+  Widget _buildTextField(
+      String label, String hint, String field, String? value) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6.0),
       child: Column(
@@ -286,6 +610,7 @@ class _CreateEventPageState extends State<CreateEventPage> {
                   fontWeight: FontWeight.bold)),
           SingleChildScrollView(
             child: TextFormField(
+              initialValue: value,
               maxLines: null, // Allow unlimited lines
               keyboardType: TextInputType.multiline, // Multiline input
               onChanged: (value) {
@@ -303,6 +628,7 @@ class _CreateEventPageState extends State<CreateEventPage> {
                 }
                 return null;
               },
+              readOnly: !isEditable,
             ),
           ),
         ],
@@ -311,11 +637,28 @@ class _CreateEventPageState extends State<CreateEventPage> {
   }
 
   Widget _buildDateTimeField(String label, TextEditingController controller,
-      IconData icon, VoidCallback onTap) {
+      IconData icon, VoidCallback onTap, Timestamp? existingDayTime) {
+    if (controller.text.isEmpty && existingDayTime != null) {
+      // If it's a date label
+      if (label.contains("Date")) {
+        DateTime date = convertTimestampToDateOrTime(existingDayTime, 'date');
+        controller.text = DateFormat('dd/MM/yyyy').format(date);
+      }
+
+      // If it's a time label
+      else if (label.contains("Time")) {
+        TimeOfDay time = convertTimestampToDateOrTime(existingDayTime, 'time');
+        final now = DateTime.now();
+        final dt =
+            DateTime(now.year, now.month, now.day, time.hour, time.minute);
+        controller.text = DateFormat('h:mm a').format(dt);
+      }
+    }
     return TextFormField(
+      // initialValue: ,
       controller: controller,
       readOnly: true,
-      onTap: onTap,
+      onTap: isEditable ? onTap : null,
       onChanged: (value) => _formKey.currentState!.validate(),
       decoration: InputDecoration(
         labelText: label,
@@ -377,7 +720,7 @@ class _CreateEventPageState extends State<CreateEventPage> {
     );
   }
 
-  Widget _buildMainImageSection() {
+  Widget _buildMainImageSection(String imageUrl) {
     return Container(
       height: 150,
       width: double.infinity,
@@ -385,12 +728,22 @@ class _CreateEventPageState extends State<CreateEventPage> {
         color: Color(0xFFDCEDDE),
         borderRadius: BorderRadius.circular(12),
       ),
-      child: Center(
-        child: GestureDetector(
-          child: _selectedImage == null
-              ? Image.asset('assets/images/addImage.png', width: 50, height: 50)
-              : Image.file(_selectedImage!,
-                  width: 80, height: 80, fit: BoxFit.cover),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(12),
+        child: Image.network(
+          imageUrl,
+          width: double.infinity,
+          height: double.infinity,
+          fit: BoxFit.cover,
+          errorBuilder: (context, error, stackTrace) {
+            return Center(
+              child: Image.asset(
+                'assets/images/addImage.png',
+                width: 50,
+                height: 50,
+              ),
+            );
+          },
         ),
       ),
     );

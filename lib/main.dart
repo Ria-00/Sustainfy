@@ -13,10 +13,9 @@ import 'package:sustainfy/screens/profilePage.dart';
 import 'package:sustainfy/screens/rewardPage.dart';
 import 'package:sustainfy/screens/splashScreen.dart';
 
-
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-    // await dotenv.load();
+  // await dotenv.load();
 
   await Firebase.initializeApp(
       options: FirebaseOptions(
@@ -36,14 +35,14 @@ class MyApp1 extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (context) => userProvider()),
-        ChangeNotifierProvider(create: (context) => EventProvider()), 
+        ChangeNotifierProvider(create: (context) => EventProvider()),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
         title: 'Sustainfy',
         theme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(
-              seedColor: Color.fromARGB(255, 52, 168, 83)),
+          colorScheme:
+              ColorScheme.fromSeed(seedColor: Color.fromARGB(255, 52, 168, 83)),
           useMaterial3: true,
         ),
         home: Consumer<userProvider>(
@@ -54,7 +53,7 @@ class MyApp1 extends StatelessWidget {
         routes: {
           '/profile': (context) => ProfilePage(),
           '/login': (context) => Login(),
-          '/splash': (context) =>SplashScreen(),
+          '/splash': (context) => SplashScreen(),
         },
       ),
     );
