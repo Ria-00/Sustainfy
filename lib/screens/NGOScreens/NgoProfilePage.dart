@@ -127,38 +127,25 @@ class _NgoProfilePageState extends State<NgoProfilePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        body: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+         body: Column(
       children: [
-        // Header Section
         ClipPath(
           clipper: CustomCurvedEdges(),
-          child: SizedBox(
-            height: 150,
-            child: Container(
-              color: const Color.fromRGBO(52, 168, 83, 1),
-              child: Row(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.only(left: 17.0),
-                    child: Image.asset(
-                      'assets/images/SustainifyLogo.png',
-                      width: 50,
-                      height: 60,
-                    ),
-                  ),
-                  SizedBox(width: 7),
-                  const Text(
-                    'Sustainfy',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontFamily: AppFonts.inter,
-                      fontSize: 25,
-                      fontWeight: AppFonts.interRegularWeight,
-                    ),
-                  ),
-                ],
-              ),
+          child: Container(
+            height: 150, 
+            color: const Color.fromRGBO(52, 168, 83, 1),
+            padding: EdgeInsets.symmetric(horizontal: 15), 
+            child: Row(
+              crossAxisAlignment:
+                  CrossAxisAlignment.center, 
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                Image.asset(
+                  'assets/images/SustainifyLogo.png',
+                  width: 50, 
+                  height: 60, 
+                ),
+              ],
             ),
           ),
         ),
