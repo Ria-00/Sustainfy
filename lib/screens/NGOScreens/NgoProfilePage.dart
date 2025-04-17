@@ -6,6 +6,7 @@ import 'package:sustainfy/model/ngoModel.dart';
 import 'package:sustainfy/providers/userProvider.dart';
 import 'package:sustainfy/screens/NGOScreens/NgoLoginPage.dart';
 import 'package:sustainfy/screens/NGOScreens/NgoSettingsPage.dart';
+import 'package:sustainfy/services/encryptServive.dart';
 import 'package:sustainfy/services/userOperations.dart';
 import 'package:sustainfy/utils/font.dart';
 import 'package:sustainfy/widgets/customCurvedEdges.dart';
@@ -26,7 +27,7 @@ class _NgoProfilePageState extends State<NgoProfilePage> {
   final FocusNode nameFocusNode = FocusNode();
   final FocusNode emailFocusNode = FocusNode();
   final FocusNode mobileFocusNode = FocusNode();
-
+  bool isLoading = false;
   bool isTapped = false;
 
   void _addFocusListener(
@@ -69,36 +70,59 @@ class _NgoProfilePageState extends State<NgoProfilePage> {
     }
   }
 
-    void showFloatingWarning(BuildContext context, String message) {
-      OverlayEntry overlayEntry = OverlayEntry(
-        builder: (context) => FloatingWarning(message: message),
+  Future<void> _handleDeleteAccount() async {
+    isLoading = true;
+    setState(() {}); // Trigger a rebuild to show loading state
+    String userEmail =
+        Provider.of<userProvider>(context, listen: false).email ?? '';
+    String encryptPass =
+        Provider.of<userProvider>(context, listen: false).password ?? '';
+    print(encryptPass);
+    String userPass = EncryptionService().decryptData(encryptPass);
+    String result =
+        await operations.reAuthenticateAndDelete(userEmail, userPass);
+    isLoading = false;
+    setState(() {}); // Trigger a rebuild to hide loading state
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(result)),
+    );
+
+    if (result == "User account deleted successfully.") {
+      // Navigate user to login or home screen
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (context) => NgoLoginPage()),
+        (Route<dynamic> route) => false, // Clears all previous screens
       );
+    }
+  }
 
-      // Insert the overlay
-      Overlay.of(context).insert(overlayEntry);
+  void showFloatingWarning(BuildContext context, String message) {
+    OverlayEntry overlayEntry = OverlayEntry(
+      builder: (context) => FloatingWarning(message: message),
+    );
 
-      // Remove the overlay after 2 seconds
-      Future.delayed(const Duration(seconds: 2), () {
-        overlayEntry.remove();
-      });
+    // Insert the overlay
+    Overlay.of(context).insert(overlayEntry);
+
+    // Remove the overlay after 2 seconds
+    Future.delayed(const Duration(seconds: 2), () {
+      overlayEntry.remove();
+    });
   }
 
   void showFloatingSuccess(BuildContext context, String message) {
-  OverlayEntry overlayEntry = OverlayEntry(
-    builder: (context) => FloatingSuccess(message: message),
-  );
+    OverlayEntry overlayEntry = OverlayEntry(
+      builder: (context) => FloatingSuccess(message: message),
+    );
 
-  // Insert the overlay
-  Overlay.of(context).insert(overlayEntry);
+    // Insert the overlay
+    Overlay.of(context).insert(overlayEntry);
 
-  // Remove the overlay after 2 seconds
-  Future.delayed(const Duration(seconds: 2), () {
-    overlayEntry.remove();
-  });
-}
-
-  
-
+    // Remove the overlay after 2 seconds
+    Future.delayed(const Duration(seconds: 2), () {
+      overlayEntry.remove();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -178,57 +202,60 @@ class _NgoProfilePageState extends State<NgoProfilePage> {
 
         // Settings Section
 
-        Container(
-          padding: EdgeInsets.symmetric(horizontal: 25),
-          child: Column(
-            children: [
-              ListTile(
-                contentPadding: EdgeInsets.zero,
-                title: Text(
-                  'Settings',
-                  style: TextStyle(
-                      color: const Color.fromRGBO(50, 50, 55, 1), fontSize: 20),
+        isLoading
+            ? Center(child: CircularProgressIndicator())
+            : Container(
+                padding: EdgeInsets.symmetric(horizontal: 25),
+                child: Column(
+                  children: [
+                    ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      title: Text(
+                        'Settings',
+                        style: TextStyle(
+                            color: const Color.fromRGBO(50, 50, 55, 1),
+                            fontSize: 20),
+                      ),
+                      trailing: Icon(Icons.arrow_forward_ios),
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => NgoSettingsPage()),
+                        );
+                      },
+                    ),
+                    Divider(),
+                    ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      title: Text('Log out',
+                          style: TextStyle(
+                              color: const Color.fromRGBO(50, 50, 55, 1),
+                              fontSize: 20)),
+                      trailing: Icon(Icons.arrow_forward_ios),
+                      onTap: () {
+                        showLogoutModal(context);
+                      },
+                    ),
+                    Divider(),
+                    ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      title: Text(
+                        'Delete Account',
+                        style: TextStyle(color: Colors.red, fontSize: 20),
+                      ),
+                      trailing:
+                          Icon(Icons.arrow_forward_ios, color: Colors.red),
+                      onTap: () {
+                        showDeleteAccModal(context);
+                      },
+                    ),
+                  ],
                 ),
-                trailing: Icon(Icons.arrow_forward_ios),
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => NgoSettingsPage()),
-                  );
-                },
               ),
-              Divider(),
-              ListTile(
-                contentPadding: EdgeInsets.zero,
-                title: Text('Log out',
-                    style: TextStyle(
-                        color: const Color.fromRGBO(50, 50, 55, 1),
-                        fontSize: 20)),
-                trailing: Icon(Icons.arrow_forward_ios),
-                onTap: () {
-                  showLogoutModal(context);
-                },
-              ),
-              Divider(),
-              ListTile(
-                contentPadding: EdgeInsets.zero,
-                title: Text(
-                  'Delete Account',
-                  style: TextStyle(color: Colors.red, fontSize: 20),
-                ),
-                trailing: Icon(Icons.arrow_forward_ios, color: Colors.red),
-                onTap: () {
-                  showDeleteAccModal(context);
-                },
-              ),
-            ],
-          ),
-        ),
       ],
     ));
   }
-
-  
 
   void showEditProfileModal(BuildContext context) {
     showModalBottomSheet(
@@ -322,7 +349,6 @@ class _NgoProfilePageState extends State<NgoProfilePage> {
                                 ),
                               ),
                               SizedBox(height: 10),
-                              
                               TextField(
                                 controller: _mobileController,
                                 focusNode: mobileFocusNode,
@@ -337,7 +363,7 @@ class _NgoProfilePageState extends State<NgoProfilePage> {
                                   ),
                                   filled: true,
                                   fillColor: Color.fromRGBO(220, 237, 222, 1),
-                                  hintText: isTapped ? "" : "Mobile No.",
+                                  hintText:"Mobile No.",
                                   hintStyle: TextStyle(
                                     color: Color.fromRGBO(
                                         128, 137, 129, 0.5), // Grayish text
@@ -361,22 +387,28 @@ class _NgoProfilePageState extends State<NgoProfilePage> {
                                     borderRadius: BorderRadius.circular(20),
                                   ),
                                 ),
-                                onPressed: () async{
+                                onPressed: () async {
                                   // Submit logic
                                   FocusScope.of(context).unfocus();
-                                  String ngon= _nameController.text;
-                                  String ngoPhone= _mobileController.text;
-                                  String userEmail =Provider.of<userProvider>(context, listen: false).email ?? '';
-                                  int a=await operations.updateNgoDetails(userEmail, ngon, ngoPhone);
+                                  String ngon = _nameController.text;
+                                  String ngoPhone = _mobileController.text;
+                                  String userEmail = Provider.of<userProvider>(
+                                              context,
+                                              listen: false)
+                                          .email ??
+                                      '';
+                                  int a = await operations.updateNgoDetails(
+                                      userEmail, ngon, ngoPhone);
                                   Navigator.of(context).pop();
                                   _getuserInformation();
-                                  if(a==1){
+                                  if (a == 1) {
                                     print("Updated");
-                                    showFloatingSuccess(context, "Profile Updated Successfully");
-                                  }
-                                  else{
+                                    showFloatingSuccess(context,
+                                        "Profile Updated Successfully");
+                                  } else {
                                     print("Not Updated");
-                                    showFloatingWarning(context, "Error Updating Profile");
+                                    showFloatingWarning(
+                                        context, "Error Updating Profile");
                                   }
                                 },
                                 child: Text(
@@ -443,7 +475,6 @@ class _NgoProfilePageState extends State<NgoProfilePage> {
                             ),
                           ),
                           onPressed: () async {
-
                             try {
                               Navigator.of(context).pop(); // Close modal
 
@@ -523,7 +554,7 @@ class _NgoProfilePageState extends State<NgoProfilePage> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    "Are you sure you want to Delete this account?",
+                    "Are you sure you want to delete?",
                     style: TextStyle(
                       color: Colors.white,
                       fontSize: 20,
@@ -546,6 +577,7 @@ class _NgoProfilePageState extends State<NgoProfilePage> {
                           onPressed: () {
                             Navigator.of(context).pop(); // Close modal
                             // Add logout logic here
+                            _handleDeleteAccount();
                           },
                           child: Text(
                             "Yes",
@@ -579,5 +611,5 @@ class _NgoProfilePageState extends State<NgoProfilePage> {
             ),
           );
         });
-  } 
+  }
 }

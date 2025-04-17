@@ -20,7 +20,7 @@ class GeminiService {
             "parts": [
               {
                 "text":
-                    "Classify the following event under one or more of the relavent 17 Sustainable Development Goals (SDGs) based on its title and description. Return the SDG goal name(s) and number(s) in a key value form, key is the sdg number and value is the name.\n\n"
+                    "Classify the following event under one or more of the relavent 17 Sustainable Development Goals (SDGs) based on its title and description. Return the SDG goal(s) in JSON format, where the key is the SDG number and the value is the SDG name.\n\n"
                         "Title: $title\n"
                         "Description: $description"
               }
@@ -35,9 +35,11 @@ class GeminiService {
       // Parse the JSON
       Map<String, dynamic> parsedJson = jsonDecode(response.body.toString());
 
+      print(parsedJson);
+
       // Extract text
       String text = parsedJson["candidates"][0]["content"]["parts"][0]["text"];
-
+      print(text);
       // Remove code block formatting
       text = text.replaceAll("```json", "").replaceAll("```", "").trim();
 

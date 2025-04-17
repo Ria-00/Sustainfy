@@ -32,6 +32,7 @@ class _NgoLandingPageState extends State<NgoLandingPage> {
 
   void _getEvents() async {
     String? mail = Provider.of<userProvider>(context, listen: false).email;
+    await operate.checkAndUpdateEvents();
     DocumentReference? ngoRef = await operate.getDocumentRef(
         collection: "ngo", field: "ngoMail", value: mail);
     List<EventModel> dummyEvents = await operate.getNgoEvents(ngoRef!);
@@ -53,24 +54,29 @@ class _NgoLandingPageState extends State<NgoLandingPage> {
             children: [
               const SizedBox(height: 150),
               Expanded(
-                child: ListView(
-                  padding: EdgeInsets.only(top: 15),
-                  children: [
-                    buildLiveActivitiesSection("Live Activities",
-                        "assets/images/live.png", Colors.red, "live"),
-                    SizedBox(
-                      height: 10,
-                    ),
-                    buildPublishedSection(
-                        "Published", "assets/images/published.png", "upcoming"),
-                    SizedBox(
-                      height: 10,
-                    ),
-                    buildDraftsSection("assets/images/drafts.png"),
-                    SizedBox(
-                      height: 10,
-                    ),
-                  ],
+                child: RefreshIndicator(
+                  onRefresh: () async {
+                    _getEvents(); // Retriggers the function to refresh data
+                  },
+                  child: ListView(
+                    padding: EdgeInsets.only(top: 15),
+                    children: [
+                      buildLiveActivitiesSection("Live Activities",
+                          "assets/images/live.png", Colors.red, "live"),
+                      SizedBox(
+                        height: 10,
+                      ),
+                      buildPublishedSection("Published",
+                          "assets/images/published.png", "upcoming"),
+                      SizedBox(
+                        height: 10,
+                      ),
+                      buildDraftsSection("assets/images/drafts.png"),
+                      SizedBox(
+                        height: 10,
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ],
@@ -133,7 +139,11 @@ class _NgoLandingPageState extends State<NgoLandingPage> {
                 onPressed: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => CreateEventPage()),
+                    MaterialPageRoute(
+                        builder: (context) => CreateEventPage(
+                              existingEvent: null,
+                              showSaveEditButtons: false,
+                            )),
                   );
                 },
                 backgroundColor: Colors.green,
@@ -149,171 +159,180 @@ class _NgoLandingPageState extends State<NgoLandingPage> {
     );
   }
 
-Widget buildEvent(EventModel event) {
-  DateTime? startDateTime = event.eventStartDate?.toDate();
-  DateTime defaultDate = DateTime(2000, 1, 1);
-  bool isDefaultDate = startDateTime == null ||
-      (startDateTime.year == 2000 &&
-          startDateTime.month == 1 &&
-          startDateTime.day == 1);
-  String formattedDate = isDefaultDate
-      ? "_/_/_"
-      : "${startDateTime!.day} ${_getMonthName(startDateTime.month)} ${startDateTime.year}";
-  String formattedTime = isDefaultDate
-      ? "_:_"
-      : "${startDateTime!.hour % 12 == 0 ? 12 : startDateTime.hour % 12}:${startDateTime.minute.toString().padLeft(2, '0')} ${startDateTime.hour >= 12 ? 'PM' : 'AM'}";
-  bool isEndingSoon = startDateTime != null &&
-      !isDefaultDate &&
-      startDateTime.difference(DateTime.now()).inDays == 1;
+  Widget buildEvent(EventModel event) {
+    DateTime? startDateTime = event.eventStartDate?.toDate();
+    DateTime defaultDate = DateTime(2000, 1, 1);
+    bool isDefaultDate = startDateTime == null ||
+        (startDateTime.year == 2000 &&
+            startDateTime.month == 1 &&
+            startDateTime.day == 1);
+    String formattedDate = isDefaultDate
+        ? "_/_/_"
+        : "${startDateTime!.day} ${_getMonthName(startDateTime.month)} ${startDateTime.year}";
+    String formattedTime = isDefaultDate
+        ? "_:_"
+        : "${startDateTime!.hour % 12 == 0 ? 12 : startDateTime.hour % 12}:${startDateTime.minute.toString().padLeft(2, '0')} ${startDateTime.hour >= 12 ? 'PM' : 'AM'}";
+    bool isEndingSoon = startDateTime != null &&
+        !isDefaultDate &&
+        startDateTime.difference(DateTime.now()).inDays == 1;
 
-  return Padding(
-    padding: const EdgeInsets.symmetric(horizontal: 11.0),
-    child: GestureDetector(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => NgoEventDescriptionPage(event: event),
-          ),
-        );
-      },
-      child: Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppColors.darkGreen, width: 2), 
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.1),
-              blurRadius: 4,
-              offset: Offset(2, 2),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 11.0),
+      child: GestureDetector(
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => NgoEventDescriptionPage(event: event),
             ),
-          ],
-        ),
-        child: Row(
-          children: [
-            ClipRRect(
-              borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(15),
-                bottomLeft: Radius.circular(16),
-                bottomRight: Radius.circular(10),
-                topRight: Radius.circular(10)
+          );
+        },
+        child: Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: AppColors.darkGreen, width: 2),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.1),
+                blurRadius: 4,
+                offset: Offset(2, 2),
               ),
-              child: event.eventImg.isNotEmpty
-                  ? Image.network(
-                      event.eventImg,
-                      width: 190, 
-                      height: 140, 
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) {
-                        return SizedBox(width: 160, height: 140);
-                      },
-                    )
-                  : SizedBox(width: 190, height: 140),
-            ),
+            ],
+          ),
+          child: Row(
+            children: [
+              ClipRRect(
+                borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(15),
+                    bottomLeft: Radius.circular(16),
+                    bottomRight: Radius.circular(10),
+                    topRight: Radius.circular(10)),
+                child: event.eventImg.isNotEmpty
+                    ? Image.network(
+                        event.eventImg,
+                        width: 190,
+                        height: 140,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return SizedBox(width: 160, height: 140);
+                        },
+                      )
+                    : SizedBox(width: 190, height: 140),
+              ),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        event.eventName?.isNotEmpty == true
+                            ? event.eventName!
+                            : "Event Name",
+                        style: TextStyle(
+                          fontSize: 17,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      SizedBox(height: 16),
+                      if (event.eventStatus != "draft")
+                        Row(
+                          children: [
+                            Icon(Icons.people,
+                                size: 18, color: AppColors.darkGreen),
+                            SizedBox(width: 4),
+                            Text('54 Users Joined',
+                                style: TextStyle(fontSize: 13)),
+                          ],
+                        ),
+                      if (event.eventStatus != "draft") SizedBox(height: 6),
 
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.all(16), 
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      event.eventName?.isNotEmpty == true ? event.eventName! : "Event Name",
-                      style: TextStyle(
-                        fontSize: 17,
-                        fontWeight: FontWeight.bold,
-                      ),
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    SizedBox(height: 16),
-                    if (event.eventStatus != "draft")
-                      Row(
-                        children: [
-                          Icon(Icons.people, size: 18, color: AppColors.darkGreen),
-                          SizedBox(width: 4),
-                          Text('54 Users Joined', style: TextStyle(fontSize: 13)),
-                        ],
-                      ),
-                    if (event.eventStatus != "draft") SizedBox(height: 6),
+                      //  Live: Show only the Date (No Time)
+                      if (event.eventStatus == "live")
+                        Row(
+                          children: [
+                            Icon(Icons.calendar_today,
+                                size: 18, color: AppColors.darkGreen),
+                            SizedBox(width: 6),
+                            Text(
+                              formattedDate,
+                              style: TextStyle(fontSize: 13),
+                            ),
+                          ],
+                        ),
 
-                    //  Live: Show only the Date (No Time)
-                    if (event.eventStatus == "live")
-                      Row(
-                        children: [
-                          Icon(Icons.calendar_today, size: 18, color: AppColors.darkGreen),
-                          SizedBox(width: 6),
-                          Text(
-                            formattedDate,
-                            style: TextStyle(fontSize: 13),
-                          ),
-                        ],
-                      ),
+                      // Drafts: Show Date & Time on Separate Rows
+                      if (event.eventStatus == "draft") ...[
+                        Row(
+                          children: [
+                            Icon(Icons.calendar_today,
+                                size: 18, color: AppColors.darkGreen),
+                            SizedBox(width: 6),
+                            Text(
+                              formattedDate,
+                              style: TextStyle(fontSize: 13),
+                            ),
+                          ],
+                        ),
+                        SizedBox(height: 4),
+                        Row(
+                          children: [
+                            Icon(Icons.access_time,
+                                size: 18, color: AppColors.darkGreen),
+                            SizedBox(width: 6),
+                            Text(
+                              formattedTime,
+                              style: TextStyle(fontSize: 13),
+                            ),
+                          ],
+                        ),
+                      ],
 
-                    // Drafts: Show Date & Time on Separate Rows
-                    if (event.eventStatus == "draft") ...[
-                      Row(
-                        children: [
-                          Icon(Icons.calendar_today, size: 18, color: AppColors.darkGreen),
-                          SizedBox(width: 6),
-                          Text(
-                            formattedDate,
-                            style: TextStyle(fontSize: 13),
-                          ),
-                        ],
-                      ),
-                      SizedBox(height: 4),
-                      Row(
-                        children: [
-                          Icon(Icons.access_time, size: 18, color: AppColors.darkGreen),
-                          SizedBox(width: 6),
-                          Text(
-                            formattedTime,
-                            style: TextStyle(fontSize: 13),
-                          ),
-                        ],
-                      ),
-                    ],
+                      //  Published: Show Time on the Right & date on left over image
+                      if (event.eventStatus.trim().toLowerCase() == "upcoming")
+                        Row(
+                          children: [
+                            Icon(Icons.access_time,
+                                size: 18, color: AppColors.darkGreen),
+                            SizedBox(width: 6),
+                            Text(
+                              formattedTime,
+                              style: TextStyle(fontSize: 13),
+                            ),
+                          ],
+                        ),
 
-                    //  Published: Show Time on the Right & date on left over image
-                    if (event.eventStatus.trim().toLowerCase() == "upcoming")
-                      Row(
-                        children: [
-                          Icon(Icons.access_time, size: 18, color: AppColors.darkGreen),
-                          SizedBox(width: 6),
-                          Text(
-                            formattedTime,
-                            style: TextStyle(fontSize: 13),
-                          ),
-                        ],
-                      ),
-
-                    if (isEndingSoon)
-                      Padding(
-                        padding: const EdgeInsets.only(top: 6.0),
-                        child: Container(
-                          padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: Colors.red[100],
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Text(
-                            "Ending Soon",
-                            style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+                      if (isEndingSoon)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 6.0),
+                          child: Container(
+                            padding: EdgeInsets.symmetric(
+                                horizontal: 8, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: Colors.red[100],
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Text(
+                              "Ending Soon",
+                              style: TextStyle(
+                                  color: Colors.red,
+                                  fontWeight: FontWeight.bold),
+                            ),
                           ),
                         ),
-                      ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
-    ),
-  );
-}
+    );
+  }
 
   String _getMonthName(int month) {
     List<String> months = [
@@ -375,6 +394,7 @@ Widget buildEvent(EventModel event) {
                   (index) => Padding(
                     padding: const EdgeInsets.only(bottom: 10), // Added spacing
                     child: buildEvent(filteredEvents[index]),
+
                   ),
                 ),
               )
@@ -423,6 +443,7 @@ Widget buildPublishedSection(String title, String imagePath, String status) {
                   (index) => Padding(
                     padding: const EdgeInsets.only(bottom: 10), // Added spacing
                     child: buildEvent(filteredEvents[index]),
+
                   ),
                 ),
               )
@@ -439,55 +460,40 @@ Widget buildPublishedSection(String title, String imagePath, String status) {
 }
 
 
- Widget buildDraftsSection(String draftImagePath) {
-  return Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-        child: Row(
-          children: [
-            Image.asset(
-              draftImagePath,
-              width: 50,
-              height: 50,
-            ),
-            SizedBox(width: 6),
-            Text(
-              "Drafts",
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-          ],
+  Widget buildDraftsSection(String draftImagePath) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+          child: Row(
+            children: [
+              Image.asset(
+                draftImagePath,
+                width: 50,
+                height: 50,
+              ),
+              SizedBox(width: 6),
+              Text(
+                "Drafts",
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+            ],
+          ),
         ),
-      ),
-      Padding(
-        padding: const EdgeInsets.only(left: 10, right: 10, bottom: 5),
-        child: draftEvents.isNotEmpty
-            ? Column(
-                children: List.generate(
-                  draftEvents.length,
-                  (index) => Padding(
-                    padding: const EdgeInsets.only(bottom: 10), // Add spacing between tiles
-                    child: Stack(
-                      children: [
-                        GestureDetector(
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => NgoEventDescriptionPage(
-                                    event: draftEvents[index]),
-                              ),
-                            );
-                          },
-                          child: buildEvent(draftEvents[index]),
-                        ),
-                        Positioned(
-                          top: 10,
-                          right: 20,
-                          child: IconButton(
-                            icon: Icon(Icons.edit, color: Colors.blue),
-                            onPressed: () {
+        Padding(
+          padding: const EdgeInsets.only(left: 10, right: 10, bottom: 5),
+          child: draftEvents.isNotEmpty
+              ? Column(
+                  children: List.generate(
+                    draftEvents.length,
+                    (index) => Padding(
+                      padding: const EdgeInsets.only(
+                          bottom: 10), // Add spacing between tiles
+                      child: Stack(
+                        children: [
+                          GestureDetector(
+                            onTap: () {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
@@ -496,22 +502,47 @@ Widget buildPublishedSection(String title, String imagePath, String status) {
                                 ),
                               );
                             },
+                            child: buildEvent(draftEvents[index]),
                           ),
-                        ),
-                      ],
+                          Positioned(
+                            top: 10,
+                            right: 20,
+                            child: IconButton(
+                              icon: Icon(Icons.edit, color: Colors.blue),
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => CreateEventPage(
+                                        existingEvent: draftEvents[index],
+                                        showSaveEditButtons: true),
+                                  ),
+                                );
+
+                                // Navigator.push(
+                                //   context,
+                                //   MaterialPageRoute(
+                                //     builder: (context) => NgoEventDescriptionPage(
+                                //         event: draftEvents[index]),
+                                //   ),
+                                // );
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
+                )
+              : Center(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 5),
+                    child: Text("No drafts available",
+                        style: TextStyle(color: Colors.grey, fontSize: 14)),
+                  ),
                 ),
-              )
-            : Center(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 5),
-                  child: Text("No drafts available",
-                      style: TextStyle(color: Colors.grey, fontSize: 14)),
-                ),
-              ),
-      ),
-    ],
-  );
-}
+        ),
+      ],
+    );
+  }
 }
