@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import 'package:sustainfy/model/couponModel.dart';
 import 'package:sustainfy/model/userModel.dart';
 import 'package:sustainfy/providers/userProvider.dart';
+import 'package:sustainfy/screens/completedEventsScreen.dart';
 import 'package:sustainfy/screens/discountDetailsPage.dart';
 import 'package:sustainfy/screens/login.dart';
 import 'package:sustainfy/screens/settingsPage.dart';
@@ -14,6 +15,7 @@ import 'package:sustainfy/services/userOperations.dart';
 import 'package:sustainfy/utils/colors.dart';
 import 'package:sustainfy/utils/font.dart';
 import 'package:sustainfy/widgets/customCurvedEdges.dart';
+import '../providers/userProvider.dart';
 import '../widgets/floatingSuccess.dart';
 import '../widgets/floatingWarning.dart';
 
@@ -300,6 +302,25 @@ class _ProfilePageState extends State<ProfilePage> {
                       padding: EdgeInsets.symmetric(horizontal: 25),
                       child: Column(
                         children: [
+                          ListTile(
+                            contentPadding: EdgeInsets.zero,
+                            title: Text(
+                              'Certificates',
+                              style: TextStyle(
+                                  color: const Color.fromRGBO(50, 50, 55, 1),
+                                  fontSize: 20),
+                            ),
+                            trailing: Icon(Icons.arrow_forward_ios),
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) =>
+                                        CompletedEventsScreen()),
+                              );
+                            },
+                          ),
+                          Divider(),
                           ListTile(
                             contentPadding: EdgeInsets.zero,
                             title: Text(
@@ -805,18 +826,19 @@ class _ProfilePageState extends State<ProfilePage> {
                 ),
                 SizedBox(height: 10),
                 Flexible(
-                child: Text(
-                  coupon.couponDesc,
-                  style: TextStyle(
-                    fontSize: 15,
-                    fontFamily: AppFonts.inter,
-                    fontWeight: AppFonts.interSemiBoldWeight,
+                  child: Text(
+                    coupon.couponDesc,
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontFamily: AppFonts.inter,
+                      fontWeight: AppFonts.interSemiBoldWeight,
+                    ),
+                    maxLines: 1, // Ensures 2-line limit
+                    overflow: TextOverflow
+                        .ellipsis, // Adds "..." when text is too long
+                    softWrap: true,
                   ),
-                  maxLines: 1, // Ensures 2-line limit
-                  overflow: TextOverflow.ellipsis, // Adds "..." when text is too long
-                  softWrap: true,
                 ),
-              ),
                 SizedBox(height: 15),
                 if (currentCategory == "Wishlist")
                   Row(
