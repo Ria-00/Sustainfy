@@ -142,6 +142,45 @@ class UserClassOperations {
     }
   }
 
+  Future<String> reAuthenticateAndDelete(String email, String password) async {
+    User? user = _auth.currentUser;
+
+    if (user == null) {
+      return "No user is signed in.";
+    }
+
+    try {
+      // Get current credentials
+      AuthCredential credential = EmailAuthProvider.credential(email: email, password: password);
+
+      // Re-authenticate user
+      await user.reauthenticateWithCredential(credential);
+
+      // Delete user data from Firestore
+      await firestore
+      .collection('users')
+      .where('userMail', isEqualTo: user.email) // Filter by userMail
+      .get()
+      .then((querySnapshot) {
+        for (var doc in querySnapshot.docs) {
+          doc.reference.delete(); // Delete each matching document
+        }
+      });
+
+
+
+      // Delete account after re-authentication
+      await user.delete();
+      return "User account deleted successfully.";
+    } on FirebaseAuthException catch (e) {
+      print(e);
+      return "Error: ${e.message}";
+    } catch (e) {
+      print(e);          
+      return "Error deleting account. Please try again.";
+    }
+  }
+
   Future<UserClass?> getUser(String umail) async {
     FirebaseFirestore firestore = FirebaseFirestore.instance;
 
@@ -197,9 +236,20 @@ class UserClassOperations {
       return 0;
     } catch (e) {
       print('Error updating details: $e');
-      return 0;
+       return 0;
     }
   }
+  
+  Future<void> resetPassword(String email) async {
+  try {
+    await FirebaseAuth.instance.sendPasswordResetEmail(email: email);
+    print("Password reset email sent.");
+  } catch (e) {
+    print("Error: $e");
+  }
+}
+
+     
 
   Future<List<CouponModel>> fetchClaimedCoupons(String userEmail) async {
     FirebaseFirestore firestore = FirebaseFirestore.instance;
@@ -530,22 +580,39 @@ class UserClassOperations {
     }
   }
 
-  Future<List<EventModel>> getAllEventsExcludingNgo(
-      DocumentReference ngoRef) async {
-    try {
-      QuerySnapshot snapshot =
-          await FirebaseFirestore.instance.collection("events").get();
+  Future<void> checkAndUpdateEvents() async {
+  final now = Timestamp.now();
+  final events = await FirebaseFirestore.instance
+      .collection('events')
+      .where('eventStatus', isEqualTo: 'live')
+      .where('eventEnd_date', isLessThanOrEqualTo: now)
+      .get();
 
-      return snapshot.docs
-          .map((doc) => EventModel.fromMap(doc.data() as Map<String, dynamic>))
-          .where((event) =>
-              event.ngoRef?.path != ngoRef.path) // Compare using paths
-          .toList();
-    } catch (e) {
-      print("Error fetching events: $e");
-      return [];
-    }
+  for (var doc in events.docs) {
+    await doc.reference.update({
+      'eventStatus': 'closed',
+    });
   }
+}
+
+
+  Future<List<EventModel>> getAllEventsExcludingNgo(DocumentReference ngoRef) async {
+  try {
+    QuerySnapshot snapshot = await FirebaseFirestore.instance
+        .collection("events")
+        .where("eventStatus", whereIn: ["live", "upcoming"]) // Filter status
+        .get();
+
+    return snapshot.docs
+        .map((doc) => EventModel.fromMap(doc.data() as Map<String, dynamic>))
+        .where((event) => event.ngoRef?.path != ngoRef.path) // Exclude NGO's own events
+        .toList();
+  } catch (e) {
+    print("Error fetching events: $e");
+    return [];
+  }
+}
+
 
   Future<String> getNgoName(DocumentReference ngoRef) async {
     try {
@@ -820,6 +887,7 @@ class UserClassOperations {
     try {
       // Get the event document
       DocumentSnapshot eventSnapshot = await eventRef.get();
+      DocumentSnapshot userSnapshot = await userRef.get();
 
       if (!eventSnapshot.exists) {
         print("Event not found");
@@ -830,6 +898,12 @@ class UserClassOperations {
       Map<String, dynamic> eventData =
           eventSnapshot.data() as Map<String, dynamic>;
       List<dynamic> eventParticipants = eventData["eventParticipants"] ?? [];
+      Map<String, dynamic> userData =
+          userSnapshot.data() as Map<String, dynamic>;
+
+      int eventPoints = eventData["eventPoints"] ?? 0;
+      int currPoints = (eventPoints + userData["userPoints"]).toInt();
+      int total=(eventPoints + userData["totalPoints"]).toInt();
 
       // Update the participant status
       List<dynamic> updatedParticipants = eventParticipants.map((participant) {
@@ -841,6 +915,11 @@ class UserClassOperations {
 
       // Update Firestore
       await eventRef.update({"eventParticipants": updatedParticipants});
+      await userRef.update({
+        "userPoints": currPoints,
+        "totalPoints": total,
+      });
+      print("User points updated successfully!");
 
       print("User marked as attended successfully");
       return 1;

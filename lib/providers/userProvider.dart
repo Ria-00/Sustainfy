@@ -4,10 +4,12 @@ import 'package:sustainfy/model/eventModel.dart';
 
 class userProvider extends ChangeNotifier {
   String? _email;
+  String? _password;
   int? points;
   List<CouponModel>? coupons;
 
   String? get email => _email;
+  String? get password => _password;
   int? get userPoints => points;
   List<CouponModel>? get userCoupons => coupons;
 
@@ -17,6 +19,11 @@ class userProvider extends ChangeNotifier {
 
   void setValue(String uemail) {
     _email = uemail;
+    notifyListeners();
+  }
+
+  void setPass(String password) {
+    _password = password;
     notifyListeners();
   }
 
