@@ -8,7 +8,7 @@ class UserClass {
   String? userImg;
   int? userPoints;
   int? totalPoints;
-  List<dynamic>? claimedCpn; // List of claimed coupon IDs
+  List<dynamic>? claimedCoupons; // List of claimed coupon IDs
   List<dynamic>? userWishlist; // List of wished items
 
   UserClass({
@@ -19,7 +19,7 @@ class UserClass {
     this.userImg,
     this.userPoints = 0,
     this.totalPoints = 0,
-    this.claimedCpn = const [],
+    this.claimedCoupons = const [],
     this.userWishlist = const [],
   });
 
@@ -45,7 +45,7 @@ class UserClass {
       "userImg": userImg,
       "userPoints": userPoints,
       "totalPoints": totalPoints,
-      "claimedCpn": claimedCpn,
+      "claimedCoupons": claimedCoupons,
       "userWishlist": userWishlist
     };
   }
@@ -60,7 +60,7 @@ class UserClass {
       userImg: map["userImg"],
       userPoints: map["userPoints"] ?? 0,
       totalPoints: map["totalPoints"] ?? 0,
-      claimedCpn: List<dynamic>.from(map["claimedCpn"] ?? []),
+      claimedCoupons: List<dynamic>.from(map["claimedCoupons"] ?? []),
       userWishlist: List<dynamic>.from(map["userWishlist"] ?? []),
     );
   }

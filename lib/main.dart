@@ -1,5 +1,6 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
 import 'package:provider/provider.dart';
 import 'package:sustainfy/providers/EventProvider.dart';
@@ -12,11 +13,13 @@ import 'package:sustainfy/screens/login.dart';
 import 'package:sustainfy/screens/profilePage.dart';
 import 'package:sustainfy/screens/rewardPage.dart';
 import 'package:sustainfy/screens/splashScreen.dart';
+import 'package:sustainfy/services/encryptServive.dart';
 
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-    // await dotenv.load();
+  await dotenv.load(fileName: ".env"); // Load environment variables
+  EncryptionService().init(dotenv.env['AES_KEY'] ?? '');
 
   await Firebase.initializeApp(
       options: FirebaseOptions(

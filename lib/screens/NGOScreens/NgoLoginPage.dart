@@ -16,6 +16,7 @@ import 'package:sustainfy/screens/NGOScreens/NgoHomePage.dart';
 import 'package:sustainfy/screens/homePage.dart';
 import 'package:sustainfy/screens/landingPage.dart';
 import 'package:sustainfy/screens/otpVerification.dart';
+import 'package:sustainfy/services/encryptServive.dart';
 import 'package:sustainfy/services/userOperations.dart';
 import 'package:sustainfy/widgets/floatingWarning.dart';
 
@@ -28,6 +29,7 @@ class NgoLoginPage extends StatefulWidget {
 
 class _NgoLoginPageState extends State<NgoLoginPage> {
   FirebaseAuth _auth = FirebaseAuth.instance;
+  bool isLoading=false;
 
   User? _user;
 
@@ -118,8 +120,15 @@ class _NgoLoginPageState extends State<NgoLoginPage> {
 
     // Form submit logic
     Future<void> _submitForm() async {
+      isLoading=true;
+      setState(() {});
       u.ngoMail = _usermailController.text.trim();
       u.ngoPassword = _passwordController.text.trim();
+      print("AAAAAAAAAAAAAAAAAAAAaaaaaaaaaaaaaaaaaaaaaa");
+      print(EncryptionService().encryptData(_passwordController.text.trim()));
+      print(EncryptionService().decryptData(EncryptionService().encryptData(_passwordController.text.trim())));
+      String encryptPass = EncryptionService().encryptData(_passwordController.text.trim());
+
       final form = _formKey.currentState;
       if (form!.validate()) {
         print("Valid Form");
@@ -127,7 +136,11 @@ class _NgoLoginPageState extends State<NgoLoginPage> {
         if (a == null) {
           Provider.of<userProvider>(context, listen: false)
               .setValue(u.ngoMail);
+          Provider.of<userProvider>(context, listen: false).setPass(encryptPass);
+
           print(Provider.of<userProvider>(context, listen: false).email);
+          isLoading=false;
+          setState(() {});
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(
@@ -136,9 +149,13 @@ class _NgoLoginPageState extends State<NgoLoginPage> {
           );
         } else {
           print(a);
+          isLoading=false;
+          setState(() {});
           showFloatingWarning(context, "Incorrect credentials");
         }
       } else {
+        isLoading=false;
+        setState(() {});
         print("Error in form");
       }
     }
@@ -210,7 +227,9 @@ class _NgoLoginPageState extends State<NgoLoginPage> {
                     opacity: _isHidden ? 0.0 : 1.0,
                     child: _isHidden
                         ? SizedBox.shrink()
-                        : Center(
+                        : isLoading
+                          ? Center(child: CircularProgressIndicator())
+                          :Center(
                             child: Form(
                               key: _formKey,
                               child: Container(

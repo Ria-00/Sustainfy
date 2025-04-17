@@ -55,6 +55,7 @@ dependencies:
   flutter_dotenv: ^5.2.1
   geolocator: ^13.0.2
   google_maps_flutter: ^2.10.1
+  encrypt: ^5.0.3
 
 
 dev_dependencies:
@@ -89,6 +90,7 @@ flutter:
     - assets/images/unGoals/
     - assets/images/profileImages/
     - assets/images/fillers/
+    - .env
     # - assets/images/mcdLogo.png
     # - assets/images/pumaLogo.png
     # - assets/images/zaraLogo.png

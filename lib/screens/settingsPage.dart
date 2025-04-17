@@ -1,9 +1,76 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:sustainfy/providers/userProvider.dart';
 import 'package:sustainfy/screens/RoleLoginPage.dart';
+import 'package:sustainfy/services/userOperations.dart';
 import 'package:sustainfy/utils/font.dart';
 import 'package:sustainfy/widgets/customCurvedEdges.dart';
+import 'package:sustainfy/widgets/floatingSuccess.dart';
+import 'package:sustainfy/widgets/floatingWarning.dart';
 
-class SettingsPage extends StatelessWidget {
+class SettingsPage extends StatefulWidget {
+
+  @override
+  State<SettingsPage> createState() => _SettingsPageState();
+}
+
+class _SettingsPageState extends State<SettingsPage> {
+  UserClassOperations operations = UserClassOperations();
+
+  void showFloatingWarning(BuildContext context, String message) {
+    OverlayEntry overlayEntry = OverlayEntry(
+      builder: (context) => FloatingWarning(message: message),
+    );
+
+    // Insert the overlay
+    Overlay.of(context).insert(overlayEntry);
+
+    // Remove the overlay after 2 seconds
+    Future.delayed(const Duration(seconds: 2), () {
+      overlayEntry.remove();
+    });
+  }
+
+  void showFloatingSuccess(BuildContext context, String message) {
+    OverlayEntry overlayEntry = OverlayEntry(
+      builder: (context) => FloatingSuccess(message: message),
+    );
+
+    // Insert the overlay
+    Overlay.of(context).insert(overlayEntry);
+
+    // Remove the overlay after 2 seconds
+    Future.delayed(const Duration(seconds: 2), () {
+      overlayEntry.remove();
+    });
+  }
+
+  Future<void> _resetPassword() async {
+    String email =
+        Provider.of<userProvider>(context, listen: false).email ?? '';
+
+    if (email.isEmpty) {
+      showFloatingWarning(context, "Please enter your email.");
+      return;
+    }
+
+    try {
+      await operations.resetPassword(email);
+      showFloatingSuccess(context, "Password reset email sent!");
+    } on FirebaseAuthException catch (e) {
+      String errorMessage = "Something went wrong. Please try again.";
+
+      if (e.code == 'user-not-found') {
+        errorMessage = "No user found with this email.";
+      } else if (e.code == 'invalid-email') {
+        errorMessage = "Please enter a valid email address.";
+      }
+
+      showFloatingWarning(context, errorMessage);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -101,7 +168,7 @@ class SettingsPage extends StatelessWidget {
                   ),
                   trailing: Icon(Icons.arrow_forward_ios, color: Colors.green),
                   onTap: () {
-                    showEditPasswordModal(context);
+                    _resetPassword();
                   },
                 ),
               ],

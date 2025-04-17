@@ -15,6 +15,7 @@ import 'package:sustainfy/screens/fillerScreen.dart';
 import 'package:sustainfy/screens/homePage.dart';
 import 'package:sustainfy/screens/landingPage.dart';
 import 'package:sustainfy/screens/otpVerification.dart';
+import 'package:sustainfy/services/encryptServive.dart';
 import 'package:sustainfy/services/userOperations.dart';
 import 'package:sustainfy/widgets/floatingWarning.dart';
 
@@ -27,6 +28,7 @@ class Login extends StatefulWidget {
 
 class _LoginState extends State<Login> {
   FirebaseAuth _auth = FirebaseAuth.instance;
+  bool isLoading=false;
 
   User? _user;
 
@@ -210,16 +212,22 @@ class _LoginState extends State<Login> {
 
     // Form submit logic
     Future<void> _submitForm() async {
+      isLoading=true;
+      setState(() {}); // Trigger a rebuild to show loading indicator
       u.userMail = _usermailController.text.trim();
       u.userPassword = _passwordController.text.trim();
+      String encryptPass = EncryptionService().encryptData(_passwordController.text.trim());
       final form = _formKey.currentState;
       if (form!.validate()) {
         print("Valid Form");
         int a = await operate.login(u);
         if (a == 1) {
           Provider.of<userProvider>(context, listen: false).setValue(u.userMail!);
+          Provider.of<userProvider>(context, listen: false).setPass(encryptPass);
           print("523647357864754583");
           print(Provider.of<userProvider>(context, listen: false).email);
+          isLoading=false;
+          setState(() {}); // Trigger a rebuild to hide loading indicator
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(
@@ -227,9 +235,13 @@ class _LoginState extends State<Login> {
             ),
           );
         } else {
+          isLoading=false;
+          setState(() {});
           showFloatingWarning(context, "Incorrect credentials");
         }
       } else {
+        isLoading=false;
+        setState(() {});
         print("Error in form");
       }
     }
@@ -247,11 +259,12 @@ class _LoginState extends State<Login> {
       mobile = "+91" + mobile;
       String password = _registerpasswordController.text.trim();
       String confirmPassword = _confirmpasswordController.text.trim();
+      String encrytPass=EncryptionService().encryptData(_registerpasswordController.text.trim());
 
       UserClass user1 = UserClass.register(
         userName: name,
         userMail: email,
-        userPassword: password,
+        userPassword: encrytPass,
         userPhone: mobile,
       );
 
@@ -355,6 +368,8 @@ class _LoginState extends State<Login> {
   try {
     // **Ensure previous user session is cleared before new login**
     await FirebaseAuth.instance.signOut();
+    isLoading=true;
+    setState(() {}); // Trigger a rebuild to show loading indicator
 
     GoogleAuthProvider _authprovider = GoogleAuthProvider();
     _authprovider
@@ -375,7 +390,11 @@ class _LoginState extends State<Login> {
       // **Ensure provider updates immediately**
       Provider.of<userProvider>(context, listen: false).setValue(_user!.email!);
       
+      
       await registerUserAfterGoogleSignIn(_user!.email!);
+      
+      isLoading=false;
+      setState(() {}); // Trigger a rebuild to hide loading indicator
       // **Navigate after provider update**
       Navigator.pushReplacement(
         context,
@@ -468,7 +487,9 @@ class _LoginState extends State<Login> {
                     opacity: _isHidden ? 0.0 : 1.0,
                     child: _isHidden
                         ? SizedBox.shrink()
-                        : Center(
+                        : isLoading
+                          ? Center(child: CircularProgressIndicator())
+                          :Center(
                             child: Form(
                               key: _formKey,
                               child: Container(
