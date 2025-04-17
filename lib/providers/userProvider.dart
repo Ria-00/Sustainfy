@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:sustainfy/model/couponModel.dart';
+import 'package:sustainfy/model/eventModel.dart';
 
 class userProvider extends ChangeNotifier {
   String? _email;
@@ -9,9 +10,13 @@ class userProvider extends ChangeNotifier {
   String? get email => _email;
   int? get userPoints => points;
   List<CouponModel>? get userCoupons => coupons;
-  
+
+  List<EventModel> _events = [];
+
+  void addAttendedEvent() {}
+
   void setValue(String uemail) {
-    _email=uemail;
+    _email = uemail;
     notifyListeners();
   }
 

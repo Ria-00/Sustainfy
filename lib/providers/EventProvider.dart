@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 
 class EventProvider extends ChangeNotifier {
-  String ngoName = "Smile Foundation"; 
+  String ngoName = "Smile Foundation";
   String eventName = "";
-  String description = ""; 
+  String description = "";
   DateTime? startDate = null;
   DateTime? endDate = null;
   TimeOfDay? startTime = null;
   TimeOfDay? endTime = null;
   String location = "";
-  String guidelines = ""; 
+  String guidelines = "";
 
   // Function to update form data
   void updateEventData({required String field, required dynamic value}) {
@@ -25,7 +25,7 @@ class EventProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-   // Getters for each field to access values in the UI
+  // Getters for each field to access values in the UI
   String get getNgoName => ngoName;
   String get getEventName => eventName;
   String get getDescription => description;

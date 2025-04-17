@@ -55,7 +55,8 @@ dependencies:
   flutter_dotenv: ^5.2.1
   geolocator: ^13.0.2
   google_maps_flutter: ^2.10.1
-
+  pdf: ^3.10.4
+  printing: ^5.12.0
 
 dev_dependencies:
   flutter_test:
