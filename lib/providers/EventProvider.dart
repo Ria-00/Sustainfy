@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:sustainfy/model/eventModel.dart';
 
 class EventProvider extends ChangeNotifier {
+  
   EventModel _event = EventModel.draft(
       eventId: "",
       eventName: "",
@@ -91,4 +92,5 @@ class EventProvider extends ChangeNotifier {
         ngoRef: null);
     notifyListeners();
   }
+
 }

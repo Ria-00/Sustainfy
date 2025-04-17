@@ -32,6 +32,7 @@ class _NgoLandingPageState extends State<NgoLandingPage> {
 
   void _getEvents() async {
     String? mail = Provider.of<userProvider>(context, listen: false).email;
+    await operate.checkAndUpdateEvents();
     DocumentReference? ngoRef = await operate.getDocumentRef(
         collection: "ngo", field: "ngoMail", value: mail);
     List<EventModel> dummyEvents = await operate.getNgoEvents(ngoRef!);

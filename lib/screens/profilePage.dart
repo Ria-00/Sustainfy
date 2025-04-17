@@ -6,13 +6,16 @@ import 'package:provider/provider.dart';
 import 'package:sustainfy/model/couponModel.dart';
 import 'package:sustainfy/model/userModel.dart';
 import 'package:sustainfy/providers/userProvider.dart';
+import 'package:sustainfy/screens/completedEventsScreen.dart';
 import 'package:sustainfy/screens/discountDetailsPage.dart';
 import 'package:sustainfy/screens/login.dart';
 import 'package:sustainfy/screens/settingsPage.dart';
+import 'package:sustainfy/services/encryptServive.dart';
 import 'package:sustainfy/services/userOperations.dart';
 import 'package:sustainfy/utils/colors.dart';
 import 'package:sustainfy/utils/font.dart';
 import 'package:sustainfy/widgets/customCurvedEdges.dart';
+import '../providers/userProvider.dart';
 import '../widgets/floatingSuccess.dart';
 import '../widgets/floatingWarning.dart';
 
@@ -34,6 +37,7 @@ class _ProfilePageState extends State<ProfilePage> {
   final FocusNode mobileFocusNode = FocusNode();
   bool isTapped = false;
   String currentCategory = "Used"; // Default category
+  bool isLoading = false;
 // Dummy Coupons List
   List<CouponModel> _usedCoupons = [];
 
@@ -94,6 +98,32 @@ class _ProfilePageState extends State<ProfilePage> {
     }
   }
 
+  Future<void> _handleDeleteAccount() async {
+    isLoading = true;
+    setState(() {}); // Trigger a rebuild to show loading state
+    String userEmail =
+        Provider.of<userProvider>(context, listen: false).email ?? '';
+    String encryptPass = Provider.of<userProvider>(context, listen: false).password ?? '';
+    print(encryptPass);
+    String userPass = EncryptionService().decryptData(encryptPass);
+    String result = await operations.reAuthenticateAndDelete(userEmail, userPass);
+    isLoading = false;
+    setState(() {}); // Trigger a rebuild to hide loading state
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(result)),
+    );
+
+    if (result == "User account deleted successfully.") {
+      // Navigate user to login or home screen
+      Navigator.of(context).pushAndRemoveUntil(
+                                MaterialPageRoute(
+                                    builder: (context) => Login()),
+                                (Route<dynamic> route) =>
+                                    false, // Clears all previous screens
+                              ); 
+    }
+  }
+
   void showFloatingWarning(BuildContext context, String message) {
     OverlayEntry overlayEntry = OverlayEntry(
       builder: (context) => FloatingWarning(message: message),
@@ -121,7 +151,7 @@ class _ProfilePageState extends State<ProfilePage> {
       overlayEntry.remove();
     });
   }
-
+  
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -266,10 +296,31 @@ class _ProfilePageState extends State<ProfilePage> {
                     SizedBox(height: 20),
 
                     // Settings Section
-                    Container(
+                    isLoading
+                          ? Center(child: CircularProgressIndicator())
+                          :Container(
                       padding: EdgeInsets.symmetric(horizontal: 25),
                       child: Column(
                         children: [
+                          ListTile(
+                            contentPadding: EdgeInsets.zero,
+                            title: Text(
+                              'Certificates',
+                              style: TextStyle(
+                                  color: const Color.fromRGBO(50, 50, 55, 1),
+                                  fontSize: 20),
+                            ),
+                            trailing: Icon(Icons.arrow_forward_ios),
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) =>
+                                        CompletedEventsScreen()),
+                              );
+                            },
+                          ),
+                          Divider(),
                           ListTile(
                             contentPadding: EdgeInsets.zero,
                             title: Text(
@@ -434,7 +485,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                   ),
                                   filled: true,
                                   fillColor: Color.fromRGBO(220, 237, 222, 1),
-                                  hintText: isTapped ? "" : "Mobile No.",
+                                  hintText: "Mobile No.",
                                   hintStyle: TextStyle(
                                     color: Color.fromRGBO(
                                         128, 137, 129, 0.5), // Grayish text
@@ -624,13 +675,19 @@ class _ProfilePageState extends State<ProfilePage> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text(
-                    "Are you sure you want to Delete this account?",
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
+                  Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Text(
+                        "Are you sure you want to delete?",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
                   ),
                   SizedBox(height: 20),
                   Column(
@@ -647,6 +704,7 @@ class _ProfilePageState extends State<ProfilePage> {
                           ),
                           onPressed: () {
                             Navigator.of(context).pop(); // Close modal
+                             _handleDeleteAccount();
                             // Add logout logic here
                           },
                           child: Text(
@@ -768,18 +826,19 @@ class _ProfilePageState extends State<ProfilePage> {
                 ),
                 SizedBox(height: 10),
                 Flexible(
-                child: Text(
-                  coupon.couponDesc,
-                  style: TextStyle(
-                    fontSize: 15,
-                    fontFamily: AppFonts.inter,
-                    fontWeight: AppFonts.interSemiBoldWeight,
+                  child: Text(
+                    coupon.couponDesc,
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontFamily: AppFonts.inter,
+                      fontWeight: AppFonts.interSemiBoldWeight,
+                    ),
+                    maxLines: 1, // Ensures 2-line limit
+                    overflow: TextOverflow
+                        .ellipsis, // Adds "..." when text is too long
+                    softWrap: true,
                   ),
-                  maxLines: 1, // Ensures 2-line limit
-                  overflow: TextOverflow.ellipsis, // Adds "..." when text is too long
-                  softWrap: true,
                 ),
-              ),
                 SizedBox(height: 15),
                 if (currentCategory == "Wishlist")
                   Row(

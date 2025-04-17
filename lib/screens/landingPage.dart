@@ -66,7 +66,7 @@ class _LandingPageState extends State<LandingPage> {
 
   void _getEvents() async {
     String? mail = Provider.of<userProvider>(context, listen: false).email;
-
+    await operations.checkAndUpdateEvents();
     // Get NGO reference based on email
     DocumentReference? ngoRef = await operations.getDocumentRef(
       collection: "ngo",

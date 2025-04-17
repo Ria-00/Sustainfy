@@ -27,27 +27,29 @@ class _ParticipantQRPageState extends State<ParticipantQRPage> {
   // var qrData = "Sanidhya Ka Data, ${widget.event.eventId}";
 
   void setQrData() async {
-  String? umail = Provider.of<userProvider>(context, listen: false).email;
+    String? umail = Provider.of<userProvider>(context, listen: false).email;
 
-  DocumentReference? participantRef = await operate.getDocumentRef(
-    collection: "users",
-    field: "userMail",
-    value: umail,
-  );
+    DocumentReference? participantRef = await operate.getDocumentRef(
+      collection: "users",
+      field: "userMail",
+      value: umail,
+    );
 
-  DocumentReference? ngoRef = await operate.getDocumentRef(
-    collection: "events",
-    field: "eventId",
-    value: widget.event.eventId,
-  );
+    DocumentReference? ngoRef = await operate.getDocumentRef(
+      collection: "events",
+      field: "eventId",
+      value: widget.event.eventId,
+    );
 
-  setState(() {
-    qrData = jsonEncode({
-      "eventRef": ngoRef?.path, // Convert Firestore reference to string
-      "participantRef": participantRef?.path, // Convert Firestore reference to string
+    setState(() {
+      qrData = jsonEncode({
+        "eventRef": ngoRef?.path, // Convert Firestore reference to string
+        "participantRef":
+            participantRef?.path, // Convert Firestore reference to string
+      });
     });
-  });
-}
+  }
+
   void initState() {
     super.initState();
     setQrData();
@@ -64,7 +66,7 @@ class _ParticipantQRPageState extends State<ParticipantQRPage> {
                 clipper: CustomCurvedEdges(),
                 child: Container(
                   height: 150,
-                  color: Colors.green,
+                  color: const Color.fromRGBO(52, 168, 83, 1),
                 ),
               ),
               Positioned(
@@ -127,8 +129,8 @@ class _ParticipantQRPageState extends State<ParticipantQRPage> {
                             TextSpan(
                               text: widget.event.eventStartDate.toDate().day ==
                                       widget.event.eventEndDate.toDate().day
-                                  ? DateFormat('d MMM yyyy')
-                                      .format(widget.event.eventStartDate.toDate())
+                                  ? DateFormat('d MMM yyyy').format(
+                                      widget.event.eventStartDate.toDate())
                                   : "${DateFormat('d MMM yyyy').format(widget.event.eventStartDate.toDate())} - ${DateFormat('d MMM yyyy').format(widget.event.eventEndDate.toDate())}",
                               style: TextStyle(
                                   fontWeight: FontWeight.normal), // Normal date
@@ -147,8 +149,8 @@ class _ParticipantQRPageState extends State<ParticipantQRPage> {
                             TextSpan(
                               text: widget.event.eventStartDate.toDate().day ==
                                       widget.event.eventEndDate.toDate().day
-                                  ? DateFormat('h:mm a')
-                                      .format(widget.event.eventStartDate.toDate())
+                                  ? DateFormat('h:mm a').format(
+                                      widget.event.eventStartDate.toDate())
                                   : "${DateFormat('h:mm ').format(widget.event.eventStartDate.toDate())} - ${DateFormat('h:mm a').format(widget.event.eventEndDate.toDate())}",
                               style: TextStyle(
                                   fontWeight: FontWeight.normal), // Normal date

@@ -1,0 +1,14 @@
+# Node Modules
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# Environment Files
+.env
+
+# Firebase Credentials (VERY IMPORTANT!)
+serviceAccountKey.json
+
+# Logs
+*.log
+logs/
