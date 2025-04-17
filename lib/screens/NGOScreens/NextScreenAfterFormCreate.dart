@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -7,7 +8,13 @@ import 'package:sustainfy/utils/colors.dart';
 import 'package:sustainfy/utils/font.dart';
 import 'package:sustainfy/widgets/customCurvedEdges.dart';
 
+import '../../model/ngoModel.dart';
+import '../../providers/userProvider.dart';
+import '../../services/eventService.dart';
+import '../../services/userOperations.dart';
+
 class NextScreen extends StatefulWidget {
+  //for sdg goals
   final Map<String, dynamic> categorizedData; // Accept categorized data
   final int points;
 
@@ -20,10 +27,53 @@ class NextScreen extends StatefulWidget {
 }
 
 class _NextScreenState extends State<NextScreen> {
+  EventService eventService = EventService();
   bool isEditable = false; // Variable to control the read-only state
+
+  Ngo? _user;
+  UserClassOperations operations = UserClassOperations();
+
+  String ngoName = "";
+
+  // Called once when the widget is initialized
+  @override
+  void initState() {
+    super.initState();
+    _getuserInformation(); // Start fetching user info when widget is first built
+  }
+
+  // Function to get user info
+  void _getuserInformation() async {
+    String userEmail =
+        Provider.of<userProvider>(context, listen: false).email ?? '';
+
+    Ngo? fetchedUser = await operations.getNgo(userEmail);
+    print(userEmail);
+
+    if (fetchedUser != null) {
+      setState(() {
+        _user = fetchedUser;
+        ngoName = _user?.ngoName ??
+            ''; // Set ngoName inside setState to trigger rebuild
+        // Optionally, update other controllers like _emailController, _mobileController, etc.
+      });
+    } else {
+      print("User not found!");
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final eventProvider = Provider.of<EventProvider>(context);
+
+    DateTime? startDate = convertTimestampToDateOrTime(
+        eventProvider.event.eventStartDate, 'date');
+    DateTime? endDate =
+        convertTimestampToDateOrTime(eventProvider.event.eventEndDate, 'date');
+    TimeOfDay? startTime = convertTimestampToDateOrTime(
+        eventProvider.event.eventStartDate, 'time');
+    TimeOfDay? endTime =
+        convertTimestampToDateOrTime(eventProvider.event.eventEndDate, 'time');
 
     Map<String, dynamic> data = widget.categorizedData;
 
@@ -93,16 +143,16 @@ class _NextScreenState extends State<NextScreen> {
                           fontSize: 19,
                           fontWeight: FontWeight.bold)), // Hardcoded label
                   TextField(
-                    controller:
-                        TextEditingController(text: eventProvider.ngoName),
+                    controller: TextEditingController(text: ngoName),
                     readOnly: true,
                     decoration: InputDecoration(
-                      hintText: eventProvider.ngoName,
+                      hintText: ngoName,
                       hintStyle: TextStyle(color: Colors.grey, fontSize: 16),
                     ),
                   ),
-                  _buildTextField("Event Name", eventProvider.eventName),
-                  _buildTextField("Description", eventProvider.description),
+                  _buildTextField("Event Name", eventProvider.event.eventName),
+                  _buildTextField(
+                      "Description", eventProvider.event.eventDetails),
                   SizedBox(height: 16),
                   Text("Details",
                       style: TextStyle(
@@ -111,29 +161,21 @@ class _NextScreenState extends State<NextScreen> {
                           fontWeight: FontWeight.bold)),
                   Row(
                     children: [
-                      Expanded(
-                          child: _buildDateField(
-                              "Start Date", eventProvider.startDate)),
+                      Expanded(child: _buildDateField("Start Date", startDate)),
                       SizedBox(width: 10),
-                      Expanded(
-                          child: _buildDateField(
-                              "End Date", eventProvider.endDate)),
+                      Expanded(child: _buildDateField("End Date", endDate)),
                     ],
                   ),
                   Row(
                     children: [
-                      Expanded(
-                          child: _buildTimeField(
-                              "Start Time", eventProvider.startTime)),
+                      Expanded(child: _buildTimeField("Start Time", startTime)),
                       SizedBox(width: 15),
                       SizedBox(height: 10),
-                      Expanded(
-                          child: _buildTimeField(
-                              "End Time", eventProvider.endTime)),
+                      Expanded(child: _buildTimeField("End Time", endTime)),
                     ],
                   ),
                   SizedBox(height: 20),
-                  _buildTextField("Location", eventProvider.location),
+                  _buildTextField("Location", eventProvider.event.eventAddress),
                   SizedBox(height: 20),
                   Text("Event Instructions & Guidelines",
                       style: TextStyle(
@@ -141,7 +183,8 @@ class _NextScreenState extends State<NextScreen> {
                           fontSize: 20,
                           fontWeight: FontWeight.bold)),
                   SizedBox(height: 10),
-                  _buildTextField("Guidelines", eventProvider.guidelines),
+                  _buildTextField(
+                      "Guidelines", eventProvider.event.eventGuidelines),
                   SizedBox(height: 20),
                   Padding(
                     padding: const EdgeInsets.symmetric(
@@ -211,6 +254,21 @@ class _NextScreenState extends State<NextScreen> {
                 children: [
                   ElevatedButton(
                     onPressed: () {
+                      //combine date and time into a single timestamp and store in provider
+                      Timestamp startdate =
+                          combineDateAndTime(startDate, startTime);
+                      Timestamp enddate = combineDateAndTime(endDate, endTime);
+
+                      context.read<EventProvider>().updateEventData(
+                          field: "eventStartDate", value: startdate);
+                      context.read<EventProvider>().updateEventData(
+                          field: "eventEndDate", value: enddate);
+                      //save the edits to the db
+                      print("event model");
+                      print(eventProvider.event.eventName);
+                      print(eventProvider.event.eventId);
+                      eventService.updateEvent(eventProvider.event);
+
                       // Navigate to NGO Landing Page
                       Navigator.push(
                         context,
@@ -308,4 +366,42 @@ class _NextScreenState extends State<NextScreen> {
       ),
     );
   }
+
+  Timestamp combineDateAndTime(DateTime? pickedDate, TimeOfDay? pickedTime) {
+    // Ensure both pickedDate and pickedTime are not null
+    if (pickedDate == null || pickedTime == null) {
+      throw ArgumentError("Both date and time must be provided.");
+    }
+
+    // Combine the picked date and picked time into a DateTime object
+    DateTime combinedDateTime = DateTime(
+      pickedDate.year,
+      pickedDate.month,
+      pickedDate.day,
+      pickedTime.hour,
+      pickedTime.minute,
+    );
+
+    // Convert the DateTime to Firestore Timestamp
+    Timestamp timestamp = Timestamp.fromDate(combinedDateTime);
+
+    return timestamp; // This is your Firestore Timestamp!
+  }
+
+  dynamic convertTimestampToDateOrTime(Timestamp timestamp, String returnType) {
+    // Get the DateTime object from the Timestamp
+    DateTime dateTime = timestamp.toDate();
+
+    if (returnType == 'date') {
+      // Return the DateTime object for the date
+      return DateTime(dateTime.year, dateTime.month, dateTime.day);
+    } else if (returnType == 'time') {
+      // Return the TimeOfDay object for the time
+      return TimeOfDay(hour: dateTime.hour, minute: dateTime.minute);
+    } else {
+      throw ArgumentError("Invalid returnType. Use 'date' or 'time'.");
+    }
+  }
+
+
 }
