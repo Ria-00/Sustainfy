@@ -151,23 +151,22 @@ class UserClassOperations {
 
     try {
       // Get current credentials
-      AuthCredential credential = EmailAuthProvider.credential(email: email, password: password);
+      AuthCredential credential =
+          EmailAuthProvider.credential(email: email, password: password);
 
       // Re-authenticate user
       await user.reauthenticateWithCredential(credential);
 
       // Delete user data from Firestore
       await firestore
-      .collection('users')
-      .where('userMail', isEqualTo: user.email) // Filter by userMail
-      .get()
-      .then((querySnapshot) {
+          .collection('users')
+          .where('userMail', isEqualTo: user.email) // Filter by userMail
+          .get()
+          .then((querySnapshot) {
         for (var doc in querySnapshot.docs) {
           doc.reference.delete(); // Delete each matching document
         }
       });
-
-
 
       // Delete account after re-authentication
       await user.delete();
@@ -176,7 +175,7 @@ class UserClassOperations {
       print(e);
       return "Error: ${e.message}";
     } catch (e) {
-      print(e);          
+      print(e);
       return "Error deleting account. Please try again.";
     }
   }
@@ -236,20 +235,18 @@ class UserClassOperations {
       return 0;
     } catch (e) {
       print('Error updating details: $e');
-       return 0;
+      return 0;
     }
   }
-  
-  Future<void> resetPassword(String email) async {
-  try {
-    await FirebaseAuth.instance.sendPasswordResetEmail(email: email);
-    print("Password reset email sent.");
-  } catch (e) {
-    print("Error: $e");
-  }
-}
 
-     
+  Future<void> resetPassword(String email) async {
+    try {
+      await FirebaseAuth.instance.sendPasswordResetEmail(email: email);
+      print("Password reset email sent.");
+    } catch (e) {
+      print("Error: $e");
+    }
+  }
 
   Future<List<CouponModel>> fetchClaimedCoupons(String userEmail) async {
     FirebaseFirestore firestore = FirebaseFirestore.instance;
@@ -581,38 +578,52 @@ class UserClassOperations {
   }
 
   Future<void> checkAndUpdateEvents() async {
-  final now = Timestamp.now();
-  final events = await FirebaseFirestore.instance
-      .collection('events')
-      .where('eventStatus', isEqualTo: 'live')
-      .where('eventEnd_date', isLessThanOrEqualTo: now)
-      .get();
-
-  for (var doc in events.docs) {
-    await doc.reference.update({
-      'eventStatus': 'closed',
-    });
-  }
-}
-
-
-  Future<List<EventModel>> getAllEventsExcludingNgo(DocumentReference ngoRef) async {
-  try {
-    QuerySnapshot snapshot = await FirebaseFirestore.instance
-        .collection("events")
-        .where("eventStatus", whereIn: ["live", "upcoming"]) // Filter status
+    final now = Timestamp.now();
+    final events = await FirebaseFirestore.instance
+        .collection('events')
+        .where('eventEnd_date', isLessThanOrEqualTo: now)
         .get();
 
-    return snapshot.docs
-        .map((doc) => EventModel.fromMap(doc.data() as Map<String, dynamic>))
-        .where((event) => event.ngoRef?.path != ngoRef.path) // Exclude NGO's own events
-        .toList();
-  } catch (e) {
-    print("Error fetching events: $e");
-    return [];
-  }
-}
+    for (var doc in events.docs) {
+      await doc.reference.update({
+        'eventStatus': 'closed',
+      });
+    }
 
+    final upcomingEvents = await FirebaseFirestore.instance
+        .collection('events')
+        .where('eventStatus', isEqualTo: 'upcoming')
+        .where('eventStart_date', isGreaterThanOrEqualTo: now)
+        .where('eventEnd_date', isLessThanOrEqualTo: now)
+        .orderBy('eventStart_date')
+        .orderBy('eventEnd_date')
+        .get();
+
+    for (var doc in upcomingEvents.docs) {
+      await doc.reference.update({
+        'eventStatus': 'live',
+      });
+    }
+  }
+
+  Future<List<EventModel>> getAllEventsExcludingNgo(
+      DocumentReference ngoRef) async {
+    try {
+      QuerySnapshot snapshot = await FirebaseFirestore.instance
+          .collection("events")
+          .where("eventStatus", whereIn: ["live", "upcoming"]) // Filter status
+          .get();
+
+      return snapshot.docs
+          .map((doc) => EventModel.fromMap(doc.data() as Map<String, dynamic>))
+          .where((event) =>
+              event.ngoRef?.path != ngoRef.path) // Exclude NGO's own events
+          .toList();
+    } catch (e) {
+      print("Error fetching events: $e");
+      return [];
+    }
+  }
 
   Future<String> getNgoName(DocumentReference ngoRef) async {
     try {
@@ -903,7 +914,7 @@ class UserClassOperations {
 
       int eventPoints = eventData["eventPoints"] ?? 0;
       int currPoints = (eventPoints + userData["userPoints"]).toInt();
-      int total=(eventPoints + userData["totalPoints"]).toInt();
+      int total = (eventPoints + userData["totalPoints"]).toInt();
 
       // Update the participant status
       List<dynamic> updatedParticipants = eventParticipants.map((participant) {
