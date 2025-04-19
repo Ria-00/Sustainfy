@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import 'package:sustainfy/model/couponModel.dart';
 import 'package:sustainfy/model/userModel.dart';
 import 'package:sustainfy/providers/userProvider.dart';
+import 'package:sustainfy/screens/RoleLoginPage.dart';
 import 'package:sustainfy/screens/completedEventsScreen.dart';
 import 'package:sustainfy/screens/discountDetailsPage.dart';
 import 'package:sustainfy/screens/login.dart';
@@ -111,9 +112,11 @@ class _ProfilePageState extends State<ProfilePage> {
         await operations.reAuthenticateAndDelete(userEmail, userPass);
     isLoading = false;
     setState(() {}); // Trigger a rebuild to hide loading state
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(result)),
-    );
+    if (result=="User account deleted successfully.") {
+      showFloatingSuccess(context, result);
+    } else {
+      showFloatingWarning(context, result);
+    }
 
     if (result == "User account deleted successfully.") {
       // Navigate user to login or home screen
@@ -234,6 +237,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                   ),
                                 ],
                               ),
+
                             ),
                             IconButton(
                               icon: Icon(Icons.edit),
@@ -363,6 +367,7 @@ class _ProfilePageState extends State<ProfilePage> {
                             ),
                     ],
                   ),
+
                 ),
               ),
             ),
@@ -606,7 +611,7 @@ class _ProfilePageState extends State<ProfilePage> {
                               // Navigate to login, removing all previous routes
                               Navigator.of(context).pushAndRemoveUntil(
                                 MaterialPageRoute(
-                                    builder: (context) => Login()),
+                                    builder: (context) => RoleLoginPage()),
                                 (Route<dynamic> route) =>
                                     false, // Clears all previous screens
                               );

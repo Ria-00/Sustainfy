@@ -232,9 +232,9 @@ class _LandingPageState extends State<LandingPage> {
                           child: TextField(
                             controller: searchController,
                             decoration: InputDecoration(
-                              hintText: 'Search an event or ngo...',
+                              hintText: '   Search an event or ngo',
                               hintStyle: TextStyle(
-                                color: AppColors.white,
+                                color: const Color.fromARGB(189, 255, 255, 255),
                                 fontFamily: AppFonts.inter,
                                 fontWeight: AppFonts.interRegularWeight,
                               ),
