@@ -288,16 +288,8 @@ class _CreateEventPageState extends State<CreateEventPage> {
                       icon: Icon(Icons.arrow_back_ios, color: Colors.white),
                       onPressed: () => Navigator.pop(context),
                     ),
-                    SizedBox(width: 7),
-                    Text(
-                      'Sustainify',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontFamily: AppFonts.inter,
-                        fontSize: 25,
-                        fontWeight: AppFonts.interRegularWeight,
-                      ),
-                    ),
+                    SizedBox(width: 5),
+                    
                   ],
                 ),
               ),
