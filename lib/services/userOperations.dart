@@ -580,17 +580,31 @@ class UserClassOperations {
     }
   }
 
-  Future<void> checkAndUpdateEvents() async {
+ Future<void> checkAndUpdateEvents() async {
   final now = Timestamp.now();
   final events = await FirebaseFirestore.instance
       .collection('events')
-      .where('eventStatus', isEqualTo: 'live')
       .where('eventEnd_date', isLessThanOrEqualTo: now)
       .get();
 
   for (var doc in events.docs) {
     await doc.reference.update({
       'eventStatus': 'closed',
+    });
+  }
+  
+  final upcomingEvents = await FirebaseFirestore.instance
+      .collection('events')
+      .where('eventStatus', isEqualTo: 'upcoming')
+      .where('eventStart_date', isGreaterThanOrEqualTo: now)
+      .where('eventEnd_date', isLessThanOrEqualTo: now)
+      .orderBy('eventStart_date')
+      .orderBy('eventEnd_date')
+      .get();
+
+  for (var doc in upcomingEvents.docs) {
+    await doc.reference.update({
+      'eventStatus': 'live',
     });
   }
 }
