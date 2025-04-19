@@ -28,7 +28,7 @@ class Login extends StatefulWidget {
 
 class _LoginState extends State<Login> {
   FirebaseAuth _auth = FirebaseAuth.instance;
-  bool isLoading=false;
+  bool isLoading = false;
 
   User? _user;
 
@@ -179,7 +179,6 @@ class _LoginState extends State<Login> {
       return null; // No error
     }
 
-
     String? _confirmPasswordValidator(String? value, String originalPassword) {
       if (value == null || value.isEmpty) {
         return "Confirm password is required";
@@ -212,21 +211,24 @@ class _LoginState extends State<Login> {
 
     // Form submit logic
     Future<void> _submitForm() async {
-      isLoading=true;
+      isLoading = true;
       setState(() {}); // Trigger a rebuild to show loading indicator
       u.userMail = _usermailController.text.trim();
       u.userPassword = _passwordController.text.trim();
-      String encryptPass = EncryptionService().encryptData(_passwordController.text.trim());
+      String encryptPass =
+          EncryptionService().encryptData(_passwordController.text.trim());
       final form = _formKey.currentState;
       if (form!.validate()) {
         print("Valid Form");
         int a = await operate.login(u);
         if (a == 1) {
-          Provider.of<userProvider>(context, listen: false).setValue(u.userMail!);
-          Provider.of<userProvider>(context, listen: false).setPass(encryptPass);
+          Provider.of<userProvider>(context, listen: false)
+              .setValue(u.userMail!);
+          Provider.of<userProvider>(context, listen: false)
+              .setPass(encryptPass);
           print("523647357864754583");
           print(Provider.of<userProvider>(context, listen: false).email);
-          isLoading=false;
+          isLoading = false;
           setState(() {}); // Trigger a rebuild to hide loading indicator
           Navigator.pushReplacement(
             context,
@@ -235,12 +237,12 @@ class _LoginState extends State<Login> {
             ),
           );
         } else {
-          isLoading=false;
+          isLoading = false;
           setState(() {});
           showFloatingWarning(context, "Incorrect credentials");
         }
       } else {
-        isLoading=false;
+        isLoading = false;
         setState(() {});
         print("Error in form");
       }
@@ -259,7 +261,8 @@ class _LoginState extends State<Login> {
       mobile = "+91" + mobile;
       String password = _registerpasswordController.text.trim();
       String confirmPassword = _confirmpasswordController.text.trim();
-      String encrytPass=EncryptionService().encryptData(_registerpasswordController.text.trim());
+      String encrytPass = EncryptionService()
+          .encryptData(_registerpasswordController.text.trim());
 
       UserClass user1 = UserClass.register(
         userName: name,
@@ -306,7 +309,7 @@ class _LoginState extends State<Login> {
         userName: name,
         userMail: email,
         userPassword: password,
-        userPhone:mobile,
+        userPhone: mobile,
       );
 
       final form = _formKey1.currentState;
@@ -345,72 +348,67 @@ class _LoginState extends State<Login> {
       FocusScope.of(context).unfocus();
     }
 
-  Future<void> registerUserAfterGoogleSignIn(String email) async {
-  try {
-   
-    UserClass? fetchedUser = await operate.getUser(email);
+    Future<void> registerUserAfterGoogleSignIn(String email) async {
+      try {
+        UserClass? fetchedUser = await operate.getUser(email);
 
-    if (fetchedUser == null) {
-      UserClass _user1= UserClass(userMail: email);
-      // If the user doesn't exist in Firestore, register them
-      await operate.create(_user1);
+        if (fetchedUser == null) {
+          UserClass _user1 = UserClass(userMail: email);
+          // If the user doesn't exist in Firestore, register them
+          await operate.create(_user1);
 
-      print("User registered successfully in Firestore.");
-    } else {
-      print("User already exists in Firestore.");
+          print("User registered successfully in Firestore.");
+        } else {
+          print("User already exists in Firestore.");
+        }
+      } catch (e) {
+        print("Error registering user in Firestore: $e");
+      }
     }
-  } catch (e) {
-    print("Error registering user in Firestore: $e");
-  }
-}
 
     Future<dynamic> signInWithGoogle() async {
-  try {
-    // **Ensure previous user session is cleared before new login**
-    await FirebaseAuth.instance.signOut();
-    isLoading=true;
-    setState(() {}); // Trigger a rebuild to show loading indicator
+      try {
+        // **Ensure previous user session is cleared before new login**
+        await FirebaseAuth.instance.signOut();
+        isLoading = true;
+        setState(() {}); // Trigger a rebuild to show loading indicator
 
-    GoogleAuthProvider _authprovider = GoogleAuthProvider();
-    _authprovider
-        .addScope('email')
-        .setCustomParameters({'prompt': 'select_account'}); // Forces account selection
+        GoogleAuthProvider _authprovider = GoogleAuthProvider();
+        _authprovider.addScope('email').setCustomParameters(
+            {'prompt': 'select_account'}); // Forces account selection
 
-    final UserCredential userCredential =
-        await FirebaseAuth.instance.signInWithProvider(_authprovider);
+        final UserCredential userCredential =
+            await FirebaseAuth.instance.signInWithProvider(_authprovider);
 
-    _user = userCredential.user;
+        _user = userCredential.user;
 
-    if (_user != null) {
-      print("Google Sign-In successful:");
-      print("Profile Data: ${userCredential.toString()}");
-      print("Name: ${_user!.displayName}");
-      print("Email: ${_user!.email}");
+        if (_user != null) {
+          print("Google Sign-In successful:");
+          print("Profile Data: ${userCredential.toString()}");
+          print("Name: ${_user!.displayName}");
+          print("Email: ${_user!.email}");
 
-      // **Ensure provider updates immediately**
-      Provider.of<userProvider>(context, listen: false).setValue(_user!.email!);
-      
-      
-      await registerUserAfterGoogleSignIn(_user!.email!);
-      
-      isLoading=false;
-      setState(() {}); // Trigger a rebuild to hide loading indicator
-      // **Navigate after provider update**
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (context) => HomePage(),
-        ),
-      );
+          // **Ensure provider updates immediately**
+          Provider.of<userProvider>(context, listen: false)
+              .setValue(_user!.email!);
+
+          await registerUserAfterGoogleSignIn(_user!.email!);
+
+          isLoading = false;
+          setState(() {}); // Trigger a rebuild to hide loading indicator
+          // **Navigate after provider update**
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => HomePage(),
+            ),
+          );
+        }
+      } catch (e) {
+        print("Error during Google Sign-In: $e");
+        _user = null;
+      }
     }
-  } catch (e) {
-    print("Error during Google Sign-In: $e");
-    _user = null; 
-  }
-}
-
-
-
 
     Future<bool> signOutFromGoogle() async {
       try {
@@ -488,222 +486,239 @@ class _LoginState extends State<Login> {
                     child: _isHidden
                         ? SizedBox.shrink()
                         : isLoading
-                          ? Center(child: CircularProgressIndicator())
-                          :Center(
-                            child: Form(
-                              key: _formKey,
-                              child: Container(
-                                padding: const EdgeInsets.only(
-                                    bottom: 20.0, top: 30, left: 40, right: 40),
-                                child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.end,
-                                    children: [
-                                      const Text(
-                                        "Login",
-                                        style: TextStyle(
-                                          fontSize: 30,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 20),
-                                      Container(
-                                        child: TextFormField(
-                                          controller: _usermailController,
-                                          focusNode: _emailFocusNode,
-                                          autovalidateMode: AutovalidateMode
-                                              .onUserInteraction,
-                                          validator: _validateUsername,
-                                          decoration: InputDecoration(
-                                            floatingLabelBehavior:
-                                                FloatingLabelBehavior.never,
-                                            hintText: 'Enter Username',
-                                            hintStyle: TextStyle(
-                                                color: Color.fromRGBO(
-                                                    128, 137, 129, 0.354)),
-                                            labelText: "Email",
-                                            labelStyle: TextStyle(
-                                                color: Color.fromRGBO(
-                                                    128, 137, 129, 1)),
-                                            border: OutlineInputBorder(
-                                                borderSide: BorderSide.none,
-                                                borderRadius:
-                                                    BorderRadius.circular(20)),
-                                            filled: true,
-                                            fillColor: Color.fromRGBO(
-                                                220, 237, 222, 1),
-                                            contentPadding: EdgeInsets.all(16),
-                                            errorBorder: OutlineInputBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(30.0),
-                                              borderSide: BorderSide.none,
-                                            ),
-                                            focusedErrorBorder:
-                                                OutlineInputBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(30.0),
-                                              borderSide: BorderSide.none,
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                      const SizedBox(height: 20),
-                                      Container(
-                                        child: TextFormField(
-                                          obscureText: true,
-                                          controller: _passwordController,
-                                          focusNode: _passwordFocusNode,
-                                          autovalidateMode: AutovalidateMode
-                                              .onUserInteraction,
-                                          validator: _validateLoginPassword,
-                                          onFieldSubmitted: (_) =>
-                                              _submitForm(),
-                                          decoration: InputDecoration(
-                                            labelText: "Password",
-                                            labelStyle: TextStyle(
-                                                color: Color.fromRGBO(
-                                                    128, 137, 129, 1)),
-                                            hintText: 'Enter Password',
-                                            hintStyle: TextStyle(
-                                                color: Color.fromRGBO(
-                                                    128, 137, 129, 0.354)),
-                                            border: OutlineInputBorder(
-                                                borderSide: BorderSide.none,
-                                                borderRadius:
-                                                    BorderRadius.circular(20)),
-                                            filled: true,
-                                            fillColor: Color.fromRGBO(
-                                                220, 237, 222, 1),
-                                            contentPadding: EdgeInsets.all(16),
-                                            floatingLabelBehavior:
-                                                FloatingLabelBehavior.never,
-                                            errorBorder: OutlineInputBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(30.0),
-                                              borderSide: BorderSide.none,
-                                            ),
-                                            focusedErrorBorder:
-                                                OutlineInputBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(30.0),
-                                              borderSide: BorderSide.none,
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                      const SizedBox(height: 35),
-                                      ElevatedButton(
-                                        style: ElevatedButton.styleFrom(
-                                          backgroundColor:
-                                              Color.fromRGBO(50, 50, 55, 1),
-                                          foregroundColor: Color.fromARGB(
-                                              204, 255, 255, 255),
-                                          padding: EdgeInsets.symmetric(
-                                              horizontal: MediaQuery.of(context)
-                                                      .size
-                                                      .width *
-                                                  0.35,
-                                              vertical: 13),
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius:
-                                                BorderRadius.circular(25),
-                                          ),
-                                        ),
-                                        onPressed: () async {
-                                          _submitForm();
-                                        },
-                                        child: const Text("Submit"),
-                                      ),
-                                      SizedBox(height: 15),
-                                      Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
+                            ? Center(child: CircularProgressIndicator())
+                            : Center(
+                                child: Form(
+                                  key: _formKey,
+                                  child: Container(
+                                    padding: const EdgeInsets.only(
+                                        bottom: 20.0,
+                                        top: 30,
+                                        left: 40,
+                                        right: 40),
+                                    child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.end,
                                         children: [
-                                          Expanded(
-                                            child: Divider(
-                                              color: Color.fromRGBO(
-                                                  133, 131, 131, 1),
-                                              thickness:
-                                                  0.3, // Thickness of the line
-                                              indent: 36,
-                                              endIndent:
-                                                  10, // Space between the line and text
-                                            ),
-                                          ),
-                                          Text(
-                                            "Other login methods",
+                                          const Text(
+                                            "Login",
                                             style: TextStyle(
-                                              fontSize: 12,
-                                              fontWeight: FontWeight.normal,
-                                              color: Color.fromRGBO(
-                                                  133, 131, 131, 1),
+                                              fontSize: 30,
+                                              fontWeight: FontWeight.bold,
                                             ),
                                           ),
-                                          Expanded(
-                                            child: Divider(
-                                              color: Color.fromRGBO(
-                                                  133, 131, 131, 1),
-                                              thickness:
-                                                  0.3, // Thickness of the line
-                                              indent:
-                                                  10, // Space between the line and text
-                                              endIndent: 36,
+                                          const SizedBox(height: 20),
+                                          Container(
+                                            child: TextFormField(
+                                              controller: _usermailController,
+                                              focusNode: _emailFocusNode,
+                                              autovalidateMode: AutovalidateMode
+                                                  .onUserInteraction,
+                                              validator: _validateUsername,
+                                              decoration: InputDecoration(
+                                                floatingLabelBehavior:
+                                                    FloatingLabelBehavior.never,
+                                                hintText: 'Enter Username',
+                                                hintStyle: TextStyle(
+                                                    color: Color.fromRGBO(
+                                                        128, 137, 129, 0.354)),
+                                                labelText: "Email",
+                                                labelStyle: TextStyle(
+                                                    color: Color.fromRGBO(
+                                                        128, 137, 129, 1)),
+                                                border: OutlineInputBorder(
+                                                    borderSide: BorderSide.none,
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            20)),
+                                                filled: true,
+                                                fillColor: Color.fromRGBO(
+                                                    220, 237, 222, 1),
+                                                contentPadding:
+                                                    EdgeInsets.all(16),
+                                                errorBorder: OutlineInputBorder(
+                                                  borderRadius:
+                                                      BorderRadius.circular(
+                                                          30.0),
+                                                  borderSide: BorderSide.none,
+                                                ),
+                                                focusedErrorBorder:
+                                                    OutlineInputBorder(
+                                                  borderRadius:
+                                                      BorderRadius.circular(
+                                                          30.0),
+                                                  borderSide: BorderSide.none,
+                                                ),
+                                              ),
                                             ),
                                           ),
-                                        ],
-                                      ),
-                                      Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        children: [
-                                          IconButton(
-                                            onPressed: () {},
-                                            icon: FaIcon(
-                                              FontAwesomeIcons.apple,
-                                              color: Color.fromRGBO(
-                                                  52, 168, 83, 1),
-                                              size: 30,
+                                          const SizedBox(height: 20),
+                                          Container(
+                                            child: TextFormField(
+                                              obscureText: true,
+                                              controller: _passwordController,
+                                              focusNode: _passwordFocusNode,
+                                              autovalidateMode: AutovalidateMode
+                                                  .onUserInteraction,
+                                              validator: _validateLoginPassword,
+                                              onFieldSubmitted: (_) =>
+                                                  _submitForm(),
+                                              decoration: InputDecoration(
+                                                labelText: "Password",
+                                                labelStyle: TextStyle(
+                                                    color: Color.fromRGBO(
+                                                        128, 137, 129, 1)),
+                                                hintText: 'Enter Password',
+                                                hintStyle: TextStyle(
+                                                    color: Color.fromRGBO(
+                                                        128, 137, 129, 0.354)),
+                                                border: OutlineInputBorder(
+                                                    borderSide: BorderSide.none,
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            20)),
+                                                filled: true,
+                                                fillColor: Color.fromRGBO(
+                                                    220, 237, 222, 1),
+                                                contentPadding:
+                                                    EdgeInsets.all(16),
+                                                floatingLabelBehavior:
+                                                    FloatingLabelBehavior.never,
+                                                errorBorder: OutlineInputBorder(
+                                                  borderRadius:
+                                                      BorderRadius.circular(
+                                                          30.0),
+                                                  borderSide: BorderSide.none,
+                                                ),
+                                                focusedErrorBorder:
+                                                    OutlineInputBorder(
+                                                  borderRadius:
+                                                      BorderRadius.circular(
+                                                          30.0),
+                                                  borderSide: BorderSide.none,
+                                                ),
+                                              ),
                                             ),
                                           ),
-                                          IconButton(
-                                            onPressed: () async {
-                                              await signOutFromGoogle();
-                                              if (_user != null) {
-                                                print(_user?.displayName);
-                                              } else {
-                                                print("65767867864875687436");
-                                              }
-                                            },
-                                            icon: FaIcon(
-                                              FontAwesomeIcons.xTwitter,
-                                              color: Color.fromRGBO(
-                                                  52, 168, 83, 1),
-                                              size: 26,
+                                          const SizedBox(height: 35),
+                                          Center(
+                                            child: ElevatedButton(
+                                              style: ElevatedButton.styleFrom(
+                                                backgroundColor:
+                                                    const Color.fromRGBO(
+                                                        50, 50, 55, 1),
+                                                foregroundColor:
+                                                    const Color.fromARGB(
+                                                        204, 255, 255, 255),
+                                                padding: const EdgeInsets
+                                                    .symmetric(
+                                                    horizontal: 110,
+                                                    vertical:
+                                                        13), // fixed padding
+                                                shape: RoundedRectangleBorder(
+                                                  borderRadius:
+                                                      BorderRadius.circular(25),
+                                                ),
+                                              ),
+                                              onPressed: () async {
+                                                _submitForm();
+                                              },
+                                              child: const Text("Submit"),
                                             ),
                                           ),
-                                          IconButton(
-                                            onPressed: () async {
-                                              await signInWithGoogle();
-                                            },
-                                            icon: FaIcon(
-                                              FontAwesomeIcons.google,
-                                              color: Color.fromRGBO(
-                                                  52, 168, 83, 1),
-                                              size: 25,
-                                            ),
+                                          SizedBox(height: 15),
+                                          Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            children: [
+                                              Expanded(
+                                                child: Divider(
+                                                  color: Color.fromRGBO(
+                                                      133, 131, 131, 1),
+                                                  thickness:
+                                                      0.3, // Thickness of the line
+                                                  indent: 36,
+                                                  endIndent:
+                                                      10, // Space between the line and text
+                                                ),
+                                              ),
+                                              Text(
+                                                "Other login methods",
+                                                style: TextStyle(
+                                                  fontSize: 12,
+                                                  fontWeight: FontWeight.normal,
+                                                  color: Color.fromRGBO(
+                                                      133, 131, 131, 1),
+                                                ),
+                                              ),
+                                              Expanded(
+                                                child: Divider(
+                                                  color: Color.fromRGBO(
+                                                      133, 131, 131, 1),
+                                                  thickness:
+                                                      0.3, // Thickness of the line
+                                                  indent:
+                                                      10, // Space between the line and text
+                                                  endIndent: 36,
+                                                ),
+                                              ),
+                                            ],
                                           ),
-                                        ],
-                                      ),
-                                    ]),
+                                          Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            children: [
+                                              IconButton(
+                                                onPressed: () {},
+                                                icon: FaIcon(
+                                                  FontAwesomeIcons.apple,
+                                                  color: Color.fromRGBO(
+                                                      52, 168, 83, 1),
+                                                  size: 30,
+                                                ),
+                                              ),
+                                              IconButton(
+                                                onPressed: () async {
+                                                  await signOutFromGoogle();
+                                                  if (_user != null) {
+                                                    print(_user?.displayName);
+                                                  } else {
+                                                    print(
+                                                        "65767867864875687436");
+                                                  }
+                                                },
+                                                icon: FaIcon(
+                                                  FontAwesomeIcons.xTwitter,
+                                                  color: Color.fromRGBO(
+                                                      52, 168, 83, 1),
+                                                  size: 26,
+                                                ),
+                                              ),
+                                              IconButton(
+                                                onPressed: () async {
+                                                  await signInWithGoogle();
+                                                },
+                                                icon: FaIcon(
+                                                  FontAwesomeIcons.google,
+                                                  color: Color.fromRGBO(
+                                                      52, 168, 83, 1),
+                                                  size: 25,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ]),
+                                  ),
+                                ),
                               ),
-                            ),
-                          ),
                   ),
                 ),
               ],
             ),
-            if ((!_passwordFocusNode.hasFocus &&
-                    !_emailFocusNode.hasFocus) ||
-                _containerHeight > _minHeight || ((_passwordFocusNode.hasFocus || _emailFocusNode.hasFocus) && MediaQuery.of(context).viewInsets.bottom == 0))
+            if ((!_passwordFocusNode.hasFocus && !_emailFocusNode.hasFocus) ||
+                _containerHeight > _minHeight ||
+                ((_passwordFocusNode.hasFocus || _emailFocusNode.hasFocus) &&
+                    MediaQuery.of(context).viewInsets.bottom == 0))
               Positioned(
                 bottom: MediaQuery.of(context).viewInsets.bottom > 0
                     ? MediaQuery.of(context)
@@ -826,29 +841,32 @@ class _LoginState extends State<Login> {
                                                           .text),
                                             ),
                                             const SizedBox(height: 30),
-                                            ElevatedButton(
-                                              style: ElevatedButton.styleFrom(
-                                                backgroundColor: Color.fromRGBO(
-                                                    50, 50, 55, 1),
-                                                foregroundColor: Color.fromARGB(
-                                                    204, 255, 255, 255),
-                                                padding: EdgeInsets.symmetric(
-                                                    horizontal:
-                                                        MediaQuery.of(context)
-                                                                .size
-                                                                .width *
-                                                            0.37,
-                                                    vertical: 13),
-                                                shape: RoundedRectangleBorder(
-                                                  borderRadius:
-                                                      BorderRadius.circular(25),
+                                            Center(
+                                              child: ElevatedButton(
+                                                style: ElevatedButton.styleFrom(
+                                                  backgroundColor:
+                                                      const Color.fromRGBO(
+                                                          50, 50, 55, 1),
+                                                  foregroundColor:
+                                                      const Color.fromARGB(
+                                                          204, 255, 255, 255),
+                                                  padding: const EdgeInsets
+                                                      .symmetric(
+                                                      horizontal: 110,
+                                                      vertical:
+                                                          13), // fixed padding
+                                                  shape: RoundedRectangleBorder(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            25),
+                                                  ),
                                                 ),
+                                                onPressed: () {
+                                                  _submitRegisterForm();
+                                                },
+                                                child: const Text("Next"),
                                               ),
-                                              onPressed: () {
-                                                _submitRegisterForm();
-                                              },
-                                              child: const Text("Next"),
-                                            ),
+                                            )
                                           ]),
                                     ),
                                   ),

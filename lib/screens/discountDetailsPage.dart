@@ -8,6 +8,8 @@ import 'package:sustainfy/providers/userProvider.dart';
 import 'package:sustainfy/services/userOperations.dart';
 import 'package:sustainfy/utils/colors.dart';
 import 'package:sustainfy/widgets/customCurvedEdges.dart';
+import 'package:sustainfy/widgets/floatingSuccess.dart';
+import 'package:sustainfy/widgets/floatingWarning.dart';
 
 class DiscountDetailsPage extends StatefulWidget {
   final String couponId;
@@ -58,10 +60,13 @@ class _DiscountDetailsPageState extends State<DiscountDetailsPage> {
         Provider.of<userProvider>(context, listen: false).email ?? '';
 
     String result = await operations.claimCoupon(userEmail, widget.couponId);
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(result)), // Display the returned message
-    );
+    if (result == "Coupon Code Copied!") {
+      showFloatingSuccess(context, result);
+    }
+    else {
+      showFloatingWarning(context, result);
+    }
+    
     // Update the user's coupon list & points
     List<CouponModel> updatedCoupons = await operations.getUnclaimedCoupons(userEmail);
     Provider.of<userProvider>(context, listen: false).setCoupon(updatedCoupons);
@@ -69,9 +74,7 @@ class _DiscountDetailsPageState extends State<DiscountDetailsPage> {
     Provider.of<userProvider>(context, listen: false).setPoints(points);
     
   } catch (e) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('❌ An error occurred. Please try again.')),
-    );
+    showFloatingWarning(context, "Error claiming coupon");
   }
 }
 
@@ -103,6 +106,34 @@ List<TextSpan> _getStyledText(String text) {
     return [TextSpan(text: text, style: TextStyle(color: Colors.black))];
   }
 }
+
+void showFloatingWarning(BuildContext context, String message) {
+    OverlayEntry overlayEntry = OverlayEntry(
+      builder: (context) => FloatingWarning(message: message),
+    );
+
+    // Insert the overlay
+    Overlay.of(context).insert(overlayEntry);
+
+    // Remove the overlay after 2 seconds
+    Future.delayed(const Duration(seconds: 2), () {
+      overlayEntry.remove();
+    });
+  }
+
+  void showFloatingSuccess(BuildContext context, String message) {
+    OverlayEntry overlayEntry = OverlayEntry(
+      builder: (context) => FloatingSuccess(message: message),
+    );
+
+    // Insert the overlay
+    Overlay.of(context).insert(overlayEntry);
+
+    // Remove the overlay after 2 seconds
+    Future.delayed(const Duration(seconds: 2), () {
+      overlayEntry.remove();
+    });
+  }
 
 
   @override

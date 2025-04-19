@@ -19,6 +19,7 @@ class FloatingWarning extends StatelessWidget {
           decoration: BoxDecoration(
             color: const Color.fromARGB(190, 50, 50, 55),
             borderRadius: BorderRadius.circular(8),
+            
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,

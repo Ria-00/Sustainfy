@@ -107,6 +107,10 @@ class _LandingPageState extends State<LandingPage> {
 
   @override
   Widget build(BuildContext context) {
+    final liveEvents =
+        filteredEvents.where((e) => e.eventStatus == "live").toList();
+    final upcomingEvents =
+        filteredEvents.where((e) => e.eventStatus == "upcoming").toList();
     return Scaffold(
       body: Stack(
         children: [
@@ -122,25 +126,29 @@ class _LandingPageState extends State<LandingPage> {
                     _buildNgoSection(),
                     SizedBox(height: 15),
                     _buildCategorySection(),
-                    SizedBox(height: 25),
-                    Container(
-                      padding: EdgeInsets.symmetric(horizontal: 20),
-                      child: Align(
-                        alignment: Alignment.centerLeft,
-                        child: Text(
-                          "Live Activities",
-                          style: TextStyle(
-                            color: Color.fromRGBO(50, 50, 55, 1),
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ),
+                    SizedBox(height: 10),
+                    // Container(
+                    //   padding: EdgeInsets.symmetric(horizontal: 20),
+                    //   child: Align(
+                    //     alignment: Alignment.centerLeft,
+                    //     child: Text(
+                    //       "Live Activities",
+                    //       style: TextStyle(
+                    //         color: Color.fromRGBO(50, 50, 55, 1),
+                    //         fontSize: 20,
+                    //         fontWeight: FontWeight.bold,
+                    //       ),
+                    //     ),
+                    //   ),
+                    // ),
                     SizedBox(height: 5),
 
 // Show message if no events are found
-                    if (noEventsFound)
+                    if (isLoading)
+                      Center(
+                        child: CircularProgressIndicator(),
+                      )
+                    else if (filteredEvents.isEmpty)
                       Padding(
                         padding: const EdgeInsets.symmetric(vertical: 20),
                         child: Center(
@@ -155,129 +163,42 @@ class _LandingPageState extends State<LandingPage> {
                         ),
                       )
                     else
-                      isLoading
-                          ? Center(child: CircularProgressIndicator())
-                          : ListView.builder(
-                              shrinkWrap: true,
-                              physics: NeverScrollableScrollPhysics(),
-                              itemCount: filteredEvents.length,
-                              itemBuilder: (context, index) {
-                                final event = filteredEvents[index];
-                                DateTime startDateTime =
-                                    event.eventStartDate.toDate();
-                                String formattedDate =
-                                    "${startDateTime.day} ${_getMonthName(startDateTime.month)} ${startDateTime.year}";
-                                String formattedTime =
-                                    "${startDateTime.hour % 12 == 0 ? 12 : startDateTime.hour % 12}:${startDateTime.minute.toString().padLeft(2, '0')} ${startDateTime.hour >= 12 ? 'PM' : 'AM'}";
-
-                                return GestureDetector(
-                                  onTap: () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) =>
-                                            EventDescriptionPage(event: event),
-                                      ),
-                                    );
-                                  },
-                                  child: Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 15.0, vertical: 8),
-                                    child: Card(
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(15),
-                                      ),
-                                      elevation: 2,
-                                      child: Padding(
-                                        padding: const EdgeInsets.all(10.0),
-                                        child: Row(
-                                          children: [
-                                            // Event Image (Left Side)
-                                            ClipRRect(
-                                              borderRadius:
-                                                  BorderRadius.circular(12),
-                                              child: event.eventImg.isNotEmpty
-                                                  ? Image.network(
-                                                      event.eventImg,
-                                                      fit: BoxFit.cover,
-                                                      height: 70,
-                                                      width: 120,
-                                                      errorBuilder: (context,
-                                                          error, stackTrace) {
-                                                        return SizedBox(); // Returns an empty widget if the image fails
-                                                      },
-                                                    )
-                                                  : SizedBox(), // Returns an empty widget if URL is empty
-                                            ),
-                                            SizedBox(width: 12),
-                                            // Event Details (Right Side)
-                                            Expanded(
-                                              child: Column(
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.start,
-                                                children: [
-                                                  Text(
-                                                    event.eventName,
-                                                    style: TextStyle(
-                                                      fontSize: 16,
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                      color: Colors.green,
-                                                    ),
-                                                    overflow:
-                                                        TextOverflow.ellipsis,
-                                                  ),
-                                                  Text(
-                                                    "by ${ngoNames[event.ngoRef?.id] ?? 'Unknown NGO'}",
-                                                    style: TextStyle(
-                                                      fontSize: 14,
-                                                      fontWeight:
-                                                          FontWeight.w500,
-                                                      color: Colors.grey[700],
-                                                    ),
-                                                  ),
-                                                  SizedBox(height: 4),
-                                                  Row(
-                                                    children: [
-                                                      Icon(Icons.calendar_month,
-                                                          size: 16,
-                                                          color: Colors.green),
-                                                      SizedBox(width: 4),
-                                                      Text(
-                                                        formattedDate,
-                                                        style: TextStyle(
-                                                            fontSize: 13,
-                                                            color: Colors
-                                                                .grey[700]),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                  Row(
-                                                    children: [
-                                                      Icon(Icons.access_time,
-                                                          size: 16,
-                                                          color: Colors.green),
-                                                      SizedBox(width: 4),
-                                                      Text(
-                                                        formattedTime,
-                                                        style: TextStyle(
-                                                            fontSize: 13,
-                                                            color: Colors
-                                                                .grey[700]),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                );
-                              },
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          if (liveEvents.isNotEmpty) ...[
+                            Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 20),
+                              child: Text(
+                                "Live Activities",
+                                style: TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color.fromRGBO(50, 50, 55, 1),
+                                ),
+                              ),
                             ),
+                            _buildEventList(liveEvents),
+                            SizedBox(height: 10),
+                          ],
+                          if (upcomingEvents.isNotEmpty) ...[
+                            Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 20),
+                              child: Text(
+                                "Upcoming Activities",
+                                style: TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color.fromRGBO(50, 50, 55, 1),
+                                ),
+                              ),
+                            ),
+                            _buildEventList(upcomingEvents),
+                          ],
+                        ],
+                      )
                   ],
                 ),
               ),
@@ -311,9 +232,9 @@ class _LandingPageState extends State<LandingPage> {
                           child: TextField(
                             controller: searchController,
                             decoration: InputDecoration(
-                              hintText: 'Search an event or ngo...',
+                              hintText: '   Search an event or ngo',
                               hintStyle: TextStyle(
-                                color: AppColors.white,
+                                color: const Color.fromARGB(189, 255, 255, 255),
                                 fontFamily: AppFonts.inter,
                                 fontWeight: AppFonts.interRegularWeight,
                               ),
@@ -440,12 +361,6 @@ class _LandingPageState extends State<LandingPage> {
           label: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Container(
-                width: 20,
-                height: 20,
-                color: Colors.grey[300], // Placeholder for an image
-                margin: EdgeInsets.only(right: 5),
-              ),
               Text(ngoName),
             ],
           ),
@@ -544,6 +459,113 @@ class _LandingPageState extends State<LandingPage> {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildEventList(List<EventModel> events) {
+    return ListView.builder(
+      shrinkWrap: true,
+      physics: NeverScrollableScrollPhysics(),
+      itemCount: events.length,
+      itemBuilder: (context, index) {
+        final event = events[index];
+        DateTime startDateTime = event.eventStartDate.toDate();
+        String formattedDate =
+            "${startDateTime.day} ${_getMonthName(startDateTime.month)} ${startDateTime.year}";
+        String formattedTime =
+            "${startDateTime.hour % 12 == 0 ? 12 : startDateTime.hour % 12}:${startDateTime.minute.toString().padLeft(2, '0')} ${startDateTime.hour >= 12 ? 'PM' : 'AM'}";
+
+        return GestureDetector(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => EventDescriptionPage(event: event),
+              ),
+            );
+          },
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 15.0, vertical: 10),
+            child: Card(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(15),
+              ),
+              elevation: 2,
+              child: Padding(
+                padding: const EdgeInsets.all(10.0),
+                child: Row(
+                  children: [
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(12),
+                      child: event.eventImg.isNotEmpty
+                          ? Image.network(
+                              event.eventImg,
+                              fit: BoxFit.cover,
+                              height: 70,
+                              width: 120,
+                              errorBuilder: (context, error, stackTrace) {
+                                return SizedBox();
+                              },
+                            )
+                          : SizedBox(),
+                    ),
+                    SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            event.eventName,
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.green,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          Text(
+                            "by ${ngoNames[event.ngoRef?.id] ?? 'Unknown NGO'}",
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                              color: Colors.grey[700],
+                            ),
+                          ),
+                          SizedBox(height: 4),
+                          Row(
+                            children: [
+                              Icon(Icons.calendar_month,
+                                  size: 16, color: Colors.green),
+                              SizedBox(width: 4),
+                              Text(
+                                formattedDate,
+                                style: TextStyle(
+                                    fontSize: 13, color: Colors.grey[700]),
+                              ),
+                            ],
+                          ),
+                          Row(
+                            children: [
+                              Icon(Icons.access_time,
+                                  size: 16, color: Colors.green),
+                              SizedBox(width: 4),
+                              Text(
+                                formattedTime,
+                                style: TextStyle(
+                                    fontSize: 13, color: Colors.grey[700]),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 }

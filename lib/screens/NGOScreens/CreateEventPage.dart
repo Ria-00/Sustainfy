@@ -22,12 +22,14 @@ import '../../services/userOperations.dart';
 class CreateEventPage extends StatefulWidget {
   final EventModel? existingEvent;
   final bool showSaveEditButtons;
+  final bool clearForm;
 
-  const CreateEventPage({
-    Key? key,
-    this.existingEvent,
-    this.showSaveEditButtons = true, // default value
-  }) : super(key: key);
+  const CreateEventPage(
+      {Key? key,
+      this.existingEvent,
+      this.showSaveEditButtons = true, // default value
+      this.clearForm = false})
+      : super(key: key);
 
   @override
   State<CreateEventPage> createState() => _CreateEventPageState();
@@ -74,6 +76,63 @@ class _CreateEventPageState extends State<CreateEventPage> {
     }
     print("final url");
     print(imageUrl);
+
+    if (widget.existingEvent?.eventId != null) {
+      final eventProvider = Provider.of<EventProvider>(context, listen: false);
+      eventProvider.updateEventData(
+          field: "eventId",
+          value: widget.existingEvent!
+              .eventId); // Update all relevant fields from the existing event to the provider
+
+      eventProvider.updateEventData(
+          field: "eventName", value: widget.existingEvent!.eventName);
+      eventProvider.updateEventData(
+          field: "eventDetails", value: widget.existingEvent!.eventDetails);
+      eventProvider.updateEventData(
+          field: "eventAddress", value: widget.existingEvent!.eventAddress);
+      eventProvider.updateEventData(
+          field: "eventGuidelines",
+          value: widget.existingEvent!.eventGuidelines);
+      eventProvider.updateEventData(
+          field: "eventPoints", value: widget.existingEvent!.eventPoints);
+      eventProvider.updateEventData(
+          field: "eventImg", value: widget.existingEvent!.eventImg);
+      eventProvider.updateEventData(
+          field: "eventStatus", value: widget.existingEvent!.eventStatus);
+      eventProvider.updateEventData(
+          field: "UNGoals", value: widget.existingEvent!.UNGoals);
+      eventProvider.updateEventData(
+          field: "ngoRef", value: widget.existingEvent!.ngoRef);
+    }
+
+    // Initialize date and time from existing event
+    if (widget.existingEvent?.eventStartDate != null) {
+      _startDate = convertTimestampToDateOrTime(
+          widget.existingEvent?.eventStartDate, 'date');
+      _startTime = convertTimestampToDateOrTime(
+          widget.existingEvent?.eventStartDate, 'time');
+
+      // Set the controller texts
+      _startDateController.text = DateFormat('dd/MM/yyyy').format(_startDate!);
+      final now = DateTime.now();
+      final dt = DateTime(
+          now.year, now.month, now.day, _startTime!.hour, _startTime!.minute);
+      _startTimeController.text = DateFormat('h:mm a').format(dt);
+    }
+
+    if (widget.existingEvent?.eventEndDate != null) {
+      _endDate = convertTimestampToDateOrTime(
+          widget.existingEvent?.eventEndDate, 'date');
+      _endTime = convertTimestampToDateOrTime(
+          widget.existingEvent?.eventEndDate, 'time');
+
+      // Set the controller texts
+      _endDateController.text = DateFormat('dd/MM/yyyy').format(_endDate!);
+      final now = DateTime.now();
+      final dt = DateTime(
+          now.year, now.month, now.day, _endTime!.hour, _endTime!.minute);
+      _endTimeController.text = DateFormat('h:mm a').format(dt);
+    }
 
     widget.existingEvent?.UNGoals.forEach((goalNumber) {
       setState(() {
@@ -421,7 +480,7 @@ class _CreateEventPageState extends State<CreateEventPage> {
                         ),
                       ),
                     ],
-                    SizedBox(height: 100),
+                    SizedBox(height: 170),
                   ],
                 ),
               ),
@@ -490,6 +549,17 @@ class _CreateEventPageState extends State<CreateEventPage> {
                             isEditable = false;
                             showSaveEditButtons = true;
                           });
+
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => CreateEventPage(
+                                existingEvent: eventProvider.event,
+                                showSaveEditButtons: true,
+                                clearForm: false,
+                              ),
+                            ),
+                          );
                         }
                       },
                       style: ElevatedButton.styleFrom(
@@ -519,9 +589,73 @@ class _CreateEventPageState extends State<CreateEventPage> {
               child: Padding(
                 padding:
                     const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        ElevatedButton(
+                          onPressed: () {
+                            Timestamp startdate =
+                                combineDateAndTime(_startDate, _startTime);
+                            Timestamp enddate =
+                                combineDateAndTime(_endDate, _endTime);
+
+                            context.read<EventProvider>().updateEventData(
+                                field: "eventStartDate", value: startdate);
+                            context.read<EventProvider>().updateEventData(
+                                field: "eventEndDate", value: enddate);
+                            context.read<EventProvider>().updateEventData(
+                                field: "eventStatus", value: 'draft');
+
+                            print("ngoref");
+                            print(eventProvider.event.ngoRef);
+                            print("un goals");
+                            print(eventProvider.event.UNGoals);
+                            eventService.updateEvent(eventProvider.event);
+
+                            // Navigator.push(
+                            //   context,
+                            //   MaterialPageRoute(
+                            //       builder: (context) => NgoLandingPage()),
+                            // );
+
+                             Navigator.pop(context); 
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.darkGreen,
+                            foregroundColor: AppColors.white,
+                            padding: EdgeInsets.symmetric(
+                                horizontal: 40, vertical: 15),
+                          ),
+                          child: Text('Save', style: TextStyle(fontSize: 18)),
+                        ),
+                        ElevatedButton(
+                          onPressed: () {
+                            setState(() {
+                              isEditable = !isEditable;
+                            });
+
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                  content: Text(isEditable
+                                      ? 'Edit mode enabled!'
+                                      : 'Edit mode disabled!')),
+                            );
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.lightGreen,
+                            foregroundColor: AppColors.black,
+                            padding: EdgeInsets.symmetric(
+                                horizontal: 40, vertical: 15),
+                          ),
+                          child: Text(isEditable ? 'Cancel' : 'Edit',
+                              style: TextStyle(fontSize: 18)),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 20), // space between the rows
                     ElevatedButton(
                       onPressed: () {
                         Timestamp startdate =
@@ -529,54 +663,37 @@ class _CreateEventPageState extends State<CreateEventPage> {
                         Timestamp enddate =
                             combineDateAndTime(_endDate, _endTime);
 
+                        print("start date");
+                        print(startdate);
+
                         context.read<EventProvider>().updateEventData(
                             field: "eventStartDate", value: startdate);
                         context.read<EventProvider>().updateEventData(
                             field: "eventEndDate", value: enddate);
-                         context.read<EventProvider>().updateEventData(
-                            field: "eventStatus", value: 'draft');
-                               
+                        context.read<EventProvider>().updateEventData(
+                            field: "eventStatus", value: 'upcoming');
+
                         print("ngoref");
                         print(eventProvider.event.ngoRef);
                         print("un goals");
                         print(eventProvider.event.UNGoals);
                         eventService.updateEvent(eventProvider.event);
 
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => NgoLandingPage()),
-                        );
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.darkGreen,
-                        foregroundColor: AppColors.white,
-                        padding:
-                            EdgeInsets.symmetric(horizontal: 40, vertical: 15),
-                      ),
-                      child: Text('Save', style: TextStyle(fontSize: 18)),
-                    ),
-                    ElevatedButton(
-                      onPressed: () {
-                        setState(() {
-                          isEditable = !isEditable;
-                        });
+                        // Navigator.push(
+                        //   context,
+                        //   MaterialPageRoute(
+                        //       builder: (context) => NgoLandingPage()),
+                        // );
 
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                              content: Text(isEditable
-                                  ? 'Edit mode enabled!'
-                                  : 'Edit mode disabled!')),
-                        );
+                        Navigator.pop(context); // returns to NgoHomePage
+
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.lightGreen,
                         foregroundColor: AppColors.black,
-                        padding:
-                            EdgeInsets.symmetric(horizontal: 40, vertical: 15),
+                        padding: EdgeInsets.symmetric(vertical: 15),
                       ),
-                      child: Text(isEditable ? 'Cancel' : 'Edit',
-                          style: TextStyle(fontSize: 18)),
+                      child: Text('Publish', style: TextStyle(fontSize: 18)),
                     ),
                   ],
                 ),
@@ -602,7 +719,7 @@ class _CreateEventPageState extends State<CreateEventPage> {
                   fontWeight: FontWeight.bold)),
           SingleChildScrollView(
             child: TextFormField(
-              initialValue: value,
+              initialValue: widget.clearForm ? "" : value,
               maxLines: null, // Allow unlimited lines
               keyboardType: TextInputType.multiline, // Multiline input
               onChanged: (value) {
@@ -630,6 +747,36 @@ class _CreateEventPageState extends State<CreateEventPage> {
 
   Widget _buildDateTimeField(String label, TextEditingController controller,
       IconData icon, VoidCallback onTap, Timestamp? existingDayTime) {
+    if (controller.text.isEmpty && existingDayTime != null) {
+      // If it's a date label
+      if (label.contains("Date")) {
+        DateTime date = convertTimestampToDateOrTime(existingDayTime, 'date');
+        controller.text = DateFormat('dd/MM/yyyy').format(date);
+
+        // Also set the class variables
+        if (label == "Start Date") {
+          _startDate = date;
+        } else if (label == "End Date") {
+          _endDate = date;
+        }
+      }
+
+      // If it's a time label
+      else if (label.contains("Time")) {
+        TimeOfDay time = convertTimestampToDateOrTime(existingDayTime, 'time');
+        final now = DateTime.now();
+        final dt =
+            DateTime(now.year, now.month, now.day, time.hour, time.minute);
+        controller.text = DateFormat('h:mm a').format(dt);
+
+        // Also set the class variables
+        if (label == "Start Time") {
+          _startTime = time;
+        } else if (label == "End Time") {
+          _endTime = time;
+        }
+      }
+    }
     if (controller.text.isEmpty && existingDayTime != null) {
       // If it's a date label
       if (label.contains("Date")) {

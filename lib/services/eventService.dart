@@ -164,6 +164,8 @@ class EventService {
         eventName, eventDesc, numOfSDGs, startTime, endTime, context);
 
     String imgUrl= await getImgUrl(eventName);
+    print("image url in the handle submit function");
+    print(imgUrl);
     // Extract the keys as strings and convert them to integers
     List<int> sdgs = categorizedData.keys.map((key) => int.parse(key)).toList();
 

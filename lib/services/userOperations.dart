@@ -472,6 +472,11 @@ class UserClassOperations {
       List<DocumentReference> claimedRefs =
           claimed.map((item) => item as DocumentReference).toList();
 
+      //  Fetch wishlisted coupons
+      List<dynamic> wishlist = List.from(userDoc.get('userWishlist') ?? []);
+      List<DocumentReference> wishlistRefs =
+          wishlist.map((item) => item as DocumentReference).toList();
+
       //  Check if the coupon is already claimed
       if (claimedRefs.contains(couponRef)) {
         print(" Coupon already claimed.");
@@ -481,6 +486,14 @@ class UserClassOperations {
       // Update claimed coupons
       claimedRefs.add(couponRef);
       await userRef.update({'claimedCoupons': claimedRefs});
+
+      //  update wishlist coupons
+      if (wishlistRefs.contains(couponRef)) {
+        wishlistRefs.remove(couponRef); // Remove if already in wishlist
+        await userRef.update({'userWishlist': wishlistRefs});
+      } else {
+        print("Coupon not in wishlist.");
+      }
 
       //  Deduct points
       await userRef.update({'userPoints': userPoints - couponPoint});
@@ -580,7 +593,7 @@ class UserClassOperations {
     }
   }
 
- Future<void> checkAndUpdateEvents() async {
+  Future<void> checkAndUpdateEvents() async {
   final now = Timestamp.now();
   final events = await FirebaseFirestore.instance
       .collection('events')
@@ -608,6 +621,19 @@ class UserClassOperations {
     });
   }
 }
+
+  Future<List<Ngo>> getNgos() async {
+        try {
+          QuerySnapshot snapshot = await firestore.collection("ngo").get();
+
+          return snapshot.docs.map((doc) {
+            return Ngo.fromJson(doc.data() as Map<String, dynamic>);
+          }).toList();
+        } catch (e) {
+          print("Error fetching Ngo: $e");
+          return [];
+        }
+    }
 
 
   Future<List<EventModel>> getAllEventsExcludingNgo(DocumentReference ngoRef) async {
@@ -1080,4 +1106,7 @@ class UserClassOperations {
       return [];
     }
   }
+  
 }
+
+
