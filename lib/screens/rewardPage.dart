@@ -21,7 +21,6 @@ class _CouponModelPageState extends State<CouponPage> {
   UserClassOperations operations = UserClassOperations();
   bool isLoading = true;
 
-
   // **Updated Redeem Coupon Logic**
   void _redeemCouponModel(CouponModel coupon) {
     Navigator.push(
@@ -30,12 +29,11 @@ class _CouponModelPageState extends State<CouponPage> {
         builder: (context) => DiscountDetailsPage(couponId: coupon.couponId),
       ),
     ).then((value) {
-  if (value == true) {
-    _getcoupons();  // Refresh the coupons list
+      if (value == true) {
+        _getcoupons(); // Refresh the coupons list
+      }
+    });
   }
-});
-  }
-
 
   void initState() {
     super.initState();
@@ -55,13 +53,13 @@ class _CouponModelPageState extends State<CouponPage> {
   void _getcoupons() async {
     String userEmail =
         Provider.of<userProvider>(context, listen: false).email ?? '';
-    List<CouponModel> updatedCoupons = await operations.getUnclaimedCoupons(userEmail);
+    List<CouponModel> updatedCoupons =
+        await operations.getUnclaimedCoupons(userEmail);
 
     Provider.of<userProvider>(context, listen: false).setCoupon(updatedCoupons);
     setState(() {
       isLoading = false;
     });
-
   }
 
   @override
@@ -117,34 +115,35 @@ class _CouponModelPageState extends State<CouponPage> {
           ),
           // Points Display
           Consumer<userProvider>(
-            builder: (BuildContext context, provider, child) {  
-            return Container(
-              padding: EdgeInsets.symmetric(vertical: 12),
-              child: RichText(
-                text: TextSpan(
-                  children: [
-                    TextSpan(
-                      text: '${provider.points ?? 0}',
-                      style: TextStyle(
-                        color: AppColors.greenappBar,
-                        fontFamily: AppFonts.inter,
-                        fontSize: 70,
-                        fontWeight: AppFonts.interSemiBoldWeight,
+            builder: (BuildContext context, provider, child) {
+              return Container(
+                padding: EdgeInsets.symmetric(vertical: 12),
+                child: RichText(
+                  text: TextSpan(
+                    children: [
+                      TextSpan(
+                        text: '${provider.points ?? 0}',
+                        style: TextStyle(
+                          color: AppColors.greenappBar,
+                          fontFamily: AppFonts.inter,
+                          fontSize: 70,
+                          fontWeight: AppFonts.interSemiBoldWeight,
+                        ),
                       ),
-                    ),
-                    TextSpan(
-                      text: ' points',
-                      style: TextStyle(
-                        fontFamily: AppFonts.inter,
-                        fontSize: 42,
-                        fontWeight: AppFonts.interSemiBoldWeight,
-                        color: const Color.fromRGBO(50, 50, 55, 1),
+                      TextSpan(
+                        text: ' points',
+                        style: TextStyle(
+                          fontFamily: AppFonts.inter,
+                          fontSize: 42,
+                          fontWeight: AppFonts.interSemiBoldWeight,
+                          color: const Color.fromRGBO(50, 50, 55, 1),
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-            );},
+              );
+            },
           ),
           SizedBox(height: 20),
           // Rewards Title
@@ -165,27 +164,30 @@ class _CouponModelPageState extends State<CouponPage> {
           SizedBox(height: 10),
           // List of coupon cards
           isLoading
-          ? Center(child: CircularProgressIndicator()):Consumer<userProvider>(
-            builder: (BuildContext context, provider, child) {
-            return Expanded(
-              child: GridView.builder(
-                padding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2, // Number of columns
-                  mainAxisSpacing: 10, // Spacing between rows
-                  crossAxisSpacing: 10, // Spacing between columns
-                  childAspectRatio: 1.22, // Aspect ratio for the cards
-                ),
-                itemCount: provider.coupons!.length,
-                itemBuilder: (context, index) {
-                  return CouponModelCard(
-                    coupon: provider.coupons![index],
-                    redeemCouponModel: _redeemCouponModel,
-                  );
-                },
-              ),
-            );},
-          )
+              ? Center(child: CircularProgressIndicator())
+              : Consumer<userProvider>(
+                  builder: (BuildContext context, provider, child) {
+                    return Expanded(
+                      child: GridView.builder(
+                        padding:
+                            EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2, // Number of columns
+                          mainAxisSpacing: 10, // Spacing between rows
+                          crossAxisSpacing: 10, // Spacing between columns
+                          childAspectRatio: 0.99, // Aspect ratio for the cards
+                        ),
+                        itemCount: provider.coupons!.length,
+                        itemBuilder: (context, index) {
+                          return CouponModelCard(
+                            coupon: provider.coupons![index],
+                            redeemCouponModel: _redeemCouponModel,
+                          );
+                        },
+                      ),
+                    );
+                  },
+                )
         ],
       ),
     );

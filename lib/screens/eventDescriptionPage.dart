@@ -64,34 +64,27 @@ class _EventDescriptionScreenState extends State<EventDescriptionPage> {
                 child: Container(
                   color: const Color.fromRGBO(52, 168, 83, 1),
                   child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      SizedBox(width: 7),
+                      const SizedBox(width: 7),
                       IconButton(
-                        icon: Row(
-                          children: [
-                            Icon(Icons.arrow_back_ios, color: Colors.white),
-                          ],
-                        ),
+                        icon: const Icon(Icons.arrow_back_ios,
+                            color: Colors.white),
                         onPressed: () {
-                          Navigator.pop(
-                              context); // Navigate back to the previous screen
+                          Navigator.pop(context);
                         },
                       ),
-                      // Image.asset(
-                      //   'assets/images/SustainifyLogo.png',
-                      //   width: 50,
-                      //   height: 60,
-                      // ),
-                      SizedBox(
-                        width: 5,
-                      ),
-                      Text(
-                        widget.event.eventName, // event name
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontFamily: AppFonts.inter,
-                          fontSize: 25,
-                          fontWeight: AppFonts.interSemiBoldWeight,
+                      const SizedBox(width: 5),
+                      Flexible(
+                        child: Text(
+                          widget.event.eventName,
+                          maxLines: 2,
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontFamily: AppFonts.inter,
+                            fontSize: 22,
+                            fontWeight: AppFonts.interSemiBoldWeight,
+                          ),
                         ),
                       ),
                     ],
