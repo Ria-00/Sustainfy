@@ -608,14 +608,18 @@ class UserClassOperations {
   
   final upcomingEvents = await FirebaseFirestore.instance
       .collection('events')
-      .where('eventStatus', isEqualTo: 'upcoming')
-      .where('eventStart_date', isGreaterThanOrEqualTo: now)
-      .where('eventEnd_date', isLessThanOrEqualTo: now)
-      .orderBy('eventStart_date')
-      .orderBy('eventEnd_date')
-      .get();
+    .where('eventStart_date', isLessThanOrEqualTo: now)
+    .where('eventEnd_date', isGreaterThan: now)
+    .orderBy('eventStart_date')
+    .orderBy('eventEnd_date')
+    .get();
+
+  // print("85982749857982479874289769");
+  // print(now);
+  // print(upcomingEvents.docs);
 
   for (var doc in upcomingEvents.docs) {
+    // print(doc.id);
     await doc.reference.update({
       'eventStatus': 'live',
     });
