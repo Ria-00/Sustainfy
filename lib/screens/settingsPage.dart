@@ -10,7 +10,6 @@ import 'package:sustainfy/widgets/floatingSuccess.dart';
 import 'package:sustainfy/widgets/floatingWarning.dart';
 
 class SettingsPage extends StatefulWidget {
-
   @override
   State<SettingsPage> createState() => _SettingsPageState();
 }
@@ -430,9 +429,11 @@ class _SettingsPageState extends State<SettingsPage> {
                               SizedBox(height: 20),
                               ElevatedButton(
                                 style: ElevatedButton.styleFrom(
+                                  minimumSize: Size(
+                                      250, 50), // Adjust width and height here
                                   backgroundColor: Colors.black,
                                   shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(10),
+                                    borderRadius: BorderRadius.circular(20),
                                   ),
                                 ),
                                 onPressed: () {
@@ -440,18 +441,12 @@ class _SettingsPageState extends State<SettingsPage> {
                                   FocusScope.of(context).unfocus();
                                   setState(() {});
                                 },
-                                child: Padding(
-                                  padding: EdgeInsets.only(
-                                    left: 145,
-                                    right: 145,
-                                  ),
-                                  child: Text(
-                                    "Submit",
-                                    style: TextStyle(
-                                        color: Colors.white,
-                                        fontWeight: AppFonts.jostSemiBoldWeight,
-                                        fontFamily: AppFonts.jost),
-                                  ),
+                                child: Text(
+                                  "Submit",
+                                  style: TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: AppFonts.jostSemiBoldWeight,
+                                      fontFamily: AppFonts.jost),
                                 ),
                               ),
                             ],

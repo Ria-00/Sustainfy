@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:sustainfy/model/ngoModel.dart';
 import 'package:sustainfy/model/userModel.dart';
 import 'package:sustainfy/utils/colors.dart';
 import 'package:sustainfy/utils/font.dart';
@@ -12,11 +13,13 @@ class CommunityPage extends StatefulWidget {
 
 String getFirstName(String? fullName) {
   if (fullName == null || fullName.isEmpty) return 'Unknown';
-  return fullName.split(' ')[0]; // Get the first name only
+  return fullName.split(' ')[0];
 }
 
 class _CommunityPageState extends State<CommunityPage> {
   List<UserClass> users = [];
+  UserClassOperations? operations;
+  List<Ngo> ngos = [];
   bool isLoading = true;
   bool hasError = false;
 
@@ -24,9 +27,26 @@ class _CommunityPageState extends State<CommunityPage> {
   void initState() {
     super.initState();
     fetchLeaderboardData();
+    fetchNgos();
   }
 
-  // Fetch leaderboard users from Firestore
+  Future<void> fetchNgos() async {
+    try {
+      List<Ngo> fetchedNgos = await UserClassOperations().getNgos();
+      if (!mounted) return; // Check if the widget is still mounted
+      setState(() {
+        ngos = fetchedNgos;
+        isLoading = false;
+        hasError = ngos.isEmpty;
+      });
+    } catch (e) {
+      setState(() {
+        isLoading = false;
+        hasError = true;
+      });
+    }
+  }
+
   Future<void> fetchLeaderboardData() async {
     try {
       List<UserClass> fetchedUsers =
@@ -49,101 +69,164 @@ class _CommunityPageState extends State<CommunityPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return DefaultTabController(
+      length: 2, // Leaderboard & NGO
+      child: Scaffold(
         body: Column(
-      children: [
-        ClipPath(
-          clipper: CustomCurvedEdges(),
-          child: Container(
-            height: 150, 
-            color: const Color.fromRGBO(52, 168, 83, 1),
-            padding: EdgeInsets.symmetric(horizontal: 15),
-            child: Row(
-              crossAxisAlignment:
-                  CrossAxisAlignment.center, 
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: [
-                Image.asset(
-                  'assets/images/SustainifyLogo.png',
-                  width: 50,
-                  height: 60, 
+          children: [
+            // ClipPath for green curved section
+            ClipPath(
+              clipper: CustomCurvedEdges(),
+              child: Container(
+                height: 150,
+                color: const Color.fromRGBO(52, 168, 83, 1),
+                padding: EdgeInsets.symmetric(horizontal: 15),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    Image.asset(
+                      'assets/images/SustainifyLogo.png',
+                      width: 50,
+                      height: 60,
+                    ),
+                  ],
                 ),
+              ),
+            ),
+
+            // TabBar placed below the curved green section
+            TabBar(
+              labelColor: Colors.black,
+              unselectedLabelColor: Colors.grey[700],
+              indicatorColor: Color(0xFF34A853),
+              tabs: [
+                Tab(text: "Leaderboard"),
+                Tab(text: "NGOs"),
               ],
             ),
-          ),
+
+            // TabBarView for Leaderboard and NGO content
+            Expanded(
+              child: TabBarView(
+                children: [
+                  buildLeaderboardTab(),
+                  buildNgoListTab(),
+                ],
+              ),
+            ),
+          ],
         ),
+      ),
+    );
+  }
 
-        // Body Content
-        Expanded(
-          child: isLoading
-              ? Center(child: CircularProgressIndicator()) // Show loader
-              : hasError
-                  ? Center(
+  Widget buildLeaderboardTab() {
+    return isLoading
+        ? Center(child: CircularProgressIndicator()) // Show loader
+        : hasError
+            ? Center(
+                child: Text(
+                    "No users found or an error occurred.")) // Show error message
+            : Column(
+                children: [
+                  // "Leaderboard" Heading in Body
+                  SizedBox(
+                    height: 10,
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 10.0),
+                    child: Center(
                       child: Text(
-                          "No users found or an error occurred.")) // Show error message
-                  : Column(
+                        'Leaderboard',
+                        style: TextStyle(
+                          fontSize: 30,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black,
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  SizedBox(height: 10),
+
+                  // Top 3 Users
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
-                        // "Leaderboard" Heading in Body
-                        Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 10.0),
-                          child: Center(
-                            child: Text(
-                              'Leaderboard',
-                              style: TextStyle(
-                                fontSize: 30,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.black,
-                              ),
-                            ),
-                          ),
-                        ),
-
-                        SizedBox(height: 10),
-
-                        // Top 3 Users
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                            crossAxisAlignment: CrossAxisAlignment.end,
-                            children: [
-                              if (users.length > 1)
-                                Expanded(
-                                    child:
-                                        TopUserColumn(user: users[1], rank: 2)),
-                              if (users.isNotEmpty)
-                                Expanded(
-                                    child: TopUserColumn(
-                                        user: users[0],
-                                        rank: 1,
-                                        isCenter: true)),
-                              if (users.length > 2)
-                                Expanded(
-                                    child:
-                                        TopUserColumn(user: users[2], rank: 3)),
-                            ],
-                          ),
-                        ),
-                        SizedBox(height: 20),
-
-                        // Remaining Users in List
-                        Expanded(
-                          child: ListView.builder(
-                            padding: EdgeInsets.all(16.0),
-                            itemCount: users.length > 3 ? users.length - 3 : 0,
-                            itemBuilder: (context, index) {
-                              return LeaderboardCard(
-                                user: users[index + 3],
-                                rank: index + 4,
-                              );
-                            },
-                          ),
-                        ),
+                        if (users.length > 1)
+                          Expanded(
+                              child: TopUserColumn(user: users[1], rank: 2)),
+                        if (users.isNotEmpty)
+                          Expanded(
+                              child: TopUserColumn(
+                                  user: users[0], rank: 1, isCenter: true)),
+                        if (users.length > 2)
+                          Expanded(
+                              child: TopUserColumn(user: users[2], rank: 3)),
                       ],
                     ),
-        )
-      ],
-    ));
+                  ),
+                  SizedBox(height: 20),
+
+                  // Remaining Users in List
+                  Expanded(
+                    child: ListView.builder(
+                      padding: EdgeInsets.all(16.0),
+                      itemCount: users.length > 3 ? users.length - 3 : 0,
+                      itemBuilder: (context, index) {
+                        return LeaderboardCard(
+                          user: users[index + 3],
+                          rank: index + 4,
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              );
+  }
+
+  Widget buildNgoListTab() {
+    return isLoading
+        ? Center(child: CircularProgressIndicator())
+        : hasError
+            ? Center(child: Text("No NGOs found or an error occurred."))
+            : SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SizedBox(height: 10),
+                    Center(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 10.0),
+                        child: Text(
+                          'NGOs',
+                          style: TextStyle(
+                            fontSize: 30,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black,
+                          ),
+                        ),
+                      ),
+                    ),
+                    // Vertical list of all NGO cards
+                    ListView.builder(
+                      physics:
+                          NeverScrollableScrollPhysics(), // To avoid nested scrolling
+                      shrinkWrap: true,
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                      itemCount: ngos.length,
+                      itemBuilder: (context, index) {
+                        return NgoCard(ngo: ngos[index]);
+                      },
+                    ),
+                  ],
+                ),
+              );
   }
 }
 
@@ -173,7 +256,7 @@ class TopUserColumn extends StatelessWidget {
                 radius: isCenter ? 65 : 55, // Increased sizes
                 backgroundImage: user.userImg != null
                     ? NetworkImage(user.userImg!)
-                    : AssetImage('assets/images/default_profile.png')
+                    : AssetImage('assets/images/profileImages/pfp1.png')
                         as ImageProvider,
               ),
             ),
@@ -222,73 +305,6 @@ class TopUserColumn extends StatelessWidget {
   }
 }
 
-// Widget for the Top 3 Users in Circle
-class TopUserCircle extends StatelessWidget {
-  final UserClass user;
-  final int rank;
-  final bool isCenter;
-
-  TopUserCircle(
-      {required this.user, required this.rank, this.isCenter = false});
-
-  @override
-  Widget build(BuildContext context) {
-    Color borderColor = Colors.amber;
-    String rankLabel = rank.toString();
-
-    return Column(
-      children: [
-        Stack(
-          alignment: Alignment.center,
-          clipBehavior: Clip.none,
-          children: [
-            Container(
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(color: borderColor, width: 5),
-              ),
-              child: CircleAvatar(
-                radius: isCenter ? 60 : 45,
-                backgroundColor: Colors.white,
-                child: CircleAvatar(
-                  radius: isCenter ? 58 : 43,
-                  backgroundImage: user.userImg != null
-                      ? NetworkImage(
-                          user.userImg!) // Fetch from URL if provided
-                      : AssetImage('assets/images/default_profile.png')
-                          as ImageProvider,
-                ),
-              ),
-            ),
-            Positioned(
-              bottom: -10,
-              right: 8,
-              child: CircleAvatar(
-                radius: 16,
-                backgroundColor: borderColor,
-                child: Text(
-                  rankLabel,
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 20,
-                    color: Colors.white,
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-        SizedBox(height: 15),
-        Text(getFirstName(user.userName),
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20)),
-        Text('${user.totalPoints ?? 0} pts',
-            style: TextStyle(color: Colors.black54, fontSize: 18)),
-      ],
-    );
-  }
-}
-
-// Leaderboard Card for remaining users
 class LeaderboardCard extends StatelessWidget {
   final UserClass user;
   final int rank;
@@ -320,8 +336,8 @@ class LeaderboardCard extends StatelessWidget {
             CircleAvatar(
               radius: 28.0,
               backgroundImage: user.userImg != null
-                  ? NetworkImage(user.userImg!) // Use URL from Firestore
-                  : AssetImage('assets/images/default_profile.png')
+                  ? NetworkImage(user.userImg!) // Fetch from URL if provided
+                  : AssetImage('assets/images/profileImages/pfp1.png')
                       as ImageProvider,
             ),
           ],
@@ -340,4 +356,174 @@ class LeaderboardCard extends StatelessWidget {
       ),
     );
   }
+}
+
+class NgoCard extends StatelessWidget {
+  final Ngo ngo;
+
+  const NgoCard({Key? key, required this.ngo}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      margin: const EdgeInsets.symmetric(vertical: 8.0),
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+      child: Padding(
+        padding: const EdgeInsets.all(12.0),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            // NGO Image
+            ClipRRect(
+              borderRadius: BorderRadius.circular(10),
+              child: ngo.ngoImg != null
+                  ? Image.network(
+                      ngo.ngoImg!,
+                      width: 80,
+                      height: 80,
+                      fit: BoxFit.cover,
+                    )
+                  : Image.asset(
+                      'assets/images/ngo_placeholder.png',
+                      width: 80,
+                      height: 80,
+                      fit: BoxFit.cover,
+                    ),
+            ),
+            SizedBox(width: 16),
+
+            // NGO Name and Description
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      SizedBox(height: 10),
+                      Text(
+                        ngo.ngoName ?? 'Unknown NGO',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 20,
+                        ),
+                      ),
+                      Spacer(),
+                    ],
+                  ),
+                  SizedBox(height: 6),
+                  Text(
+                    ngo.ngoMail ?? 'No description provided.',
+                    style: TextStyle(fontSize: 14, color: Colors.grey[700]),
+                    maxLines: 3,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+            ),
+            IconButton(
+              icon: Icon(Icons.phone, color: Colors.green),
+              iconSize: 30,
+              onPressed: () {
+                _showContactDialog(context, ngo);
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showContactDialog(BuildContext context, Ngo ngo) {
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        title: Center(
+          child: Text(
+            'Contact Information',
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 20,
+              color: Colors.black87,
+            ),
+          ),
+        ),
+        content: Padding(
+          padding: const EdgeInsets.only(top: 10),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Phone Text with bold label and normal value
+              RichText(
+                text: TextSpan(
+                  children: [
+                    TextSpan(
+                      text: 'Phone:  ',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black87,
+                      ),
+                    ),
+                    TextSpan(
+                      text: '${ngo.ngoPhone ?? 'No phone number available.'}',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.normal,
+                        color: Colors.black54,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(height: 12),
+              // Address Text with bold label and normal value
+              RichText(
+                text: TextSpan(
+                  children: [
+                    TextSpan(
+                      text: 'Address:  ',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black87,
+                      ),
+                    ),
+                    TextSpan(
+                      text: '${ngo.ngoAdd ?? 'No address provided.'}',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.normal,
+                        color: Colors.black54,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            child: Text(
+              'Close',
+              style: TextStyle(
+                color: Theme.of(context).primaryColor,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ],
+      );
+    },
+  );
+}
+
 }
