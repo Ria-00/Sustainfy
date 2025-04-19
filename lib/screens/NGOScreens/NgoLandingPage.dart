@@ -244,7 +244,7 @@ class _NgoLandingPageState extends State<NgoLandingPage> {
                             Icon(Icons.people,
                                 size: 18, color: AppColors.darkGreen),
                             SizedBox(width: 4),
-                            Text('54 Users Joined',
+                            Text('${event.eventParticipants.length} Users Joined',
                                 style: TextStyle(fontSize: 13)),
                           ],
                         ),

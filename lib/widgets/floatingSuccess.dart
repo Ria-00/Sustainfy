@@ -17,8 +17,9 @@ class FloatingSuccess extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 15),
           decoration: BoxDecoration(
-            color: Colors.green.withOpacity(0.85), // Success color
+            color: const Color.fromARGB(190, 50, 50, 55), // Success color
             borderRadius: BorderRadius.circular(8),
+            
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
@@ -28,16 +29,16 @@ class FloatingSuccess extends StatelessWidget {
               Center(
                 child: FaIcon(
                   FontAwesomeIcons.checkCircle, // Success icon
-                  color: Colors.white,
+                  color: Colors.green,
                   size: 20, // Adjusted size for visibility
                 ),
               ),
-              const SizedBox(width: 10), // Space between icon and text
+              const SizedBox(width: 6), // Space between icon and text
               Expanded(
                 child: Text(
                   message,
                   style: const TextStyle(
-                    color: Colors.white,
+                    color:  Colors.white,
                     fontWeight: FontWeight.bold,
                   ),
                   textAlign: TextAlign.center,

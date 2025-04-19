@@ -182,7 +182,6 @@ packages:
     description:
       name: collection
       sha256: a1ace0a119f20aabc852d165077c036cd864315bd99b7eaa10a60100341941bf
-
       url: "https://pub.dev"
     source: hosted
     version: "1.19.0"
@@ -881,14 +880,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.1.8"
-  posix:
-    dependency: transitive
-    description:
-      name: posix
-      sha256: a0117dc2167805aa9125b82eee515cc891819bac2f538c83646d355b16f58b9a
-      url: "https://pub.dev"
-    source: hosted
-    version: "6.0.1"
   pointycastle:
     dependency: transitive
     description:
@@ -897,7 +888,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.9.1"
-
+  posix:
+    dependency: transitive
+    description:
+      name: posix
+      sha256: a0117dc2167805aa9125b82eee515cc891819bac2f538c83646d355b16f58b9a
+      url: "https://pub.dev"
+    source: hosted
+    version: "6.0.1"
   pretty_qr_code:
     dependency: "direct main"
     description:
