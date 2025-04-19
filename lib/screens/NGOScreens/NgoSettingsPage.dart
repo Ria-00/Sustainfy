@@ -14,10 +14,9 @@ class NgoSettingsPage extends StatefulWidget {
 }
 
 class _NgoSettingsPageState extends State<NgoSettingsPage> {
-
   UserClassOperations operations = UserClassOperations();
 
- void showFloatingWarning(BuildContext context, String message) {
+  void showFloatingWarning(BuildContext context, String message) {
     OverlayEntry overlayEntry = OverlayEntry(
       builder: (context) => FloatingWarning(message: message),
     );
@@ -69,7 +68,7 @@ class _NgoSettingsPageState extends State<NgoSettingsPage> {
       showFloatingWarning(context, errorMessage);
     }
   }
- 
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -436,9 +435,11 @@ class _NgoSettingsPageState extends State<NgoSettingsPage> {
                               SizedBox(height: 20),
                               ElevatedButton(
                                 style: ElevatedButton.styleFrom(
+                                  minimumSize: Size(
+                                      250, 50), // Adjust width and height here
                                   backgroundColor: Colors.black,
                                   shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(10),
+                                    borderRadius: BorderRadius.circular(20),
                                   ),
                                 ),
                                 onPressed: () {
@@ -446,18 +447,12 @@ class _NgoSettingsPageState extends State<NgoSettingsPage> {
                                   FocusScope.of(context).unfocus();
                                   setState(() {});
                                 },
-                                child: Padding(
-                                  padding: EdgeInsets.only(
-                                    left: 145,
-                                    right: 145,
-                                  ),
-                                  child: Text(
-                                    "Submit",
-                                    style: TextStyle(
-                                        color: Colors.white,
-                                        fontWeight: AppFonts.jostSemiBoldWeight,
-                                        fontFamily: AppFonts.jost),
-                                  ),
+                                child: Text(
+                                  "Submit",
+                                  style: TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: AppFonts.jostSemiBoldWeight,
+                                      fontFamily: AppFonts.jost),
                                 ),
                               ),
                             ],

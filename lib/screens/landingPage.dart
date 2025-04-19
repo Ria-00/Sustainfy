@@ -180,7 +180,7 @@ class _LandingPageState extends State<LandingPage> {
                               ),
                             ),
                             _buildEventList(liveEvents),
-                            SizedBox(height: 10),
+                            SizedBox(height: 30),
                           ],
                           if (upcomingEvents.isNotEmpty) ...[
                             Padding(
@@ -485,7 +485,7 @@ class _LandingPageState extends State<LandingPage> {
             );
           },
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 15.0, vertical: 10),
+            padding: const EdgeInsets.symmetric(horizontal: 15.0, vertical: 1),
             child: Card(
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(15),

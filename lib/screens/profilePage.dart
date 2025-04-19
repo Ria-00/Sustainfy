@@ -112,7 +112,7 @@ class _ProfilePageState extends State<ProfilePage> {
         await operations.reAuthenticateAndDelete(userEmail, userPass);
     isLoading = false;
     setState(() {}); // Trigger a rebuild to hide loading state
-    if (result=="User account deleted successfully.") {
+    if (result == "User account deleted successfully.") {
       showFloatingSuccess(context, result);
     } else {
       showFloatingWarning(context, result);
@@ -237,7 +237,6 @@ class _ProfilePageState extends State<ProfilePage> {
                                   ),
                                 ],
                               ),
-
                             ),
                             IconButton(
                               icon: Icon(Icons.edit),
@@ -367,7 +366,6 @@ class _ProfilePageState extends State<ProfilePage> {
                             ),
                     ],
                   ),
-
                 ),
               ),
             ),
@@ -564,7 +562,7 @@ class _ProfilePageState extends State<ProfilePage> {
             child: Container(
               padding: EdgeInsets.symmetric(horizontal: 20, vertical: 20),
               decoration: BoxDecoration(
-                color: Colors.green,
+                color: const Color.fromRGBO(52, 168, 83, 1),
                 borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
               ),
               child: Column(

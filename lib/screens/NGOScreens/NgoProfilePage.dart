@@ -84,7 +84,7 @@ class _NgoProfilePageState extends State<NgoProfilePage> {
         await operations.reAuthenticateAndDelete(userEmail, userPass);
     isLoading = false;
     setState(() {}); // Trigger a rebuild to hide loading state
-    if (result=="User account deleted successfully.") {
+    if (result == "User account deleted successfully.") {
       showFloatingSuccess(context, result);
     } else {
       showFloatingWarning(context, result);
@@ -130,23 +130,22 @@ class _NgoProfilePageState extends State<NgoProfilePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-         body: Column(
+        body: Column(
       children: [
         ClipPath(
           clipper: CustomCurvedEdges(),
           child: Container(
-            height: 150, 
+            height: 150,
             color: const Color.fromRGBO(52, 168, 83, 1),
-            padding: EdgeInsets.symmetric(horizontal: 15), 
+            padding: EdgeInsets.symmetric(horizontal: 15),
             child: Row(
-              crossAxisAlignment:
-                  CrossAxisAlignment.center, 
+              crossAxisAlignment: CrossAxisAlignment.center,
               mainAxisAlignment: MainAxisAlignment.start,
               children: [
                 Image.asset(
                   'assets/images/SustainifyLogo.png',
-                  width: 50, 
-                  height: 60, 
+                  width: 50,
+                  height: 60,
                 ),
               ],
             ),
@@ -366,7 +365,7 @@ class _NgoProfilePageState extends State<NgoProfilePage> {
                                   ),
                                   filled: true,
                                   fillColor: Color.fromRGBO(220, 237, 222, 1),
-                                  hintText:"Mobile No.",
+                                  hintText: "Mobile No.",
                                   hintStyle: TextStyle(
                                     color: Color.fromRGBO(
                                         128, 137, 129, 0.5), // Grayish text
@@ -380,11 +379,8 @@ class _NgoProfilePageState extends State<NgoProfilePage> {
                               SizedBox(height: 40),
                               ElevatedButton(
                                 style: ElevatedButton.styleFrom(
-                                  padding: EdgeInsets.only(
-                                      left: 170,
-                                      right: 170,
-                                      top: 15,
-                                      bottom: 15),
+                                  minimumSize: Size(
+                                      250, 50), // Adjust width and height here
                                   backgroundColor: Colors.black,
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(20),
@@ -450,7 +446,7 @@ class _NgoProfilePageState extends State<NgoProfilePage> {
             child: Container(
               padding: EdgeInsets.symmetric(horizontal: 20, vertical: 20),
               decoration: BoxDecoration(
-                color: Colors.green,
+                color: const Color.fromRGBO(52, 168, 83, 1),
                 borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
               ),
               child: Column(
@@ -550,7 +546,7 @@ class _NgoProfilePageState extends State<NgoProfilePage> {
             child: Container(
               padding: EdgeInsets.symmetric(horizontal: 20, vertical: 20),
               decoration: BoxDecoration(
-                color: Colors.green,
+                color: const Color.fromRGBO(52, 168, 83, 1),
                 borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
               ),
               child: Column(

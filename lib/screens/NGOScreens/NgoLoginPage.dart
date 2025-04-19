@@ -29,7 +29,7 @@ class NgoLoginPage extends StatefulWidget {
 
 class _NgoLoginPageState extends State<NgoLoginPage> {
   FirebaseAuth _auth = FirebaseAuth.instance;
-  bool isLoading=false;
+  bool isLoading = false;
 
   User? _user;
 
@@ -120,26 +120,28 @@ class _NgoLoginPageState extends State<NgoLoginPage> {
 
     // Form submit logic
     Future<void> _submitForm() async {
-      isLoading=true;
+      isLoading = true;
       setState(() {});
       u.ngoMail = _usermailController.text.trim();
       u.ngoPassword = _passwordController.text.trim();
       print("AAAAAAAAAAAAAAAAAAAAaaaaaaaaaaaaaaaaaaaaaa");
       print(EncryptionService().encryptData(_passwordController.text.trim()));
-      print(EncryptionService().decryptData(EncryptionService().encryptData(_passwordController.text.trim())));
-      String encryptPass = EncryptionService().encryptData(_passwordController.text.trim());
+      print(EncryptionService().decryptData(
+          EncryptionService().encryptData(_passwordController.text.trim())));
+      String encryptPass =
+          EncryptionService().encryptData(_passwordController.text.trim());
 
       final form = _formKey.currentState;
       if (form!.validate()) {
         print("Valid Form");
         String? a = await operate.signInAsNgo(u);
         if (a == null) {
+          Provider.of<userProvider>(context, listen: false).setValue(u.ngoMail);
           Provider.of<userProvider>(context, listen: false)
-              .setValue(u.ngoMail);
-          Provider.of<userProvider>(context, listen: false).setPass(encryptPass);
+              .setPass(encryptPass);
 
           print(Provider.of<userProvider>(context, listen: false).email);
-          isLoading=false;
+          isLoading = false;
           setState(() {});
           Navigator.pushReplacement(
             context,
@@ -149,12 +151,12 @@ class _NgoLoginPageState extends State<NgoLoginPage> {
           );
         } else {
           print(a);
-          isLoading=false;
+          isLoading = false;
           setState(() {});
           showFloatingWarning(context, "Incorrect credentials");
         }
       } else {
-        isLoading=false;
+        isLoading = false;
         setState(() {});
         print("Error in form");
       }
@@ -228,136 +230,151 @@ class _NgoLoginPageState extends State<NgoLoginPage> {
                     child: _isHidden
                         ? SizedBox.shrink()
                         : isLoading
-                          ? Center(child: CircularProgressIndicator())
-                          :Center(
-                            child: Form(
-                              key: _formKey,
-                              child: Container(
-                                padding: const EdgeInsets.only(
-                                    bottom: 20.0, top: 30, left: 40, right: 40),
-                                child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.end,
-                                    children: [
-                                      const Text(
-                                        "Login",
-                                        style: TextStyle(
-                                          fontSize: 30,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 20),
-                                      Container(
-                                        child: TextFormField(
-                                          controller: _usermailController,
-                                          focusNode: _emailFocusNode,
-                                          autovalidateMode: AutovalidateMode
-                                              .onUserInteraction,
-                                          validator: _validateUsername,
-                                          decoration: InputDecoration(
-                                            floatingLabelBehavior:
-                                                FloatingLabelBehavior.never,
-                                            hintText: 'Enter Username',
-                                            hintStyle: TextStyle(
-                                                color: Color.fromRGBO(
-                                                    128, 137, 129, 0.354)),
-                                            labelText: "Email",
-                                            labelStyle: TextStyle(
-                                                color: Color.fromRGBO(
-                                                    128, 137, 129, 1)),
-                                            border: OutlineInputBorder(
-                                                borderSide: BorderSide.none,
-                                                borderRadius:
-                                                    BorderRadius.circular(20)),
-                                            filled: true,
-                                            fillColor: Color.fromRGBO(
-                                                220, 237, 222, 1),
-                                            contentPadding: EdgeInsets.all(16),
-                                            errorBorder: OutlineInputBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(30.0),
-                                              borderSide: BorderSide.none,
-                                            ),
-                                            focusedErrorBorder:
-                                                OutlineInputBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(30.0),
-                                              borderSide: BorderSide.none,
+                            ? Center(child: CircularProgressIndicator())
+                            : Center(
+                                child: Form(
+                                  key: _formKey,
+                                  child: Container(
+                                    padding: const EdgeInsets.only(
+                                        bottom: 20.0,
+                                        top: 30,
+                                        left: 40,
+                                        right: 40),
+                                    child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.end,
+                                        children: [
+                                          const Text(
+                                            "Login",
+                                            style: TextStyle(
+                                              fontSize: 30,
+                                              fontWeight: FontWeight.bold,
                                             ),
                                           ),
-                                        ),
-                                      ),
-                                      const SizedBox(height: 20),
-                                      Container(
-                                        child: TextFormField(
-                                          obscureText: true,
-                                          controller: _passwordController,
-                                          focusNode: _passwordFocusNode,
-                                          autovalidateMode: AutovalidateMode
-                                              .onUserInteraction,
-                                          validator: _validatePassword,
-                                          onFieldSubmitted: (_) =>
-                                              _submitForm(),
-                                          decoration: InputDecoration(
-                                            labelText: "Password",
-                                            labelStyle: TextStyle(
-                                                color: Color.fromRGBO(
-                                                    128, 137, 129, 1)),
-                                            hintText: 'Enter Password',
-                                            hintStyle: TextStyle(
-                                                color: Color.fromRGBO(
-                                                    128, 137, 129, 0.354)),
-                                            border: OutlineInputBorder(
-                                                borderSide: BorderSide.none,
-                                                borderRadius:
-                                                    BorderRadius.circular(20)),
-                                            filled: true,
-                                            fillColor: Color.fromRGBO(
-                                                220, 237, 222, 1),
-                                            contentPadding: EdgeInsets.all(16),
-                                            floatingLabelBehavior:
-                                                FloatingLabelBehavior.never,
-                                            errorBorder: OutlineInputBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(30.0),
-                                              borderSide: BorderSide.none,
-                                            ),
-                                            focusedErrorBorder:
-                                                OutlineInputBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(30.0),
-                                              borderSide: BorderSide.none,
+                                          const SizedBox(height: 20),
+                                          Container(
+                                            child: TextFormField(
+                                              controller: _usermailController,
+                                              focusNode: _emailFocusNode,
+                                              autovalidateMode: AutovalidateMode
+                                                  .onUserInteraction,
+                                              validator: _validateUsername,
+                                              decoration: InputDecoration(
+                                                floatingLabelBehavior:
+                                                    FloatingLabelBehavior.never,
+                                                hintText: 'Enter Username',
+                                                hintStyle: TextStyle(
+                                                    color: Color.fromRGBO(
+                                                        128, 137, 129, 0.354)),
+                                                labelText: "Email",
+                                                labelStyle: TextStyle(
+                                                    color: Color.fromRGBO(
+                                                        128, 137, 129, 1)),
+                                                border: OutlineInputBorder(
+                                                    borderSide: BorderSide.none,
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            20)),
+                                                filled: true,
+                                                fillColor: Color.fromRGBO(
+                                                    220, 237, 222, 1),
+                                                contentPadding:
+                                                    EdgeInsets.all(16),
+                                                errorBorder: OutlineInputBorder(
+                                                  borderRadius:
+                                                      BorderRadius.circular(
+                                                          30.0),
+                                                  borderSide: BorderSide.none,
+                                                ),
+                                                focusedErrorBorder:
+                                                    OutlineInputBorder(
+                                                  borderRadius:
+                                                      BorderRadius.circular(
+                                                          30.0),
+                                                  borderSide: BorderSide.none,
+                                                ),
+                                              ),
                                             ),
                                           ),
-                                        ),
-                                      ),
-                                      const SizedBox(height: 35),
-                                      ElevatedButton(
-                                        style: ElevatedButton.styleFrom(
-                                          backgroundColor:
-                                              Color.fromRGBO(50, 50, 55, 1),
-                                          foregroundColor: Color.fromARGB(
-                                              204, 255, 255, 255),
-                                          padding: EdgeInsets.symmetric(
-                                              horizontal: MediaQuery.of(context)
-                                                      .size
-                                                      .width *
-                                                  0.35,
-                                              vertical: 13),
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius:
-                                                BorderRadius.circular(25),
+                                          const SizedBox(height: 20),
+                                          Container(
+                                            child: TextFormField(
+                                              obscureText: true,
+                                              controller: _passwordController,
+                                              focusNode: _passwordFocusNode,
+                                              autovalidateMode: AutovalidateMode
+                                                  .onUserInteraction,
+                                              validator: _validatePassword,
+                                              onFieldSubmitted: (_) =>
+                                                  _submitForm(),
+                                              decoration: InputDecoration(
+                                                labelText: "Password",
+                                                labelStyle: TextStyle(
+                                                    color: Color.fromRGBO(
+                                                        128, 137, 129, 1)),
+                                                hintText: 'Enter Password',
+                                                hintStyle: TextStyle(
+                                                    color: Color.fromRGBO(
+                                                        128, 137, 129, 0.354)),
+                                                border: OutlineInputBorder(
+                                                    borderSide: BorderSide.none,
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            20)),
+                                                filled: true,
+                                                fillColor: Color.fromRGBO(
+                                                    220, 237, 222, 1),
+                                                contentPadding:
+                                                    EdgeInsets.all(16),
+                                                floatingLabelBehavior:
+                                                    FloatingLabelBehavior.never,
+                                                errorBorder: OutlineInputBorder(
+                                                  borderRadius:
+                                                      BorderRadius.circular(
+                                                          30.0),
+                                                  borderSide: BorderSide.none,
+                                                ),
+                                                focusedErrorBorder:
+                                                    OutlineInputBorder(
+                                                  borderRadius:
+                                                      BorderRadius.circular(
+                                                          30.0),
+                                                  borderSide: BorderSide.none,
+                                                ),
+                                              ),
+                                            ),
                                           ),
-                                        ),
-                                        onPressed: () async {
-                                          _submitForm();
-                                        },
-                                        child: const Text("Submit"),
-                                      ),
-                                      SizedBox(height: 15),
-                                    ]),
+                                          const SizedBox(height: 35),
+                                          Center(
+                                            child: ElevatedButton(
+                                              style: ElevatedButton.styleFrom(
+                                                backgroundColor:
+                                                    const Color.fromRGBO(
+                                                        50, 50, 55, 1),
+                                                foregroundColor:
+                                                    const Color.fromARGB(
+                                                        204, 255, 255, 255),
+                                                padding: const EdgeInsets
+                                                    .symmetric(
+                                                    horizontal: 110,
+                                                    vertical:
+                                                        13), // fixed padding
+                                                shape: RoundedRectangleBorder(
+                                                  borderRadius:
+                                                      BorderRadius.circular(25),
+                                                ),
+                                              ),
+                                              onPressed: () async {
+                                                _submitForm();
+                                              },
+                                              child: const Text("Submit"),
+                                            ),
+                                          ),
+                                          SizedBox(height: 15),
+                                        ]),
+                                  ),
+                                ),
                               ),
-                            ),
-                          ),
                   ),
                 ),
               ],
