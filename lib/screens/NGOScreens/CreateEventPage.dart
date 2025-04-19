@@ -623,11 +623,13 @@ class _CreateEventPageState extends State<CreateEventPage> {
                             print(eventProvider.event.UNGoals);
                             eventService.updateEvent(eventProvider.event);
 
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => NgoLandingPage()),
-                            );
+                            // Navigator.push(
+                            //   context,
+                            //   MaterialPageRoute(
+                            //       builder: (context) => NgoLandingPage()),
+                            // );
+
+                             Navigator.pop(context); 
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: AppColors.darkGreen,
@@ -685,11 +687,14 @@ class _CreateEventPageState extends State<CreateEventPage> {
                         print(eventProvider.event.UNGoals);
                         eventService.updateEvent(eventProvider.event);
 
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => NgoLandingPage()),
-                        );
+                        // Navigator.push(
+                        //   context,
+                        //   MaterialPageRoute(
+                        //       builder: (context) => NgoLandingPage()),
+                        // );
+
+                        Navigator.pop(context); // returns to NgoHomePage
+
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.lightGreen,
