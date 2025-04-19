@@ -6,6 +6,7 @@ import 'package:sustainfy/model/ngoModel.dart';
 import 'package:sustainfy/providers/userProvider.dart';
 import 'package:sustainfy/screens/NGOScreens/NgoLoginPage.dart';
 import 'package:sustainfy/screens/NGOScreens/NgoSettingsPage.dart';
+import 'package:sustainfy/screens/RoleLoginPage.dart';
 import 'package:sustainfy/services/encryptServive.dart';
 import 'package:sustainfy/services/userOperations.dart';
 import 'package:sustainfy/utils/font.dart';
@@ -83,14 +84,16 @@ class _NgoProfilePageState extends State<NgoProfilePage> {
         await operations.reAuthenticateAndDelete(userEmail, userPass);
     isLoading = false;
     setState(() {}); // Trigger a rebuild to hide loading state
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(result)),
-    );
+    if (result=="User account deleted successfully.") {
+      showFloatingSuccess(context, result);
+    } else {
+      showFloatingWarning(context, result);
+    }
 
     if (result == "User account deleted successfully.") {
       // Navigate user to login or home screen
       Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(builder: (context) => NgoLoginPage()),
+        MaterialPageRoute(builder: (context) => RoleLoginPage()),
         (Route<dynamic> route) => false, // Clears all previous screens
       );
     }
@@ -494,7 +497,7 @@ class _NgoProfilePageState extends State<NgoProfilePage> {
                               // Navigate to login, removing all previous routes
                               Navigator.of(context).pushAndRemoveUntil(
                                 MaterialPageRoute(
-                                    builder: (context) => NgoLoginPage()),
+                                    builder: (context) => RoleLoginPage()),
                                 (Route<dynamic> route) =>
                                     false, // Clears all previous screens
                               );

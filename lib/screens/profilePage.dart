@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import 'package:sustainfy/model/couponModel.dart';
 import 'package:sustainfy/model/userModel.dart';
 import 'package:sustainfy/providers/userProvider.dart';
+import 'package:sustainfy/screens/RoleLoginPage.dart';
 import 'package:sustainfy/screens/completedEventsScreen.dart';
 import 'package:sustainfy/screens/discountDetailsPage.dart';
 import 'package:sustainfy/screens/login.dart';
@@ -103,24 +104,26 @@ class _ProfilePageState extends State<ProfilePage> {
     setState(() {}); // Trigger a rebuild to show loading state
     String userEmail =
         Provider.of<userProvider>(context, listen: false).email ?? '';
-    String encryptPass = Provider.of<userProvider>(context, listen: false).password ?? '';
+    String encryptPass =
+        Provider.of<userProvider>(context, listen: false).password ?? '';
     print(encryptPass);
     String userPass = EncryptionService().decryptData(encryptPass);
-    String result = await operations.reAuthenticateAndDelete(userEmail, userPass);
+    String result =
+        await operations.reAuthenticateAndDelete(userEmail, userPass);
     isLoading = false;
     setState(() {}); // Trigger a rebuild to hide loading state
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(result)),
-    );
+    if (result=="User account deleted successfully.") {
+      showFloatingSuccess(context, result);
+    } else {
+      showFloatingWarning(context, result);
+    }
 
     if (result == "User account deleted successfully.") {
       // Navigate user to login or home screen
       Navigator.of(context).pushAndRemoveUntil(
-                                MaterialPageRoute(
-                                    builder: (context) => Login()),
-                                (Route<dynamic> route) =>
-                                    false, // Clears all previous screens
-                              ); 
+        MaterialPageRoute(builder: (context) => Login()),
+        (Route<dynamic> route) => false, // Clears all previous screens
+      );
     }
   }
 
@@ -151,45 +154,44 @@ class _ProfilePageState extends State<ProfilePage> {
       overlayEntry.remove();
     });
   }
-  
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        body: Column(
-      children: [
-        ClipPath(
-          clipper: CustomCurvedEdges(),
-          child: Container(
-            height: 150, 
-            color: const Color.fromRGBO(52, 168, 83, 1),
-            padding: EdgeInsets.symmetric(horizontal: 15), 
-            child: Row(
-              crossAxisAlignment:
-                  CrossAxisAlignment.center, 
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: [
-                Image.asset(
-                  'assets/images/SustainifyLogo.png',
-                  width: 50, 
-                  height: 60, 
-                ),
-              ],
+      body: Column(
+        children: [
+          // Header
+          ClipPath(
+            clipper: CustomCurvedEdges(),
+            child: Container(
+              height: 150,
+              color: const Color.fromRGBO(52, 168, 83, 1),
+              padding: EdgeInsets.symmetric(horizontal: 15),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  Image.asset(
+                    'assets/images/SustainifyLogo.png',
+                    width: 50,
+                    height: 60,
+                  ),
+                ],
+              ),
             ),
           ),
-        ),
 
-          // Scrollable Content
-          Positioned.fill(
-            top: 140, // Adjust to avoid overlap
+          // Expanded scrollable content
+          Expanded(
             child: Container(
-              color: Colors.white, // Fix white screen issue
+              color: Colors.white,
               child: SingleChildScrollView(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // User Details Section
+                    // User Info
                     SizedBox(height: 10),
-                    Container(
+                    Padding(
                       padding: EdgeInsets.symmetric(horizontal: 10),
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.center,
@@ -214,7 +216,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                           .email!
                                           .split("@")[0],
                                   style: TextStyle(
-                                    color: const Color.fromRGBO(50, 50, 55, 1),
+                                    color: Color.fromRGBO(50, 50, 55, 1),
                                     fontSize: 20,
                                     fontWeight: FontWeight.bold,
                                   ),
@@ -226,7 +228,9 @@ class _ProfilePageState extends State<ProfilePage> {
                                 ),
                                 SizedBox(height: 4),
                                 Text(
-                                  '${_user?.userPhone != null ? "+91 ${_user?.userPhone}" : "N/A"}',
+                                  _user?.userPhone != null
+                                      ? "+91 ${_user!.userPhone}"
+                                      : "N/A",
                                   style: TextStyle(
                                       fontSize: 16, color: Colors.grey[600]),
                                 ),
@@ -243,7 +247,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       ),
                     ),
 
-                    // Category Buttons Section
+                    // Category Buttons
                     SizedBox(height: 20),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.start,
@@ -281,80 +285,82 @@ class _ProfilePageState extends State<ProfilePage> {
                     ),
                     SizedBox(height: 20),
 
-                    // Settings Section
+                    // Settings
                     isLoading
-                          ? Center(child: CircularProgressIndicator())
-                          :Container(
-                      padding: EdgeInsets.symmetric(horizontal: 25),
-                      child: Column(
-                        children: [
-                          ListTile(
-                            contentPadding: EdgeInsets.zero,
-                            title: Text(
-                              'Certificates',
-                              style: TextStyle(
-                                  color: const Color.fromRGBO(50, 50, 55, 1),
-                                  fontSize: 20),
+                        ? Center(child: CircularProgressIndicator())
+                        : Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 25),
+                            child: Column(
+                              children: [
+                                ListTile(
+                                  contentPadding: EdgeInsets.zero,
+                                  title: Text(
+                                    'Certificates',
+                                    style: TextStyle(
+                                        color: Color.fromRGBO(50, 50, 55, 1),
+                                        fontSize: 20),
+                                  ),
+                                  trailing: Icon(Icons.arrow_forward_ios),
+                                  onTap: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) =>
+                                            CompletedEventsScreen(),
+                                      ),
+                                    );
+                                  },
+                                ),
+                                Divider(),
+                                ListTile(
+                                  contentPadding: EdgeInsets.zero,
+                                  title: Text(
+                                    'Settings',
+                                    style: TextStyle(
+                                        color: Color.fromRGBO(50, 50, 55, 1),
+                                        fontSize: 20),
+                                  ),
+                                  trailing: Icon(Icons.arrow_forward_ios),
+                                  onTap: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (context) => SettingsPage()),
+                                    );
+                                  },
+                                ),
+                                Divider(),
+                                ListTile(
+                                  contentPadding: EdgeInsets.zero,
+                                  title: Text(
+                                    'Log out',
+                                    style: TextStyle(
+                                        color: Color.fromRGBO(50, 50, 55, 1),
+                                        fontSize: 20),
+                                  ),
+                                  trailing: Icon(Icons.arrow_forward_ios),
+                                  onTap: () {
+                                    showLogoutModal(context);
+                                  },
+                                ),
+                                Divider(),
+                                ListTile(
+                                  contentPadding: EdgeInsets.zero,
+                                  title: Text(
+                                    'Delete Account',
+                                    style: TextStyle(
+                                        color: Colors.red, fontSize: 20),
+                                  ),
+                                  trailing: Icon(Icons.arrow_forward_ios,
+                                      color: Colors.red),
+                                  onTap: () {
+                                    showDeleteAccModal(context);
+                                  },
+                                ),
+                                SizedBox(height: 10),
+                              ],
                             ),
-                            trailing: Icon(Icons.arrow_forward_ios),
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) =>
-                                        CompletedEventsScreen()),
-                              );
-                            },
                           ),
-                          Divider(),
-                          ListTile(
-                            contentPadding: EdgeInsets.zero,
-                            title: Text(
-                              'Settings',
-                              style: TextStyle(
-                                  color: const Color.fromRGBO(50, 50, 55, 1),
-                                  fontSize: 20),
-                            ),
-                            trailing: Icon(Icons.arrow_forward_ios),
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) => SettingsPage()),
-                              );
-                            },
-                          ),
-                          Divider(),
-                          ListTile(
-                            contentPadding: EdgeInsets.zero,
-                            title: Text('Log out',
-                                style: TextStyle(
-                                    color: const Color.fromRGBO(50, 50, 55, 1),
-                                    fontSize: 20)),
-                            trailing: Icon(Icons.arrow_forward_ios),
-                            onTap: () {
-                              showLogoutModal(context);
-                            },
-                          ),
-                          Divider(),
-                          ListTile(
-                            contentPadding: EdgeInsets.zero,
-                            title: Text(
-                              'Delete Account',
-                              style: TextStyle(color: Colors.red, fontSize: 20),
-                            ),
-                            trailing: Icon(Icons.arrow_forward_ios,
-                                color: Colors.red),
-                            onTap: () {
-                              showDeleteAccModal(context);
-                            },
-                          ),
-                          SizedBox(
-                            height: 10,
-                          )
-                        ],
-                      ),
-                    ),
                   ],
                 ),
               ),
@@ -602,7 +608,7 @@ class _ProfilePageState extends State<ProfilePage> {
                               // Navigate to login, removing all previous routes
                               Navigator.of(context).pushAndRemoveUntil(
                                 MaterialPageRoute(
-                                    builder: (context) => Login()),
+                                    builder: (context) => RoleLoginPage()),
                                 (Route<dynamic> route) =>
                                     false, // Clears all previous screens
                               );
@@ -690,7 +696,7 @@ class _ProfilePageState extends State<ProfilePage> {
                           ),
                           onPressed: () {
                             Navigator.of(context).pop(); // Close modal
-                             _handleDeleteAccount();
+                            _handleDeleteAccount();
                             // Add logout logic here
                           },
                           child: Text(
