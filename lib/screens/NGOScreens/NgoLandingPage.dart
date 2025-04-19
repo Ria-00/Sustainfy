@@ -141,9 +141,9 @@ class _NgoLandingPageState extends State<NgoLandingPage> {
                     context,
                     MaterialPageRoute(
                         builder: (context) => CreateEventPage(
-                              existingEvent: null,
-                              showSaveEditButtons: false,
-                            )),
+                            existingEvent: null,
+                            showSaveEditButtons: false,
+                            clearForm: true)),
                   );
                 },
                 backgroundColor: Colors.green,
@@ -352,113 +352,112 @@ class _NgoLandingPageState extends State<NgoLandingPage> {
     return months[month - 1];
   }
 
- Widget buildLiveActivitiesSection(
-    String title, String imagePath, Color color, String status) {
-  List<EventModel> filteredEvents =
-      events.where((event) => event.eventStatus == status).toList();
+  Widget buildLiveActivitiesSection(
+      String title, String imagePath, Color color, String status) {
+    List<EventModel> filteredEvents =
+        events.where((event) => event.eventStatus == status).toList();
 
-  return Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-        child: Row(
-          children: [
-            Container(
-              decoration: BoxDecoration(
-                color: color.withOpacity(0.2),
-                borderRadius: BorderRadius.circular(50),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+          child: Row(
+            children: [
+              Container(
+                decoration: BoxDecoration(
+                  color: color.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(50),
+                ),
+                padding: EdgeInsets.all(3),
+                child: Image.asset(
+                  imagePath,
+                  width: 25,
+                  height: 25,
+                  color: color,
+                ),
               ),
-              padding: EdgeInsets.all(3),
-              child: Image.asset(
+              SizedBox(width: 6),
+              Text(
+                title,
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+            ],
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.only(left: 10, right: 10, bottom: 5),
+          child: filteredEvents.isNotEmpty
+              ? Column(
+                  children: List.generate(
+                    filteredEvents.length,
+                    (index) => Padding(
+                      padding:
+                          const EdgeInsets.only(bottom: 10), // Added spacing
+                      child: buildEvent(filteredEvents[index]),
+                    ),
+                  ),
+                )
+              : Center(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 5),
+                    child: Text("No events available",
+                        style: TextStyle(color: Colors.grey, fontSize: 14)),
+                  ),
+                ),
+        ),
+      ],
+    );
+  }
+
+  Widget buildPublishedSection(String title, String imagePath, String status) {
+    List<EventModel> filteredEvents =
+        events.where((event) => event.eventStatus == status).toList();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+          child: Row(
+            children: [
+              Image.asset(
                 imagePath,
-                width: 25,
-                height: 25,
-                color: color,
+                width: 50,
+                height: 50,
               ),
-            ),
-            SizedBox(width: 6),
-            Text(
-              title,
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-          ],
+              SizedBox(width: 6),
+              Text(
+                title,
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+            ],
+          ),
         ),
-      ),
-      Padding(
-        padding: const EdgeInsets.only(left: 10, right: 10, bottom: 5),
-        child: filteredEvents.isNotEmpty
-            ? Column(
-                children: List.generate(
-                  filteredEvents.length,
-                  (index) => Padding(
-                    padding: const EdgeInsets.only(bottom: 10), // Added spacing
-                    child: buildEvent(filteredEvents[index]),
-
+        Padding(
+          padding: const EdgeInsets.only(left: 10, right: 10, bottom: 5),
+          child: filteredEvents.isNotEmpty
+              ? Column(
+                  children: List.generate(
+                    filteredEvents.length,
+                    (index) => Padding(
+                      padding:
+                          const EdgeInsets.only(bottom: 10), // Added spacing
+                      child: buildEvent(filteredEvents[index]),
+                    ),
+                  ),
+                )
+              : Center(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 5),
+                    child: Text("No events available",
+                        style: TextStyle(color: Colors.grey, fontSize: 14)),
                   ),
                 ),
-              )
-            : Center(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 5),
-                  child: Text("No events available",
-                      style: TextStyle(color: Colors.grey, fontSize: 14)),
-                ),
-              ),
-      ),
-    ],
-  );
-}
-
-Widget buildPublishedSection(String title, String imagePath, String status) {
-  List<EventModel> filteredEvents =
-      events.where((event) => event.eventStatus == status).toList();
-
-  return Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-        child: Row(
-          children: [
-            Image.asset(
-              imagePath,
-              width: 50,
-              height: 50,
-            ),
-            SizedBox(width: 6),
-            Text(
-              title,
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-          ],
         ),
-      ),
-      Padding(
-        padding: const EdgeInsets.only(left: 10, right: 10, bottom: 5),
-        child: filteredEvents.isNotEmpty
-            ? Column(
-                children: List.generate(
-                  filteredEvents.length,
-                  (index) => Padding(
-                    padding: const EdgeInsets.only(bottom: 10), // Added spacing
-                    child: buildEvent(filteredEvents[index]),
-
-                  ),
-                ),
-              )
-            : Center(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 5),
-                  child: Text("No events available",
-                      style: TextStyle(color: Colors.grey, fontSize: 14)),
-                ),
-              ),
-      ),
-    ],
-  );
-}
-
+      ],
+    );
+  }
 
   Widget buildDraftsSection(String draftImagePath) {
     return Column(
@@ -505,7 +504,7 @@ Widget buildPublishedSection(String title, String imagePath, String status) {
                             child: buildEvent(draftEvents[index]),
                           ),
                           Positioned(
-                            top: 10,
+                            bottom: 10,
                             right: 20,
                             child: IconButton(
                               icon: Icon(Icons.edit, color: Colors.blue),
@@ -514,8 +513,10 @@ Widget buildPublishedSection(String title, String imagePath, String status) {
                                   context,
                                   MaterialPageRoute(
                                     builder: (context) => CreateEventPage(
-                                        existingEvent: draftEvents[index],
-                                        showSaveEditButtons: true),
+                                      existingEvent: draftEvents[index],
+                                      showSaveEditButtons: true,
+                                      clearForm: false,
+                                    ),
                                   ),
                                 );
 
