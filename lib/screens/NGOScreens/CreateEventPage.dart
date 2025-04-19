@@ -229,7 +229,7 @@ class _CreateEventPageState extends State<CreateEventPage> {
                       icon: Icon(Icons.arrow_back_ios, color: Colors.white),
                       onPressed: () => Navigator.pop(context),
                     ),
-                    SizedBox(width: 7),
+                    SizedBox(width: 5),
                     
                   ],
                 ),
