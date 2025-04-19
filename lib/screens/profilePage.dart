@@ -185,183 +185,189 @@ class _ProfilePageState extends State<ProfilePage> {
           Expanded(
             child: Container(
               color: Colors.white,
-              child: SingleChildScrollView(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // User Info
-                    SizedBox(height: 10),
-                    Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 10),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          CircleAvatar(
-                            radius: 40,
-                            backgroundImage: _user?.userImg != null
-                                ? NetworkImage(_user!.userImg!)
-                                : null,
-                            child: _user?.userImg == null
-                                ? Icon(Icons.image_not_supported)
-                                : null,
-                          ),
-                          SizedBox(width: 30),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  _user?.userName ??
-                                      Provider.of<userProvider>(context)
-                                          .email!
-                                          .split("@")[0],
-                                  style: TextStyle(
-                                    color: Color.fromRGBO(50, 50, 55, 1),
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                Text(
-                                  _user?.userMail ?? "Unknown",
-                                  style: TextStyle(
-                                      fontSize: 16, color: Colors.grey[600]),
-                                ),
-                                SizedBox(height: 4),
-                                Text(
-                                  _user?.userPhone != null
-                                      ? "+91 ${_user!.userPhone}"
-                                      : "N/A",
-                                  style: TextStyle(
-                                      fontSize: 16, color: Colors.grey[600]),
-                                ),
-                              ],
+              child: SafeArea(
+                child: SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // User Info
+                      SizedBox(height: 10),
+                      Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 10),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            CircleAvatar(
+                              radius: 40,
+                              backgroundImage: _user?.userImg != null
+                                  ? NetworkImage(_user!.userImg!)
+                                  : null,
+                              child: _user?.userImg == null
+                                  ? Icon(Icons.image_not_supported)
+                                  : null,
                             ),
-                          ),
-                          IconButton(
-                            icon: Icon(Icons.edit),
-                            onPressed: () {
-                              showEditProfileModal(context);
-                            },
-                          ),
+                            SizedBox(width: 30),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    _user?.userName ??
+                                        Provider.of<userProvider>(context)
+                                            .email!
+                                            .split("@")[0],
+                                    style: TextStyle(
+                                      color: Color.fromRGBO(50, 50, 55, 1),
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  Text(
+                                    _user?.userMail ?? "Unknown",
+                                    style: TextStyle(
+                                        fontSize: 16, color: Colors.grey[600]),
+                                  ),
+                                  SizedBox(height: 4),
+                                  Text(
+                                    _user?.userPhone != null
+                                        ? "+91 ${_user!.userPhone}"
+                                        : "N/A",
+                                    style: TextStyle(
+                                        fontSize: 16, color: Colors.grey[600]),
+                                  ),
+                                ],
+                              ),
+
+                            ),
+                            IconButton(
+                              icon: Icon(Icons.edit),
+                              onPressed: () {
+                                showEditProfileModal(context);
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      // Category Buttons
+                      SizedBox(height: 20),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: [
+                          SizedBox(width: 55),
+                          _buildCategoryButton("Used", Icons.history),
+                          SizedBox(width: 85),
+                          _buildCategoryButton("Wishlist", Icons.favorite),
                         ],
                       ),
-                    ),
 
-                    // Category Buttons
-                    SizedBox(height: 20),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: [
-                        SizedBox(width: 55),
-                        _buildCategoryButton("Used", Icons.history),
-                        SizedBox(width: 85),
-                        _buildCategoryButton("Wishlist", Icons.favorite),
-                      ],
-                    ),
+                      SizedBox(height: 10),
 
-                    SizedBox(height: 10),
-
-                    // Grid Section
-                    GridView.builder(
-                      shrinkWrap: true,
-                      physics: NeverScrollableScrollPhysics(),
-                      padding:
-                          EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 2,
-                        mainAxisSpacing: 10,
-                        crossAxisSpacing: 10,
-                        childAspectRatio: 1.22,
+                      // Grid Section
+                      GridView.builder(
+                        shrinkWrap: true,
+                        physics: NeverScrollableScrollPhysics(),
+                        padding:
+                            EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2,
+                          mainAxisSpacing: 10,
+                          crossAxisSpacing: 10,
+                          childAspectRatio: 0.75, // Lower to make cards taller
+                        ),
+                        itemCount: currentCategory == "Used"
+                            ? _usedCoupons.length
+                            : _wishlistCoupons.length,
+                        itemBuilder: (context, index) {
+                          CouponModel coupon = currentCategory == "Used"
+                              ? _usedCoupons[index]
+                              : _wishlistCoupons[index];
+                          return _buildCard(coupon);
+                        },
                       ),
-                      itemCount: currentCategory == "Used"
-                          ? _usedCoupons.length
-                          : _wishlistCoupons.length,
-                      itemBuilder: (context, index) {
-                        CouponModel coupon = currentCategory == "Used"
-                            ? _usedCoupons[index]
-                            : _wishlistCoupons[index];
-                        return _buildCard(coupon);
-                      },
-                    ),
-                    SizedBox(height: 20),
 
-                    // Settings
-                    isLoading
-                        ? Center(child: CircularProgressIndicator())
-                        : Padding(
-                            padding: EdgeInsets.symmetric(horizontal: 25),
-                            child: Column(
-                              children: [
-                                ListTile(
-                                  contentPadding: EdgeInsets.zero,
-                                  title: Text(
-                                    'Certificates',
-                                    style: TextStyle(
-                                        color: Color.fromRGBO(50, 50, 55, 1),
-                                        fontSize: 20),
+                      SizedBox(height: 20),
+
+                      // Settings
+                      isLoading
+                          ? Center(child: CircularProgressIndicator())
+                          : Padding(
+                              padding: EdgeInsets.symmetric(horizontal: 25),
+                              child: Column(
+                                children: [
+                                  ListTile(
+                                    contentPadding: EdgeInsets.zero,
+                                    title: Text(
+                                      'Certificates',
+                                      style: TextStyle(
+                                          color: Color.fromRGBO(50, 50, 55, 1),
+                                          fontSize: 20),
+                                    ),
+                                    trailing: Icon(Icons.arrow_forward_ios),
+                                    onTap: () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) =>
+                                              CompletedEventsScreen(),
+                                        ),
+                                      );
+                                    },
                                   ),
-                                  trailing: Icon(Icons.arrow_forward_ios),
-                                  onTap: () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) =>
-                                            CompletedEventsScreen(),
-                                      ),
-                                    );
-                                  },
-                                ),
-                                Divider(),
-                                ListTile(
-                                  contentPadding: EdgeInsets.zero,
-                                  title: Text(
-                                    'Settings',
-                                    style: TextStyle(
-                                        color: Color.fromRGBO(50, 50, 55, 1),
-                                        fontSize: 20),
+                                  Divider(),
+                                  ListTile(
+                                    contentPadding: EdgeInsets.zero,
+                                    title: Text(
+                                      'Settings',
+                                      style: TextStyle(
+                                          color: Color.fromRGBO(50, 50, 55, 1),
+                                          fontSize: 20),
+                                    ),
+                                    trailing: Icon(Icons.arrow_forward_ios),
+                                    onTap: () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                            builder: (context) =>
+                                                SettingsPage()),
+                                      );
+                                    },
                                   ),
-                                  trailing: Icon(Icons.arrow_forward_ios),
-                                  onTap: () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                          builder: (context) => SettingsPage()),
-                                    );
-                                  },
-                                ),
-                                Divider(),
-                                ListTile(
-                                  contentPadding: EdgeInsets.zero,
-                                  title: Text(
-                                    'Log out',
-                                    style: TextStyle(
-                                        color: Color.fromRGBO(50, 50, 55, 1),
-                                        fontSize: 20),
+                                  Divider(),
+                                  ListTile(
+                                    contentPadding: EdgeInsets.zero,
+                                    title: Text(
+                                      'Log out',
+                                      style: TextStyle(
+                                          color: Color.fromRGBO(50, 50, 55, 1),
+                                          fontSize: 20),
+                                    ),
+                                    trailing: Icon(Icons.arrow_forward_ios),
+                                    onTap: () {
+                                      showLogoutModal(context);
+                                    },
                                   ),
-                                  trailing: Icon(Icons.arrow_forward_ios),
-                                  onTap: () {
-                                    showLogoutModal(context);
-                                  },
-                                ),
-                                Divider(),
-                                ListTile(
-                                  contentPadding: EdgeInsets.zero,
-                                  title: Text(
-                                    'Delete Account',
-                                    style: TextStyle(
-                                        color: Colors.red, fontSize: 20),
+                                  Divider(),
+                                  ListTile(
+                                    contentPadding: EdgeInsets.zero,
+                                    title: Text(
+                                      'Delete Account',
+                                      style: TextStyle(
+                                          color: Colors.red, fontSize: 20),
+                                    ),
+                                    trailing: Icon(Icons.arrow_forward_ios,
+                                        color: Colors.red),
+                                    onTap: () {
+                                      showDeleteAccModal(context);
+                                    },
                                   ),
-                                  trailing: Icon(Icons.arrow_forward_ios,
-                                      color: Colors.red),
-                                  onTap: () {
-                                    showDeleteAccModal(context);
-                                  },
-                                ),
-                                SizedBox(height: 10),
-                              ],
+                                  SizedBox(height: 10),
+                                ],
+                              ),
                             ),
-                          ),
-                  ],
+                    ],
+                  ),
+
                 ),
               ),
             ),
@@ -491,11 +497,8 @@ class _ProfilePageState extends State<ProfilePage> {
                               SizedBox(height: 40),
                               ElevatedButton(
                                 style: ElevatedButton.styleFrom(
-                                  padding: EdgeInsets.only(
-                                      left: 170,
-                                      right: 170,
-                                      top: 15,
-                                      bottom: 15),
+                                  minimumSize: Size(
+                                      250, 50), // Adjust width and height here
                                   backgroundColor: Colors.black,
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(20),
@@ -765,8 +768,6 @@ class _ProfilePageState extends State<ProfilePage> {
     return GestureDetector(
       onTap: currentCategory == "Wishlist"
           ? () {
-              // Only enable onTap for wishlist
-              // Redirect to discount page for detailed info for wishlist part
               Navigator.push(
                 context,
                 MaterialPageRoute(
@@ -776,100 +777,72 @@ class _ProfilePageState extends State<ProfilePage> {
                 ),
               );
             }
-          : null, // No onTap for other categories
+          : null,
       child: Card(
         elevation: 3,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(10),
         ),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 17, vertical: 10),
-          child: IntrinsicHeight(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Center(
+        child: Container(
+          padding: const EdgeInsets.all(12),
+          height: 190, // ✅ Increased height to fix overflow
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: SizedBox(
+                  height: 50,
                   child: FutureBuilder<String?>(
                     future: operations.getCompanyImage(
-                      FirebaseFirestore.instance.collection('companies').doc(
-                          coupon.compRef.id), // Convert to DocumentReference
+                      FirebaseFirestore.instance
+                          .collection('companies')
+                          .doc(coupon.compRef.id),
                     ),
                     builder: (context, snapshot) {
-                      if (snapshot.hasError) {
-                        print(
-                            "Error: ${snapshot.error}"); // Print the error for debugging
-                        return Icon(Icons.error); // Show an error icon
-                      }
+                      if (snapshot.hasError) return Icon(Icons.error);
                       if (snapshot.connectionState == ConnectionState.waiting) {
-                        return CircularProgressIndicator(); // Show a loading indicator
+                        return Center(child: CircularProgressIndicator());
                       }
-                      if (!snapshot.hasData || snapshot.data == null) {
-                        return Icon(Icons
-                            .image_not_supported); // Show a placeholder icon
+                      if (!snapshot.hasData) {
+                        return Icon(Icons.image_not_supported);
                       }
                       return Image.network(
                         snapshot.data!,
-                        width: double.infinity,
-                        height: 50,
                         fit: BoxFit.contain,
                       );
                     },
                   ),
                 ),
-                SizedBox(height: 10),
-                Flexible(
+              ),
+              Text(
+                coupon.couponDesc,
+                style: TextStyle(
+                  fontSize: 14,
+                  fontFamily: AppFonts.inter,
+                  fontWeight: AppFonts.interSemiBoldWeight,
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: AppColors.pointsContainerReward,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
                   child: Text(
-                    coupon.couponDesc,
-                    style: TextStyle(
-                      fontSize: 15,
-                      fontFamily: AppFonts.inter,
-                      fontWeight: AppFonts.interSemiBoldWeight,
-                    ),
-                    maxLines: 1, // Ensures 2-line limit
-                    overflow: TextOverflow
-                        .ellipsis, // Adds "..." when text is too long
-                    softWrap: true,
+                    currentCategory == "Used"
+                        ? "Redeemed for ${coupon.couponPoint} pts"
+                        : "${coupon.couponPoint} pts",
+                    style: const TextStyle(fontSize: 13, color: Colors.white),
                   ),
                 ),
-                SizedBox(height: 15),
-                if (currentCategory == "Wishlist")
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        "Redeem for",
-                        style: TextStyle(fontSize: 15, color: Colors.black),
-                      ),
-                      Container(
-                        padding:
-                            EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-                        decoration: BoxDecoration(
-                          color: AppColors.pointsContainerReward,
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Text(
-                          "${coupon.couponPoint} pts",
-                          style: TextStyle(fontSize: 15, color: Colors.white),
-                        ),
-                      ),
-                    ],
-                  )
-                else
-                  Container(
-                    padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                    decoration: BoxDecoration(
-                      color: AppColors.pointsContainerReward,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Text(
-                      currentCategory == "Used"
-                          ? "Redeemed for ${coupon.couponPoint} pts"
-                          : "${coupon.couponPoint} pts",
-                      style: TextStyle(fontSize: 13, color: Colors.white),
-                    ),
-                  ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),
