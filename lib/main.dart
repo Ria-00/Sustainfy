@@ -23,7 +23,7 @@ void main() async {
 
   await Firebase.initializeApp(
       options: FirebaseOptions(
-          apiKey: 'AIzaSyD3D59Md0l0SAWFc-mXGW7OL-PpATwDt3A',
+          apiKey: dotenv.env['FLUTTER_API'] ?? '',
           appId: '1:196279097755:android:6ce90ad38c4fa056bbe93e',
           messagingSenderId: '196279097755',
           projectId: 'sustainfy-7e1ab'));

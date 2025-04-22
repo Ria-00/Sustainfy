@@ -1,10 +1,10 @@
 import 'dart:convert';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 
 class UnsplashService {
   static const String _baseUrl = 'https://api.unsplash.com';
-  static const String _accessKey =
-      'L9ERMk14TpJIUdjZ2XT3GasoviIdOc9JAFKb31Cbo64'; // Replace this with your real key
+  static String _accessKey = dotenv.env['UNSPLASH_API'] ?? ''; 
 
   static Future<String?> fetchImageUrl(String query) async {
     final url = Uri.parse(

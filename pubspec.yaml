@@ -60,6 +60,7 @@ dependencies:
   encrypt: ^5.0.3
 
 dev_dependencies:
+  flutter_launcher_icons: ^0.13.1
   flutter_test:
     sdk: flutter
 
@@ -72,6 +73,11 @@ dev_dependencies:
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/images/suslogo.png"  # your icon image path
 
 # The following section is specific to Flutter packages.
 flutter:

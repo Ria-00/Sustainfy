@@ -1,10 +1,9 @@
 import 'dart:convert';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 
 class GeminiService {
-  // final String apiKey = dotenv.env['GEMINI_API_KEY'] ?? '';
-
-  final String apiKey = "AIzaSyDavRc6oLdOoh4Wzjn__qz7if0n0o6mhSU";
+  final String apiKey = dotenv.env['GEMINI_API_KEY'] ?? '';
 
   Future<Map<String, dynamic>> categorizeEvent(
       String title, String description) async {
