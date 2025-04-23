@@ -10,8 +10,11 @@ class UserClass {
   int? totalPoints;
   List<dynamic>? claimedCoupons; // List of claimed coupon IDs
   List<dynamic>? userWishlist; // List of wished items
+  int? csHours; // Community service hours
+  DocumentReference? orgRef; // Reference to the NGO
+  
 
-  UserClass({
+   UserClass({
     required this.userMail,
     this.userPassword,
     this.userName,
@@ -21,7 +24,10 @@ class UserClass {
     this.totalPoints = 0,
     this.claimedCoupons = const [],
     this.userWishlist = const [],
-  });
+    this.csHours = 0,
+    DocumentReference? orgRef,
+  }) : orgRef = orgRef ?? FirebaseFirestore.instance.doc('organizations/none'); // Default to placeholder if not provided
+
 
     UserClass.register({
     required this.userName,
@@ -46,7 +52,9 @@ class UserClass {
       "userPoints": userPoints,
       "totalPoints": totalPoints,
       "claimedCoupons": claimedCoupons,
-      "userWishlist": userWishlist
+      "userWishlist": userWishlist,
+      "csHours": csHours,
+      "orgRef": orgRef,
     };
   }
 
@@ -62,6 +70,8 @@ class UserClass {
       totalPoints: map["totalPoints"] ?? 0,
       claimedCoupons: List<dynamic>.from(map["claimedCoupons"] ?? []),
       userWishlist: List<dynamic>.from(map["userWishlist"] ?? []),
+      csHours: map["csHours"] ?? 0,
+      orgRef: map["orgRef"] ?? FirebaseFirestore.instance.doc('organizations/none'), // Use default if not present
     );
   }
 

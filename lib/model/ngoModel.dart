@@ -9,6 +9,7 @@ class Ngo {
   String? ngoImg;
   String ngoPassword;
   GeoPoint? ngoLoc;
+  DocumentReference? orgRef; // Reference to the org
 
   Ngo({
     required this.ngoId,
@@ -19,7 +20,9 @@ class Ngo {
     this.ngoImg,
     required this.ngoPassword,
     required this.ngoLoc,
-  });
+  DocumentReference? orgRef,
+  }) : orgRef = orgRef ?? FirebaseFirestore.instance.doc('organizations/none'); // Default to placeholder if not provided
+
 
   Ngo.log({
     required this.ngoMail,
@@ -41,6 +44,8 @@ class Ngo {
       ngoLoc: json['ngoLoc'] is GeoPoint
           ? json['ngoLoc']
           : GeoPoint(json['ngoLoc']['latitude'], json['ngoLoc']['longitude']),
+      orgRef: json["orgRef"] ?? FirebaseFirestore.instance.doc('organizations/none'), // Use default if not present
+       
     );
   }
 
@@ -57,6 +62,7 @@ class Ngo {
 
       // ✅ No need to convert GeoPoint manually, Firestore supports it
       'ngoLoc': ngoLoc,
+      "orgRef": orgRef,
     };
   }
 }

@@ -83,32 +83,6 @@ class _CouponModelPageState extends State<CouponPage> {
                       height: 60,
                     ),
                   ),
-                  SizedBox(width: 17),
-                  Expanded(
-                    child: TextField(
-                      decoration: InputDecoration(
-                        hintText: 'Search a coupon...',
-                        hintStyle: TextStyle(
-                          color: AppColors.white,
-                          fontFamily: AppFonts.inter,
-                          fontWeight: AppFonts.interRegularWeight,
-                        ),
-                        prefixIcon: Icon(
-                          Icons.search,
-                          color: AppColors.white,
-                        ),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(25.0),
-                          borderSide: BorderSide.none,
-                        ),
-                        filled: true,
-                        fillColor: Colors.white.withOpacity(0.1),
-                      ),
-                    ),
-                  ),
-                  SizedBox(
-                    width: 15,
-                  )
                 ],
               ),
             ),

@@ -690,6 +690,84 @@ class UserClassOperations {
     }
   }
 
+  Future<String> getOrgName(String userMail) async {
+  try {
+    // Get the user document based on email
+    QuerySnapshot userSnapshot = await FirebaseFirestore.instance
+        .collection('users')
+        .where('userMail', isEqualTo: userMail)
+        .limit(1)
+        .get();
+
+    // Check if user exists
+    if (userSnapshot.docs.isEmpty) {
+      return "User not found";
+    }
+
+    DocumentSnapshot userDoc = userSnapshot.docs.first;
+    Map<String, dynamic>? userData = userDoc.data() as Map<String, dynamic>?;
+
+    // Get orgRef from user data
+    DocumentReference? orgRef = userData?['orgRef'];
+
+    if (orgRef == null) {
+      return "No organization linked";
+    }
+
+    // Get organization document
+    DocumentSnapshot orgSnapshot = await orgRef.get();
+
+    if (orgSnapshot.exists) {
+      Map<String, dynamic>? orgData =
+          orgSnapshot.data() as Map<String, dynamic>?;
+      return orgData?['uniName'] ?? "Unknown Organization";
+    } else {
+      return "Organization not found";
+    }
+  } catch (e) {
+    return "Error fetching organization name: $e";
+  }
+}
+
+Future<String> getOrgNameNgo(String userMail) async {
+  try {
+    // Get the user document based on email
+    QuerySnapshot userSnapshot = await FirebaseFirestore.instance
+        .collection('ngo')
+        .where('ngoMail', isEqualTo: userMail)
+        .limit(1)
+        .get();
+
+    // Check if user exists
+    if (userSnapshot.docs.isEmpty) {
+      return "Ngo not found";
+    }
+
+    DocumentSnapshot userDoc = userSnapshot.docs.first;
+    Map<String, dynamic>? userData = userDoc.data() as Map<String, dynamic>?;
+
+    // Get orgRef from user data
+    DocumentReference? orgRef = userData?['orgRef'];
+
+    if (orgRef == null) {
+      return "No organization linked";
+    }
+
+    // Get organization document
+    DocumentSnapshot orgSnapshot = await orgRef.get();
+
+    if (orgSnapshot.exists) {
+      Map<String, dynamic>? orgData =
+          orgSnapshot.data() as Map<String, dynamic>?;
+      return orgData?['uniName'] ?? "Unknown Organization";
+    } else {
+      return "Organization not found";
+    }
+  } catch (e) {
+    return "Error fetching organization name: $e";
+  }
+}
+
   Future<String?> getCompanyImage(DocumentReference compRef) async {
     try {
       DocumentSnapshot companyDoc = await compRef.get();
@@ -1049,6 +1127,22 @@ class UserClassOperations {
       QuerySnapshot snapshot = await firestore
           .collection("users")
           .orderBy("totalPoints", descending: true) // Sort by points
+          .get();
+
+      return snapshot.docs
+          .map((doc) => UserClass.fromMap(doc.data() as Map<String, dynamic>))
+          .toList();
+    } catch (e) {
+      print("Error fetching leaderboard users: $e");
+      return [];
+    }
+  }
+
+  Future<List<UserClass>> getAllUserHours() async {
+    try {
+      QuerySnapshot snapshot = await firestore
+          .collection("users")
+          .orderBy("csHours", descending: true) // Sort by points
           .get();
 
       return snapshot.docs

@@ -29,6 +29,7 @@ class ProfilePage extends StatefulWidget {
 
 class _ProfilePageState extends State<ProfilePage> {
   UserClass? _user;
+  String? orgName;
   UserClassOperations operations = UserClassOperations();
   TextEditingController _nameController = TextEditingController();
   TextEditingController _emailController = TextEditingController();
@@ -57,6 +58,15 @@ class _ProfilePageState extends State<ProfilePage> {
     });
   }
 
+  void _getOrgName() async{
+    String userEmail =
+        Provider.of<userProvider>(context, listen: false).email ?? '';
+    String orgName = await operations.getOrgName(userEmail);
+    setState(() {
+      this.orgName = orgName;
+    });
+  }
+
   void _getcoupons() async {
     String userEmail =
         Provider.of<userProvider>(context, listen: false).email ?? '';
@@ -75,6 +85,7 @@ class _ProfilePageState extends State<ProfilePage> {
     super.initState();
     _getuserInformation();
     _getcoupons();
+    _getOrgName();
     _addFocusListener(mobileFocusNode, _mobileController);
     _addFocusListener(emailFocusNode, _emailController);
     _addFocusListener(nameFocusNode, _nameController);
@@ -234,6 +245,15 @@ class _ProfilePageState extends State<ProfilePage> {
                                     style: TextStyle(
                                         fontSize: 16, color: Colors.grey[600]),
                                   ),
+                                  SizedBox(height: 4),
+                                  _user?.orgRef!.id != "none"
+                                        ? Text(
+                                    orgName ?? "Unknown",
+                                    style: TextStyle(
+                                        fontSize: 16, color: Colors.grey[600]),
+                                  ): SizedBox()
+                                       
+                                  
                                 ],
                               ),
                             ),
@@ -304,7 +324,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                   ListTile(
                                     contentPadding: EdgeInsets.zero,
                                     title: Text(
-                                      'Certificates',
+                                      'Certificates & CS Hours',
                                       style: TextStyle(
                                           color: Color.fromRGBO(50, 50, 55, 1),
                                           fontSize: 20),
