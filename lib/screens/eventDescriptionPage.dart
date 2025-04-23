@@ -209,25 +209,70 @@ class _EventDescriptionScreenState extends State<EventDescriptionPage> {
                             ),
 
                           // Event Points on the right
-                          Padding(
-                            padding: const EdgeInsets.only(
-                                right: 20), // Adjust right margin
-                            child: Container(
-                              padding: EdgeInsets.symmetric(
-                                  horizontal: 5, vertical: 5),
-                              decoration: BoxDecoration(
-                                color: Color.fromRGBO(220, 237, 222, 1),
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              child: Text(
-                                "${widget.event.eventPoints} Points",
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  color: Color.fromRGBO(50, 50, 55, 1),
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Container(
+                                padding: EdgeInsets.symmetric(
+                                    horizontal: 10, vertical: 6),
+                                decoration: BoxDecoration(
+                                  color: Color.fromRGBO(235, 250, 235, 1),
+                                  borderRadius: BorderRadius.circular(8),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.green.withOpacity(0.2),
+                                      blurRadius: 4,
+                                      offset: Offset(0, 2),
+                                    ),
+                                  ],
+                                ),
+                                child: Row(
+                                  children: [
+                                    Icon(Icons.stars,
+                                        size: 18, color: Colors.green[700]),
+                                    SizedBox(width: 5),
+                                    Text(
+                                      "${widget.event.eventPoints} pts",
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.w600,
+                                        color: Colors.green[900],
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
-                            ),
-                          ),
+                              SizedBox(width: 10),
+                              Container(
+                                padding: EdgeInsets.symmetric(
+                                    horizontal: 10, vertical: 6),
+                                decoration: BoxDecoration(
+                                  color: Color.fromRGBO(230, 245, 255, 1),
+                                  borderRadius: BorderRadius.circular(8),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.blue.withOpacity(0.15),
+                                      blurRadius: 4,
+                                      offset: Offset(0, 2),
+                                    ),
+                                  ],
+                                ),
+                                child: Row(
+                                  children: [
+                                    Icon(Icons.access_time,
+                                        size: 18, color: Colors.blue[700]),
+                                    SizedBox(width: 5),
+                                    Text(
+                                      "${widget.event.csHours} CS hrs",
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.w600,
+                                        color: Colors.blue[900],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          )
                         ],
                       ),
                       SizedBox(height: 10),
@@ -292,7 +337,6 @@ class _EventDescriptionScreenState extends State<EventDescriptionPage> {
                           ],
                         ),
                       ),
-                      SizedBox(height: 5),
                       Padding(
                         padding: const EdgeInsets.symmetric(
                             horizontal: 16, vertical: 5),
@@ -311,6 +355,7 @@ class _EventDescriptionScreenState extends State<EventDescriptionPage> {
                         ),
                       ),
                       SizedBox(height: 10),
+
                       // Location
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 16),

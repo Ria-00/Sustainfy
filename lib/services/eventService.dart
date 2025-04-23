@@ -93,35 +93,34 @@ class EventService {
     return timestamp; // This is your Firestore Timestamp!
   }
 
-  Future<Map<String, dynamic>> submitEvent(
-      BuildContext context, int points, List<int> sdgs,String imgUrl) async {
+  Future<Map<String, dynamic>> submitEvent(BuildContext context, int points,
+      List<int> sdgs, String imgUrl, String ngoName) async {
     UserClassOperations operate = UserClassOperations();
     DocumentReference? ref = await operate.getDocumentRef(
       collection: "ngo",
       field: "ngoName",
       // value: context.read<EventProvider>().getNgoName
-      value: "Smile Foundation",
+      value: ngoName,
     ); //
     try {
       // Retrieve event details from your provider or form input
       EventModel event = EventModel(
-        eventId: "",
-        eventName: context.read<EventProvider>().event.eventName,
-        eventDetails: context.read<EventProvider>().event.eventDetails,
-        eventImg:
-            imgUrl, // Optionally set image URL or path
-        //live,upcoming, draft
-        eventStatus: 'draft',
-        eventAddress: context.read<EventProvider>().event.eventAddress,
-        eventStartDate: context.read<EventProvider>().event.eventStartDate,
-        eventEndDate: context.read<EventProvider>().event.eventEndDate,
-        UNGoals: sdgs,
-        eventLoc: null, // Example location
-        eventParticipants: [],
-        eventPoints: points,
-        eventGuidelines: context.read<EventProvider>().event.eventGuidelines,
-        ngoRef: ref,
-      );
+          eventId: "",
+          eventName: context.read<EventProvider>().event.eventName,
+          eventDetails: context.read<EventProvider>().event.eventDetails,
+          eventImg: imgUrl, // Optionally set image URL or path
+          //live,upcoming, draft
+          eventStatus: 'draft',
+          eventAddress: context.read<EventProvider>().event.eventAddress,
+          eventStartDate: context.read<EventProvider>().event.eventStartDate,
+          eventEndDate: context.read<EventProvider>().event.eventEndDate,
+          UNGoals: sdgs,
+          eventLoc: null, // Example location
+          eventParticipants: [],
+          eventPoints: points,
+          eventGuidelines: context.read<EventProvider>().event.eventGuidelines,
+          ngoRef: ref,
+          csHours: context.read<EventProvider>().event.csHours);
 
       // Create event using EventService
       EventService eventService = EventService();
@@ -131,10 +130,10 @@ class EventService {
       // Optionally, update UI or show confirmation message to the user
 
       // return eventId;
-       return {
-    'eventId': eventId,
-    'ref': ref,
-  };
+      return {
+        'eventId': eventId,
+        'ref': ref,
+      };
     } catch (e) {
       print('Error: $e');
       // Optionally, show an error message to the user
@@ -143,9 +142,8 @@ class EventService {
     }
   }
 
-  Future<Map<String, dynamic>> handleSubmit({
-    required BuildContext context,
-  }) async {
+  Future<Map<String, dynamic>> handleSubmit(
+      {required BuildContext context, ngoName}) async {
     // Retrieve values from the EventProvider
     String eventName = context.read<EventProvider>().event.eventName;
     String eventDesc = context.read<EventProvider>().event.eventDetails;
@@ -163,23 +161,23 @@ class EventService {
     int points = await getPoints(
         eventName, eventDesc, numOfSDGs, startTime, endTime, context);
 
-    String imgUrl= await getImgUrl(eventName);
+    String imgUrl = await getImgUrl(eventName);
     print("image url in the handle submit function");
     print(imgUrl);
     // Extract the keys as strings and convert them to integers
     List<int> sdgs = categorizedData.keys.map((key) => int.parse(key)).toList();
 
     //save to db
-    var result= await submitEvent(context, points, sdgs,imgUrl);
-    String eventId= result['eventId'];
-    DocumentReference ref= result['ref'];
+    var result = await submitEvent(context, points, sdgs, imgUrl, ngoName);
+    String eventId = result['eventId'];
+    DocumentReference ref = result['ref'];
     // You can use the points or categorizedData for any additional logic if needed
     return {
       'categorizedData': categorizedData,
       'points': points,
-      'eventId':eventId,
-      'ref':ref,
-      'imgUrl':imgUrl
+      'eventId': eventId,
+      'ref': ref,
+      'imgUrl': imgUrl
     };
   }
 
@@ -208,21 +206,20 @@ class EventService {
     return points;
   }
 
-Future<String> getImgUrl(String query) async {
-  try {
-    String? imageUrl = await UnsplashService.fetchImageUrl(query);
-    if (imageUrl != null) {
-      print('Image URL: $imageUrl');
-      return imageUrl;
-      // Use the URL however you like, e.g. display in UI
-    } else {
-      print('No image found for this query.');
+  Future<String> getImgUrl(String query) async {
+    try {
+      String? imageUrl = await UnsplashService.fetchImageUrl(query);
+      if (imageUrl != null) {
+        print('Image URL: $imageUrl');
+        return imageUrl;
+        // Use the URL however you like, e.g. display in UI
+      } else {
+        print('No image found for this query.');
+        return "";
+      }
+    } catch (e) {
+      print('Error fetching image: $e');
       return "";
     }
-  } catch (e) {
-    print('Error fetching image: $e');
-    return "";
   }
-}
-
 }

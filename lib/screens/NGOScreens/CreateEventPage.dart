@@ -289,7 +289,6 @@ class _CreateEventPageState extends State<CreateEventPage> {
                       onPressed: () => Navigator.pop(context),
                     ),
                     SizedBox(width: 5),
-                    
                   ],
                 ),
               ),
@@ -427,6 +426,35 @@ class _CreateEventPageState extends State<CreateEventPage> {
                         "eventGuidelines",
                         widget.existingEvent?.eventGuidelines ??
                             eventProvider.event.eventGuidelines),
+                    SizedBox(
+                      height: 20,
+                    ),
+                    DropdownButtonFormField<int>(
+                      value: widget.clearForm
+                          ? null
+                          : (widget.existingEvent?.csHours ??
+                              eventProvider.event.csHours),
+                      decoration: InputDecoration(
+                        labelText: 'Select CS Hours',
+                        border: OutlineInputBorder(),
+                      ),
+                      items: List.generate(25, (index) => index) // 1 to 25
+                          .map((number) => DropdownMenuItem(
+                                value: number,
+                                child: Text(number.toString()),
+                              ))
+                          .toList(),
+                      onChanged: isEditable
+                          ? (value) {
+                              if (value != null) {
+                                context.read<EventProvider>().updateEventData(
+                                    field: "csHours", value: value);
+                              }
+                            }
+                          : null,
+                      validator: (value) =>
+                          value == null ? 'Please select a number' : null,
+                    ),
                     if (showSaveEditButtons) ...[
                       SizedBox(height: 20),
                       Padding(
@@ -436,32 +464,35 @@ class _CreateEventPageState extends State<CreateEventPage> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              "SDG Goals:",
+                              "UN SDG Goals:",
                               style: TextStyle(
                                   fontSize: 18, fontWeight: FontWeight.bold),
                             ),
                             SizedBox(height: 10),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.start,
-                              children: imageList.isNotEmpty
-                                  ? imageList.map((imagePath) {
-                                      return Container(
-                                        margin:
-                                            EdgeInsets.symmetric(horizontal: 8),
-                                        width: 80,
-                                        height: 80,
-                                        decoration: BoxDecoration(
-                                          image: DecorationImage(
-                                            image: AssetImage(imagePath),
-                                            fit: BoxFit.cover,
+                            SingleChildScrollView(
+                              scrollDirection: Axis.horizontal,
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                children: imageList.isNotEmpty
+                                    ? imageList.map((imagePath) {
+                                        return Container(
+                                          margin: EdgeInsets.symmetric(
+                                              horizontal: 8),
+                                          width: 80,
+                                          height: 80,
+                                          decoration: BoxDecoration(
+                                            image: DecorationImage(
+                                              image: AssetImage(imagePath),
+                                              fit: BoxFit.cover,
+                                            ),
+                                            borderRadius:
+                                                BorderRadius.circular(8),
                                           ),
-                                          borderRadius:
-                                              BorderRadius.circular(8),
-                                        ),
-                                      );
-                                    }).toList()
-                                  : [Text("No SDG goals available.")],
-                            ),
+                                        );
+                                      }).toList()
+                                    : [Text("No SDG goals available.")],
+                              ),
+                            )
                           ],
                         ),
                       ),
@@ -501,7 +532,7 @@ class _CreateEventPageState extends State<CreateEventPage> {
                       onPressed: () async {
                         if (_formKey.currentState!.validate()) {
                           Map<String, dynamic> result =
-                              await eventService.handleSubmit(context: context);
+                              await eventService.handleSubmit(context: context, ngoName:ngoName);
 
                           DocumentReference ref = result['ref'];
 
@@ -621,7 +652,7 @@ class _CreateEventPageState extends State<CreateEventPage> {
                             //       builder: (context) => NgoLandingPage()),
                             // );
 
-                             Navigator.pop(context); 
+                            Navigator.pop(context);
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: AppColors.darkGreen,
@@ -686,7 +717,6 @@ class _CreateEventPageState extends State<CreateEventPage> {
                         // );
 
                         Navigator.pop(context); // returns to NgoHomePage
-
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.lightGreen,

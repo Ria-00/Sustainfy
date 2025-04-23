@@ -21,14 +21,13 @@ class NgoEventDescriptionPage extends StatefulWidget {
 }
 
 class _NgoEventDescriptionPage extends State<NgoEventDescriptionPage> {
-
-  UserClassOperations operations =UserClassOperations();
+  UserClassOperations operations = UserClassOperations();
   bool _showButton = false;
-  
-  String ngo="";
+
+  String ngo = "";
 
   @override
-  void initState(){
+  void initState() {
     super.initState();
     _getNgoName();
     _checkNgo();
@@ -41,10 +40,11 @@ class _NgoEventDescriptionPage extends State<NgoEventDescriptionPage> {
     });
   }
 
-  void _checkNgo() async{
+  void _checkNgo() async {
     String? mail = Provider.of<userProvider>(context, listen: false).email;
-    DocumentReference? ngoRef =await operations.getDocumentRef(collection: "ngo", field: "ngoMail", value: mail);
-    if(ngoRef == widget.event.ngoRef){
+    DocumentReference? ngoRef = await operations.getDocumentRef(
+        collection: "ngo", field: "ngoMail", value: mail);
+    if (ngoRef == widget.event.ngoRef) {
       setState(() {
         _showButton = true;
       });
@@ -119,17 +119,17 @@ class _NgoEventDescriptionPage extends State<NgoEventDescriptionPage> {
                         child: Align(
                           alignment: Alignment.center,
                           child: ClipRRect(
-            borderRadius: BorderRadius.circular(12),
-            child: widget.event.eventImg.isNotEmpty
-                ? Image.network(
-                    widget.event.eventImg,
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) {
-                      return SizedBox(); // Returns an empty widget if the image fails
-                    },
-                  )
-                : SizedBox(), // Returns an empty widget if URL is empty
-          ),
+                            borderRadius: BorderRadius.circular(12),
+                            child: widget.event.eventImg.isNotEmpty
+                                ? Image.network(
+                                    widget.event.eventImg,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (context, error, stackTrace) {
+                                      return SizedBox(); // Returns an empty widget if the image fails
+                                    },
+                                  )
+                                : SizedBox(), // Returns an empty widget if URL is empty
+                          ),
                         ),
                       ),
                       SizedBox(height: 10),
@@ -226,25 +226,70 @@ class _NgoEventDescriptionPage extends State<NgoEventDescriptionPage> {
                             ),
 
                           // Event Points on the right
-                          Padding(
-                            padding: const EdgeInsets.only(
-                                right: 20), // Adjust right margin
-                            child: Container(
-                              padding: EdgeInsets.symmetric(
-                                  horizontal: 5, vertical: 5),
-                              decoration: BoxDecoration(
-                                color: Color.fromRGBO(220, 237, 222, 1),
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              child: Text(
-                                "${widget.event.eventPoints} Points",
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  color: Color.fromRGBO(50, 50, 55, 1),
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Container(
+                                padding: EdgeInsets.symmetric(
+                                    horizontal: 10, vertical: 6),
+                                decoration: BoxDecoration(
+                                  color: Color.fromRGBO(235, 250, 235, 1),
+                                  borderRadius: BorderRadius.circular(8),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.green.withOpacity(0.2),
+                                      blurRadius: 4,
+                                      offset: Offset(0, 2),
+                                    ),
+                                  ],
+                                ),
+                                child: Row(
+                                  children: [
+                                    Icon(Icons.stars,
+                                        size: 18, color: Colors.green[700]),
+                                    SizedBox(width: 5),
+                                    Text(
+                                      "${widget.event.eventPoints} pts",
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.w600,
+                                        color: Colors.green[900],
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
-                            ),
-                          ),
+                              SizedBox(width: 10),
+                              Container(
+                                padding: EdgeInsets.symmetric(
+                                    horizontal: 10, vertical: 6),
+                                decoration: BoxDecoration(
+                                  color: Color.fromRGBO(230, 245, 255, 1),
+                                  borderRadius: BorderRadius.circular(8),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.blue.withOpacity(0.15),
+                                      blurRadius: 4,
+                                      offset: Offset(0, 2),
+                                    ),
+                                  ],
+                                ),
+                                child: Row(
+                                  children: [
+                                    Icon(Icons.access_time,
+                                        size: 18, color: Colors.blue[700]),
+                                    SizedBox(width: 5),
+                                    Text(
+                                      "${widget.event.csHours} CS hrs",
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.w600,
+                                        color: Colors.blue[900],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          )
                         ],
                       ),
                       SizedBox(height: 10),
@@ -376,31 +421,36 @@ class _NgoEventDescriptionPage extends State<NgoEventDescriptionPage> {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             // view all participants list
-                            _showButton? ElevatedButton(
-                              onPressed: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => ViewParticipantPage(
-                                        event: widget.event),
-                                  ),
-                                );
-                              },
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Color.fromRGBO(52, 168, 83, 1),
-                                shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(30)),
-                                padding: EdgeInsets.symmetric(
-                                    horizontal: 30, vertical: 15),
-                              ),
-                              child: Text(
-                                "View All Participants",
-                                style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.white),
-                              ),
-                            ):SizedBox.shrink(),
+                            _showButton
+                                ? ElevatedButton(
+                                    onPressed: () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) =>
+                                              ViewParticipantPage(
+                                                  event: widget.event),
+                                        ),
+                                      );
+                                    },
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor:
+                                          Color.fromRGBO(52, 168, 83, 1),
+                                      shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(30)),
+                                      padding: EdgeInsets.symmetric(
+                                          horizontal: 30, vertical: 15),
+                                    ),
+                                    child: Text(
+                                      "View All Participants",
+                                      style: TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.white),
+                                    ),
+                                  )
+                                : SizedBox.shrink(),
                           ],
                         ),
                       ),
