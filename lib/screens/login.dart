@@ -217,7 +217,6 @@ class _LoginState extends State<Login> {
       u.userPassword = _passwordController.text.trim();
       String encryptPass =
           EncryptionService().encryptData(_passwordController.text.trim());
-      print(encryptPass);
       final form = _formKey.currentState;
       if (form!.validate()) {
         print("Valid Form");
