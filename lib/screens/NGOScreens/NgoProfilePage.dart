@@ -21,6 +21,7 @@ class NgoProfilePage extends StatefulWidget {
 
 class _NgoProfilePageState extends State<NgoProfilePage> {
   Ngo? _user;
+  String? orgName;
   UserClassOperations operations = UserClassOperations();
   TextEditingController _nameController = TextEditingController();
   TextEditingController _emailController = TextEditingController();
@@ -44,9 +45,20 @@ class _NgoProfilePageState extends State<NgoProfilePage> {
     });
   }
 
+  void _getOrgName() async{
+    String userEmail =
+        Provider.of<userProvider>(context, listen: false).email ?? '';
+    String orgName = await operations.getOrgNameNgo(userEmail);
+    print(orgName);
+    setState(() {
+      this.orgName = orgName;
+    });
+  }
+
   void initState() {
     super.initState();
     _getuserInformation();
+    _getOrgName();
     _addFocusListener(mobileFocusNode, _mobileController);
     _addFocusListener(emailFocusNode, _emailController);
     _addFocusListener(nameFocusNode, _nameController);
@@ -187,6 +199,12 @@ class _NgoProfilePageState extends State<NgoProfilePage> {
                       '${_user?.ngoPhone != null ? "+91 ${_user?.ngoPhone}" : "N/A"}',
                       style: TextStyle(fontSize: 16, color: Colors.grey[600]),
                     ),
+                    _user?.orgRef!.id != "none"
+                                        ? Text(
+                                    orgName ?? "Unknown",
+                                    style: TextStyle(
+                                        fontSize: 16, color: Colors.grey[600]),
+                                  ): SizedBox(),
                   ],
                 ),
               ),
@@ -379,6 +397,7 @@ class _NgoProfilePageState extends State<NgoProfilePage> {
                                   ),
                                 ),
                               ),
+                              
                               SizedBox(height: 40),
                               ElevatedButton(
                                 style: ElevatedButton.styleFrom(

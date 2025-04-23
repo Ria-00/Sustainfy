@@ -51,9 +51,14 @@ class _LandingPageState extends State<LandingPage> {
         bool isValidStatus =
             event.eventStatus == "live" || event.eventStatus == "upcoming";
 
-        bool matchesSearch = event.eventName.toLowerCase().contains(query);
+        // Match event name or NGO name with search
+        String ngoName = ngoNames[event.ngoRef!.id]?.toLowerCase() ?? "";
+        bool matchesSearch = event.eventName.toLowerCase().contains(query) ||
+            ngoName.contains(query);
+
         bool matchesNgo =
             selectedNgo == null || ngoNames[event.ngoRef!.id] == selectedNgo;
+
         bool matchesGoals = selectedUNGoals.isEmpty ||
             event.UNGoals.any((goal) => selectedUNGoals.contains(goal));
 
@@ -256,6 +261,12 @@ class _LandingPageState extends State<LandingPage> {
                         ),
                         onPressed: () {
                           setState(() {
+                            if (isSearchVisible) {
+                              // If closing search, clear controller and reset events
+                              searchController.clear();
+                              filteredEvents = List.from(dummyEvents);
+                              noEventsFound = filteredEvents.isEmpty;
+                            }
                             isSearchVisible = !isSearchVisible;
                           });
                         },

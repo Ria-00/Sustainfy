@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:sustainfy/model/ngoModel.dart';
 import 'package:sustainfy/model/userModel.dart';
+import 'package:sustainfy/providers/userProvider.dart';
 import 'package:sustainfy/utils/colors.dart';
 import 'package:sustainfy/utils/font.dart';
 import 'package:sustainfy/widgets/customCurvedEdges.dart';
@@ -15,17 +17,21 @@ String getFirstName(String? fullName) {
   if (fullName == null || fullName.isEmpty) return 'Unknown';
   return fullName.split(' ')[0];
 }
+bool showOrgOnly = false; // Toggle for showing only organizations
 
 class _CommunityPageState extends State<CommunityPage> {
   List<UserClass> users = [];
+   UserClass? _user;
   UserClassOperations? operations;
   List<Ngo> ngos = [];
   bool isLoading = true;
   bool hasError = false;
+  
 
   @override
   void initState() {
     super.initState();
+    _getuserInformation();
     fetchLeaderboardData();
     fetchNgos();
   }
@@ -44,6 +50,24 @@ class _CommunityPageState extends State<CommunityPage> {
         isLoading = false;
         hasError = true;
       });
+    }
+  }
+
+  void _getuserInformation() async {
+    isLoading = true;
+    String userEmail =
+        Provider.of<userProvider>(context, listen: false).email ?? '';
+
+    UserClass? fetchedUser = await UserClassOperations().getUser(userEmail);
+    print(userEmail);
+
+    if (fetchedUser != null) {
+      setState(() {
+        _user = fetchedUser;
+        isLoading = false;
+      });
+    } else {
+      print("User not found!");
     }
   }
 
@@ -67,59 +91,114 @@ class _CommunityPageState extends State<CommunityPage> {
     }
   }
 
+  Future<void> fetchPointData() async {
+    try {
+      List<UserClass> fetchedUsers =
+          await UserClassOperations().getAllUserHours();
+      fetchedUsers.sort((a, b) => (b.csHours ?? 0).compareTo(a.csHours ?? 0));
+
+      setState(() {
+        users = fetchedUsers;
+        isLoading = false;
+        hasError = users.isEmpty;
+      });
+    } catch (e) {
+      setState(() {
+        isLoading = false;
+        hasError = true;
+      });
+    }
+  }
+
   @override
-  Widget build(BuildContext context) {
-    return DefaultTabController(
-      length: 2, // Leaderboard & NGO
-      child: Scaffold(
-        body: Column(
-          children: [
-            // ClipPath for green curved section
-            ClipPath(
-              clipper: CustomCurvedEdges(),
-              child: Container(
-                height: 150,
-                color: const Color.fromRGBO(52, 168, 83, 1),
-                padding: EdgeInsets.symmetric(horizontal: 15),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    Image.asset(
-                      'assets/images/SustainifyLogo.png',
-                      width: 50,
-                      height: 60,
-                    ),
-                  ],
-                ),
-              ),
-            ),
-
-            // TabBar placed below the curved green section
-            TabBar(
-              labelColor: Colors.black,
-              unselectedLabelColor: Colors.grey[700],
-              indicatorColor: Color(0xFF34A853),
-              tabs: [
-                Tab(text: "Leaderboard"),
-                Tab(text: "NGOs"),
-              ],
-            ),
-
-            // TabBarView for Leaderboard and NGO content
-            Expanded(
-              child: TabBarView(
+Widget build(BuildContext context) {
+  return DefaultTabController(
+    length: 2, // Leaderboard & NGO
+    child: Scaffold(
+      body: Column(
+        children: [
+          // ClipPath for green curved section
+          ClipPath(
+            clipper: CustomCurvedEdges(),
+            child: Container(
+              height: 150,
+              color: const Color.fromRGBO(52, 168, 83, 1),
+              padding: const EdgeInsets.symmetric(horizontal: 15),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  buildLeaderboardTab(),
-                  buildNgoListTab(),
+                  Row(
+                    children: [
+                      Image.asset(
+                        'assets/images/SustainifyLogo.png',
+                        width: 50,
+                        height: 60,
+                      ),
+                      const SizedBox(width: 10),
+                    ],
+                  ),
+                  (_user != null && _user!.orgRef != null && _user!.orgRef!.id != "none")
+                      ? Row(
+                          children: [
+                            const Text(
+                              "Org",
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                                letterSpacing: 1.2,
+                              ),
+                            ),
+                            const SizedBox(width: 5),
+                            Switch(
+                              value: showOrgOnly,
+                              activeColor: Colors.white,
+                              inactiveThumbColor: Colors.grey[300],
+                              inactiveTrackColor: Colors.grey[500],
+                              onChanged: (value) {
+                                if (value) {
+                                  fetchPointData(); // Fetch data for organizations
+                                } else {
+                                  fetchLeaderboardData(); // Fetch data for all users
+                                }
+                                setState(() {
+                                  showOrgOnly = value;
+                                });
+                              },
+                            ),
+                          ],
+                        )
+                      : Container(),
                 ],
               ),
             ),
-          ],
-        ),
+          ),
+          // TabBar placed below the curved green section
+          TabBar(
+            labelColor: Colors.black,
+            unselectedLabelColor: Colors.grey[700],
+            indicatorColor: Color(0xFF34A853),
+            tabs: [
+              Tab(text: "Leaderboard"),
+              Tab(text: "NGOs"),
+            ],
+          ),
+
+          // TabBarView for Leaderboard and NGO content
+          Expanded(
+            child: TabBarView(
+              children: [
+                buildLeaderboardTab(),
+                buildNgoListTab(),
+              ],
+            ),
+          ),
+        ],
       ),
-    );
-  }
+    ),
+  );
+}
+
 
   Widget buildLeaderboardTab() {
     return isLoading
@@ -294,8 +373,12 @@ class TopUserColumn extends StatelessWidget {
                 maxLines: 1,
               ),
               Text(
-                '${user.totalPoints ?? 0} pts',
-                style: TextStyle(color: Colors.black54, fontSize: 16),
+                showOrgOnly ? '${user.csHours} Hrs' : '${user.totalPoints} pts',
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 20.0,
+                  color: Color(0xFF808981),
+                ),
               ),
             ],
           ),
@@ -347,11 +430,12 @@ class LeaderboardCard extends StatelessWidget {
           style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20.0),
         ),
         trailing: Text(
-          '${user.totalPoints ?? 0} pts',
-          style: TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 20.0,
-              color: Color(0xFF808981)),
+          showOrgOnly ? '${user.csHours} Hrs' : '${user.totalPoints} pts',
+          style: const TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 20.0,
+            color: Color(0xFF808981),
+          ),
         ),
       ),
     );
