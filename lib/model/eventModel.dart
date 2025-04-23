@@ -13,8 +13,10 @@ class EventModel {
   final GeoPoint? eventLoc;
   final List<EventParticipant> eventParticipants;
   final int eventPoints;
-  final String eventGuidelines; // New field added
-  DocumentReference? ngoRef;
+  final String eventGuidelines;
+  final DocumentReference? ngoRef;
+
+  final int csHours; // New field
 
   EventModel({
     required this.eventId,
@@ -29,8 +31,10 @@ class EventModel {
     required this.eventLoc,
     required this.eventParticipants,
     required this.eventPoints,
-    required this.eventGuidelines, // New field in the constructor
+    required this.eventGuidelines,
     required this.ngoRef,
+
+    required this.csHours, // New param
   });
 
   EventModel.draft({
@@ -46,8 +50,10 @@ class EventModel {
     required this.eventLoc,
     required this.eventParticipants,
     required this.eventPoints,
-    required this.eventGuidelines, // New field in the draft constructor
+    required this.eventGuidelines,
     required this.ngoRef,
+ 
+    required this.csHours, // New param
   });
 
   static final Timestamp defaultTimestamp =
@@ -67,28 +73,23 @@ class EventModel {
       eventEndDate: map["eventEnd_date"] is Timestamp
           ? map["eventEnd_date"]
           : defaultTimestamp,
-
       UNGoals: List<int>.from(map["UNGoals"] ?? []),
-
-      // Fixed GeoPoint issue
       eventLoc: map["eventLoc"] is GeoPoint
           ? map["eventLoc"]
-          : GeoPoint(0.0, 0.0), // Default GeoPoint in case of null
-
-      // Fixed eventParticipants mapping
+          : GeoPoint(0.0, 0.0),
       eventParticipants: (map["eventParticipants"] as List<dynamic>?)
               ?.map(
                   (e) => EventParticipant.fromMap(Map<String, dynamic>.from(e)))
               .toList() ??
           [],
-
       eventPoints: map["eventPoints"] ?? 0,
-      eventGuidelines: map["eventGuidelines"] ?? "", // New field added here
+      eventGuidelines: map["eventGuidelines"] ?? "",
       ngoRef: map["ngoRef"],
+     
+      csHours: map["csHours"] ?? 0, // New field
     );
   }
 
-  // CopyWith method to create a new instance with modified fields
   EventModel copyWith({
     String? eventId,
     String? eventName,
@@ -102,8 +103,10 @@ class EventModel {
     GeoPoint? eventLoc,
     List<EventParticipant>? eventParticipants,
     int? eventPoints,
-    String? eventGuidelines, // New parameter for copyWith method
+    String? eventGuidelines,
     DocumentReference? ngoRef,
+   
+    int? csHours, // New param
   }) {
     return EventModel(
       eventId: eventId ?? this.eventId,
@@ -118,9 +121,10 @@ class EventModel {
       eventLoc: eventLoc ?? this.eventLoc,
       eventParticipants: eventParticipants ?? this.eventParticipants,
       eventPoints: eventPoints ?? this.eventPoints,
-      eventGuidelines:
-          eventGuidelines ?? this.eventGuidelines, // New field here
+      eventGuidelines: eventGuidelines ?? this.eventGuidelines,
       ngoRef: ngoRef ?? this.ngoRef,
+     
+      csHours: csHours ?? this.csHours, // New param
     );
   }
 
@@ -139,11 +143,12 @@ class EventModel {
         'latitude': eventLoc?.latitude,
         'longitude': eventLoc?.longitude,
       },
-      // Fixed eventParticipants serialization
       "eventParticipants": eventParticipants.map((e) => e.toMap()).toList(),
       "eventPoints": eventPoints,
-      "eventGuidelines": eventGuidelines, // New field here
+      "eventGuidelines": eventGuidelines,
       "ngoRef": ngoRef,
+     
+      "csHours": csHours, // New field
     };
   }
 }

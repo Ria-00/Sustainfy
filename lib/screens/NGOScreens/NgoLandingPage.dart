@@ -210,6 +210,31 @@ class _NgoLandingPageState extends State<NgoLandingPage> {
               ),
             ),
           ),
+          Positioned(
+            bottom: 10,
+            right: MediaQuery.of(context).size.width / 2 - 28,
+            child: SizedBox(
+              width: 80,
+              height: 80,
+              child: FloatingActionButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => CreateEventPage(
+                            existingEvent: null,
+                            showSaveEditButtons: false,
+                            clearForm: true)),
+                  );
+                },
+                backgroundColor: Colors.green,
+                child: Icon(Icons.add, size: 40, color: Colors.white),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(40),
+                ),
+              ),
+            ),
+          ),
         ],
       ),
     );

@@ -47,3 +47,5 @@ git
 
 # Environment Files (Sensitive Info)
 .env
+
+gradle.properties

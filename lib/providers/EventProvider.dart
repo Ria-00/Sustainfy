@@ -3,7 +3,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:sustainfy/model/eventModel.dart';
 
 class EventProvider extends ChangeNotifier {
-  
   EventModel _event = EventModel.draft(
       eventId: "",
       eventName: "",
@@ -18,7 +17,8 @@ class EventProvider extends ChangeNotifier {
       eventParticipants: [],
       eventPoints: 0,
       eventGuidelines: "", // Add the eventGuidelines field
-      ngoRef: null);
+      ngoRef: null,
+      csHours: 0);
 
   // Getter for event data
   EventModel get event => _event;
@@ -67,6 +67,9 @@ class EventProvider extends ChangeNotifier {
       case "eventImg":
         _event = _event.copyWith(eventImg: value);
         break;
+      case "csHours":
+        _event = _event.copyWith(csHours: value);
+        break;
       default:
         break;
     }
@@ -89,8 +92,8 @@ class EventProvider extends ChangeNotifier {
         eventParticipants: [],
         eventPoints: 0,
         eventGuidelines: "", // Clear the guidelines as well
-        ngoRef: null);
+        ngoRef: null,
+        csHours: 0);
     notifyListeners();
   }
-
 }
