@@ -18,11 +18,26 @@ class NgoLandingPage extends StatefulWidget {
 
 class _NgoLandingPageState extends State<NgoLandingPage> {
   UserClassOperations operate = UserClassOperations();
+  List<EventModel> filteredEvents = [];
+  bool isSearchVisible = false;
+  TextEditingController searchController = TextEditingController();
+  bool isLoading = true;
 
   @override
   void initState() {
     super.initState();
+    searchController.addListener(_filterEvents);
     _getEvents();
+  }
+
+  void _filterEvents() {
+    String query = searchController.text.toLowerCase();
+
+    setState(() {
+      filteredEvents = events.where((event) {
+        return event.eventName.toLowerCase().contains(query);
+      }).toList();
+    });
   }
 
   List<EventModel> events = [];
@@ -31,6 +46,7 @@ class _NgoLandingPageState extends State<NgoLandingPage> {
   String? ngoName;
 
   void _getEvents() async {
+    setState(() => isLoading = true);
     String? mail = Provider.of<userProvider>(context, listen: false).email;
     await operate.checkAndUpdateEvents();
     DocumentReference? ngoRef = await operate.getDocumentRef(
@@ -39,9 +55,11 @@ class _NgoLandingPageState extends State<NgoLandingPage> {
     String? name = await operate.getNgoName(ngoRef);
     setState(() {
       events = dummyEvents;
+      filteredEvents = List.from(dummyEvents); // ✅ update filtered
       ngoName = name;
       draftEvents =
           dummyEvents.where((event) => event.eventStatus == "draft").toList();
+      isLoading = false;
     });
   }
 
@@ -61,20 +79,22 @@ class _NgoLandingPageState extends State<NgoLandingPage> {
                   child: ListView(
                     padding: EdgeInsets.only(top: 15),
                     children: [
-                      buildLiveActivitiesSection("Live Activities",
-                          "assets/images/live.png", Colors.red, "live"),
-                      SizedBox(
-                        height: 10,
-                      ),
-                      buildPublishedSection("Published",
-                          "assets/images/published.png", "upcoming"),
-                      SizedBox(
-                        height: 10,
-                      ),
-                      buildDraftsSection("assets/images/drafts.png"),
-                      SizedBox(
-                        height: 10,
-                      ),
+                      buildLiveActivitiesSection(
+                          "Live Activities",
+                          "assets/images/live.png",
+                          Colors.red,
+                          "live",
+                          filteredEvents),
+                      SizedBox(height: 10),
+                      buildPublishedSection(
+                          "Published",
+                          "assets/images/published.png",
+                          "upcoming",
+                          filteredEvents),
+                      SizedBox(height: 10),
+                      buildDraftsSection(
+                          "assets/images/drafts.png", filteredEvents),
+                      SizedBox(height: 10),
                     ],
                   ),
                 ),
@@ -102,7 +122,7 @@ class _NgoLandingPageState extends State<NgoLandingPage> {
                         height: 60,
                       ),
                     ),
-                    SizedBox(width: 7),
+                    SizedBox(width: 10),
                     Expanded(
                       child: TextField(
                         decoration: InputDecoration(
@@ -130,26 +150,62 @@ class _NgoLandingPageState extends State<NgoLandingPage> {
             ),
           ),
           Positioned(
-            bottom: 10,
-            right: MediaQuery.of(context).size.width / 2 - 28,
-            child: SizedBox(
-              width: 80,
-              height: 80,
-              child: FloatingActionButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => CreateEventPage(
-                            existingEvent: null,
-                            showSaveEditButtons: false,
-                            clearForm: true)),
-                  );
-                },
-                backgroundColor: Colors.green,
-                child: Icon(Icons.add, size: 40, color: Colors.white),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(40),
+            top: 0,
+            left: 0,
+            right: 0,
+            child: ClipPath(
+              clipper: CustomCurvedEdges(),
+              child: Container(
+                height: 150,
+                color: Color.fromRGBO(52, 168, 83, 1),
+                padding: EdgeInsets.symmetric(horizontal: 15),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Image.asset(
+                      'assets/images/SustainifyLogo.png',
+                      width: 50,
+                      height: 60,
+                    ),
+                    SizedBox(width: 10),
+                    if (isSearchVisible)
+                      Expanded(
+                        child: TextField(
+                          controller: searchController,
+                          decoration: InputDecoration(
+                            hintText: '   Search your event...',
+                            hintStyle: TextStyle(
+                              color: Colors.white.withOpacity(0.8),
+                              fontFamily: AppFonts.inter,
+                              fontWeight: AppFonts.interRegularWeight,
+                            ),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(25.0),
+                              borderSide: BorderSide.none,
+                            ),
+                            filled: true,
+                            fillColor: Colors.white.withOpacity(0.1),
+                          ),
+                        ),
+                      ),
+                    IconButton(
+                      icon: Icon(
+                        isSearchVisible ? Icons.close : Icons.search,
+                        color: Colors.white,
+                        size: 30,
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          isSearchVisible = !isSearchVisible;
+                          if (!isSearchVisible) {
+                            searchController.clear();
+                            filteredEvents = List.from(events);
+                          }
+                        });
+                      },
+                    ),
+                  ],
                 ),
               ),
             ),
@@ -244,7 +300,8 @@ class _NgoLandingPageState extends State<NgoLandingPage> {
                             Icon(Icons.people,
                                 size: 18, color: AppColors.darkGreen),
                             SizedBox(width: 4),
-                            Text('${event.eventParticipants.length} Users Joined',
+                            Text(
+                                '${event.eventParticipants.length} Users Joined',
                                 style: TextStyle(fontSize: 13)),
                           ],
                         ),
@@ -352,10 +409,11 @@ class _NgoLandingPageState extends State<NgoLandingPage> {
     return months[month - 1];
   }
 
-  Widget buildLiveActivitiesSection(
-      String title, String imagePath, Color color, String status) {
-    List<EventModel> filteredEvents =
-        events.where((event) => event.eventStatus == status).toList();
+  Widget buildLiveActivitiesSection(String title, String imagePath, Color color,
+      String status, List<EventModel> filteredEventsList) {
+    List<EventModel> filtered = filteredEventsList
+        .where((event) => event.eventStatus == status)
+        .toList();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -387,14 +445,13 @@ class _NgoLandingPageState extends State<NgoLandingPage> {
         ),
         Padding(
           padding: const EdgeInsets.only(left: 10, right: 10, bottom: 5),
-          child: filteredEvents.isNotEmpty
+          child: filtered.isNotEmpty
               ? Column(
                   children: List.generate(
-                    filteredEvents.length,
+                    filtered.length,
                     (index) => Padding(
-                      padding:
-                          const EdgeInsets.only(bottom: 10), // Added spacing
-                      child: buildEvent(filteredEvents[index]),
+                      padding: const EdgeInsets.only(bottom: 10),
+                      child: buildEvent(filtered[index]),
                     ),
                   ),
                 )
@@ -410,9 +467,11 @@ class _NgoLandingPageState extends State<NgoLandingPage> {
     );
   }
 
-  Widget buildPublishedSection(String title, String imagePath, String status) {
-    List<EventModel> filteredEvents =
-        events.where((event) => event.eventStatus == status).toList();
+  Widget buildPublishedSection(String title, String imagePath, String status,
+      List<EventModel> filteredEventsList) {
+    List<EventModel> filtered = filteredEventsList
+        .where((event) => event.eventStatus == status)
+        .toList();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -436,14 +495,13 @@ class _NgoLandingPageState extends State<NgoLandingPage> {
         ),
         Padding(
           padding: const EdgeInsets.only(left: 10, right: 10, bottom: 5),
-          child: filteredEvents.isNotEmpty
+          child: filtered.isNotEmpty
               ? Column(
                   children: List.generate(
-                    filteredEvents.length,
+                    filtered.length,
                     (index) => Padding(
-                      padding:
-                          const EdgeInsets.only(bottom: 10), // Added spacing
-                      child: buildEvent(filteredEvents[index]),
+                      padding: const EdgeInsets.only(bottom: 10),
+                      child: buildEvent(filtered[index]),
                     ),
                   ),
                 )
@@ -459,7 +517,12 @@ class _NgoLandingPageState extends State<NgoLandingPage> {
     );
   }
 
-  Widget buildDraftsSection(String draftImagePath) {
+  Widget buildDraftsSection(
+      String draftImagePath, List<EventModel> filteredEventsList) {
+    List<EventModel> filtered = filteredEventsList
+        .where((event) => event.eventStatus == "draft")
+        .toList();
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -482,13 +545,12 @@ class _NgoLandingPageState extends State<NgoLandingPage> {
         ),
         Padding(
           padding: const EdgeInsets.only(left: 10, right: 10, bottom: 5),
-          child: draftEvents.isNotEmpty
+          child: filtered.isNotEmpty
               ? Column(
                   children: List.generate(
-                    draftEvents.length,
+                    filtered.length,
                     (index) => Padding(
-                      padding: const EdgeInsets.only(
-                          bottom: 10), // Add spacing between tiles
+                      padding: const EdgeInsets.only(bottom: 10),
                       child: Stack(
                         children: [
                           GestureDetector(
@@ -497,11 +559,11 @@ class _NgoLandingPageState extends State<NgoLandingPage> {
                                 context,
                                 MaterialPageRoute(
                                   builder: (context) => NgoEventDescriptionPage(
-                                      event: draftEvents[index]),
+                                      event: filtered[index]),
                                 ),
                               );
                             },
-                            child: buildEvent(draftEvents[index]),
+                            child: buildEvent(filtered[index]),
                           ),
                           Positioned(
                             bottom: 10,
@@ -513,20 +575,12 @@ class _NgoLandingPageState extends State<NgoLandingPage> {
                                   context,
                                   MaterialPageRoute(
                                     builder: (context) => CreateEventPage(
-                                      existingEvent: draftEvents[index],
+                                      existingEvent: filtered[index],
                                       showSaveEditButtons: true,
                                       clearForm: false,
                                     ),
                                   ),
                                 );
-
-                                // Navigator.push(
-                                //   context,
-                                //   MaterialPageRoute(
-                                //     builder: (context) => NgoEventDescriptionPage(
-                                //         event: draftEvents[index]),
-                                //   ),
-                                // );
                               },
                             ),
                           ),

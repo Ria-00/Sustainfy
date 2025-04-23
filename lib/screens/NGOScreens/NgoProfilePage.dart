@@ -302,8 +302,11 @@ class _NgoProfilePageState extends State<NgoProfilePage> {
                               SizedBox(height: 70),
                               CircleAvatar(
                                 radius: 50,
-                                backgroundImage: AssetImage(
-                                    'assets/images/profileImages/pfp2.png'),
+                                backgroundImage: _user?.ngoImg != null
+                                    ? NetworkImage(_user!.ngoImg!)
+                                    : AssetImage(
+                                            'assets/images/profileImages/pfp2.png')
+                                        as ImageProvider,
                                 child: Align(
                                   alignment: Alignment.bottomRight,
                                   child: Icon(

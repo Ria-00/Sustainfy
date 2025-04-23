@@ -184,7 +184,6 @@ class _ProfilePageState extends State<ProfilePage> {
           // Expanded scrollable content
           Expanded(
             child: Container(
-              color: Colors.white,
               child: SafeArea(
                 child: SingleChildScrollView(
                   child: Column(
@@ -251,12 +250,20 @@ class _ProfilePageState extends State<ProfilePage> {
                       // Category Buttons
                       SizedBox(height: 20),
                       Row(
-                        mainAxisAlignment: MainAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          SizedBox(width: 55),
-                          _buildCategoryButton("Used", Icons.history),
-                          SizedBox(width: 85),
-                          _buildCategoryButton("Wishlist", Icons.favorite),
+                          SizedBox(
+                            width: MediaQuery.of(context).size.width *
+                                0.9, // dynamic width
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                              children: [
+                                _buildCategoryButton("Used", Icons.history),
+                                _buildCategoryButton(
+                                    "Wishlist", Icons.favorite),
+                              ],
+                            ),
+                          ),
                         ],
                       ),
 
@@ -418,8 +425,11 @@ class _ProfilePageState extends State<ProfilePage> {
                               SizedBox(height: 70),
                               CircleAvatar(
                                 radius: 50,
-                                backgroundImage: AssetImage(
-                                    'assets/images/profileImages/pfp2.png'),
+                                backgroundImage: _user?.userImg != null
+                                    ? NetworkImage(_user!.userImg!)
+                                    : AssetImage(
+                                            'assets/images/profileImages/pfp2.png')
+                                        as ImageProvider,
                                 child: Align(
                                   alignment: Alignment.bottomRight,
                                   child: Icon(

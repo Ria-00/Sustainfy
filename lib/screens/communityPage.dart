@@ -372,7 +372,7 @@ class NgoCard extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.all(12.0),
         child: Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // NGO Image
             ClipRRect(
@@ -380,62 +380,70 @@ class NgoCard extends StatelessWidget {
               child: ngo.ngoImg != null
                   ? Image.network(
                       ngo.ngoImg!,
-                      width: 80,
-                      height: 80,
+                      width: 60,
+                      height: 60,
                       fit: BoxFit.cover,
                     )
                   : Image.asset(
                       'assets/images/ngo_placeholder.png',
-                      width: 80,
-                      height: 80,
+                      width: 60,
+                      height: 60,
                       fit: BoxFit.cover,
                     ),
             ),
-            SizedBox(width: 16),
+            SizedBox(width: 12),
 
-            // NGO Name and Description
+            // NGO name, email and phone button
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.start,
                 children: [
+                  // Top Row with name and phone icon
                   Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      SizedBox(height: 10),
-                      Text(
-                        ngo.ngoName ?? 'Unknown NGO',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 20,
+                      // NGO name
+                      Expanded(
+                        child: Text(
+                          ngo.ngoName ?? 'Unknown NGO',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
-                      Spacer(),
+
+                      // Phone icon
+                      IconButton(
+                        padding: EdgeInsets.zero,
+                        constraints: BoxConstraints(),
+                        icon: Icon(Icons.phone, color: Colors.green, size: 24),
+                        onPressed: () {
+                          _showContactDialog(context, ngo);
+                        },
+                      ),
                     ],
                   ),
-                  SizedBox(height: 6),
+                  // SizedBox(height: 4),
+                  // Email / Description
                   Text(
                     ngo.ngoMail ?? 'No description provided.',
                     style: TextStyle(fontSize: 14, color: Colors.grey[700]),
-                    maxLines: 3,
                     overflow: TextOverflow.ellipsis,
+                    maxLines: 2,
                   ),
                 ],
               ),
-            ),
-            IconButton(
-              icon: Icon(Icons.phone, color: Colors.green),
-              iconSize: 30,
-              onPressed: () {
-                _showContactDialog(context, ngo);
-              },
             ),
           ],
         ),
       ),
     );
   }
+}
 
-  void _showContactDialog(BuildContext context, Ngo ngo) {
+void _showContactDialog(BuildContext context, Ngo ngo) {
   showDialog(
     context: context,
     builder: (BuildContext context) {
@@ -524,6 +532,4 @@ class NgoCard extends StatelessWidget {
       );
     },
   );
-}
-
 }
