@@ -643,7 +643,7 @@ class _LoginState extends State<Login> {
                                                 ),
                                               ),
                                               Text(
-                                                "Other login methods",
+                                                "Continue with Google",
                                                 style: TextStyle(
                                                   fontSize: 12,
                                                   fontWeight: FontWeight.normal,

@@ -12,7 +12,9 @@ import 'package:sustainfy/main.dart';
 import 'package:sustainfy/model/ngoModel.dart';
 import 'package:sustainfy/model/userModel.dart';
 import 'package:sustainfy/providers/userProvider.dart';
+import 'package:sustainfy/screens/NGOScreens/LearnMoreScreen.dart';
 import 'package:sustainfy/screens/NGOScreens/NgoHomePage.dart';
+import 'package:sustainfy/screens/NGOScreens/NgoRegisterPage.dart';
 import 'package:sustainfy/screens/homePage.dart';
 import 'package:sustainfy/screens/landingPage.dart';
 import 'package:sustainfy/screens/otpVerification.dart';
@@ -469,41 +471,39 @@ class _NgoLoginPageState extends State<NgoLoginPage> {
                                           children: [
                                             ListTile(
                                               leading: Icon(Icons.web,
-                                                  color: const Color.fromARGB(
+                                                  color: Color.fromARGB(
                                                       255, 23, 94, 152)),
-                                              title: Text("Visit Our Website"),
+                                              title: Text(
+                                                  "Fill Registration Form"),
                                               subtitle: Text(
-                                                "www.sustainfy.org",
-                                              ),
+                                                  "Enter your NGO details to register."),
                                             ),
                                             Divider(),
                                             ListTile(
-                                              leading: Icon(Icons.assignment,
-                                                  color: const Color.fromARGB(
+                                              leading: Icon(Icons.upload_file,
+                                                  color: Color.fromARGB(
                                                       255, 13, 96, 25)),
-                                              title: Text(
-                                                  "Submit Your Application"),
+                                              title: Text("Upload Documents"),
                                               subtitle: Text(
-                                                  "Fill out the onboarding form."),
+                                                  "Submit necessary documents for review."),
                                             ),
                                             Divider(),
                                             ListTile(
                                               leading: Icon(Icons.verified,
-                                                  color: const Color.fromARGB(
+                                                  color: Color.fromARGB(
                                                       255, 218, 151, 52)),
-                                              title: Text(
-                                                  "Verification & Approval"),
+                                              title:
+                                                  Text("Verification Process"),
                                               subtitle: Text(
-                                                  "Our team will review and verify your details."),
+                                                  "We will verify your submitted details."),
                                             ),
                                             Divider(),
                                             ListTile(
                                               leading: Icon(Icons.email,
                                                   color: Colors.purple),
-                                              title: Text(
-                                                  "Receive Login Credentials"),
+                                              title: Text("Get Credentials"),
                                               subtitle: Text(
-                                                  "Once approved, you'll get access via email."),
+                                                  "Receive login credentials via email."),
                                             ),
                                           ],
                                         ),
@@ -528,7 +528,15 @@ class _NgoLoginPageState extends State<NgoLoginPage> {
                                                   padding: EdgeInsets.symmetric(
                                                       vertical: 15),
                                                 ),
-                                                onPressed: () {},
+                                                onPressed: () {
+                                                  Navigator.push(
+                                                    context,
+                                                    MaterialPageRoute(
+                                                      builder: (context) =>
+                                                          NgoRegisterPage(),
+                                                    ),
+                                                  );
+                                                },
                                                 child: const Text(
                                                     "Register as NGO"),
                                               ),
@@ -549,7 +557,15 @@ class _NgoLoginPageState extends State<NgoLoginPage> {
                                                   padding: EdgeInsets.symmetric(
                                                       vertical: 15),
                                                 ),
-                                                onPressed: () {},
+                                                onPressed: () {
+                                                  Navigator.push(
+                                                    context,
+                                                    MaterialPageRoute(
+                                                      builder: (context) =>
+                                                          LearnMoreScreen(),
+                                                    ),
+                                                  );
+                                                },
                                                 child: const Text("Learn more"),
                                               ),
                                             ),
