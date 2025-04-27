@@ -530,9 +530,38 @@ class _CreateEventPageState extends State<CreateEventPage> {
                   children: [
                     ElevatedButton(
                       onPressed: () async {
+                        showDialog(
+                          context: context,
+                          barrierDismissible:
+                              false, // User can't dismiss by tapping outside
+                          builder: (context) => Center(
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                // Gemini API Icon (replace with your asset or use an Icon widget)
+                                Image.asset(
+                                  'assets/images/gemini_icon.png', // <- your gemini icon asset
+                                  width: 50,
+                                  height: 50,
+                                ),
+                                const SizedBox(height: 20),
+                                SizedBox(
+                                  width:
+                                      MediaQuery.of(context).size.width * 0.25,
+                                  child: LinearProgressIndicator(
+                                    color: Colors.white,
+                                    backgroundColor: const Color.fromARGB(
+                                        153, 255, 255, 255),
+                                    minHeight: 3,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
                         if (_formKey.currentState!.validate()) {
-                          Map<String, dynamic> result =
-                              await eventService.handleSubmit(context: context, ngoName:ngoName);
+                          Map<String, dynamic> result = await eventService
+                              .handleSubmit(context: context, ngoName: ngoName);
 
                           DocumentReference ref = result['ref'];
 
